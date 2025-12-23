@@ -36,8 +36,8 @@ const AdminDashboard: React.FC = () => {
         const [coursesRes, enrollmentsRes, certRequestsRes, logsRes] = await Promise.all([
             supabase.from('courses').select('*', { count: 'exact' }),
             supabase.from('enrollments').select('*', { count: 'exact', head: true }),
-            supabase.from('certificate_requests').select('*, user_profiles(full_name), courses(title)', { count: 'exact' }).eq('status', 'pending').order('requested_at', { ascending: false }),
-            supabase.from('activity_log').select('*, user_profiles(full_name, company_name), courses(title), modules(title)').order('created_at', { ascending: false }).limit(100)
+            supabase.from('certificate_requests').select('*, user_profiles!inner(full_name), courses!inner(title)', { count: 'exact' }).eq('status', 'pending').order('requested_at', { ascending: false }),
+            supabase.from('activity_log').select('*, user_profiles!inner(full_name, company_name), courses!inner(title), modules!inner(title)').order('created_at', { ascending: false }).limit(100)
         ]);
 
         if (coursesRes.data) setCourses(coursesRes.data);
@@ -74,7 +74,7 @@ const AdminDashboard: React.FC = () => {
           });
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'certificate_requests' }, async (payload) => {
-          const { data } = await supabase.from('certificate_requests').select('*, user_profiles(full_name), courses(title)').eq('id', payload.new.id).single();
+          const { data } = await supabase.from('certificate_requests').select('*, user_profiles!inner(full_name), courses!inner(title)').eq('id', payload.new.id).single();
           if (data) {
             setCertificateRequests(prev => [data as any, ...prev]);
             setStats(prev => ({...prev, certRequests: prev.certRequests + 1}));
@@ -87,7 +87,7 @@ const AdminDashboard: React.FC = () => {
           }
       })
        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_log' }, async (payload) => {
-            const { data } = await supabase.from('activity_log').select('*, user_profiles(full_name, company_name), courses(title), modules(title)').eq('id', payload.new.id).single();
+            const { data } = await supabase.from('activity_log').select('*, user_profiles!inner(full_name, company_name), courses!inner(title), modules!inner(title)').eq('id', payload.new.id).single();
             if(data){
                 setActivityLogs(prev => [data as ActivityLog, ...prev]);
             }
@@ -240,7 +240,7 @@ const AdminDashboard: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredLogs.map(log => (
                     <tr key={log.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(log.created_at).toLocaleString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.full_name || '(Usuário Excluído)'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.company_name || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
