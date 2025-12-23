@@ -105,8 +105,8 @@ const AuthPage: React.FC = () => {
         ) : (
         <>
             <div className="flex flex-col items-center">
-                <Logo className="h-12 w-auto" />
-                <h2 className="mt-6 text-3xl font-bold text-center text-gray-900">
+                <Logo className="h-16 w-auto" />
+                <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
                 {isLogin ? 'Acesse sua conta de aluno' : 'Crie uma nova conta'}
                 </h2>
             </div>

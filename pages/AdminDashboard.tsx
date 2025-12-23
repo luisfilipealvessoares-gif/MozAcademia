@@ -114,7 +114,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-12">
-      <h1 className="text-3xl font-bold">Painel de Administração</h1>
+      <h1 className="text-3xl font-extrabold">Painel de Administração</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title="Total de Cursos" value={stats.courses} icon={<BookOpenIcon />} />

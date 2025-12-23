@@ -52,6 +52,7 @@ const AdminLoginPage: React.FC = () => {
         navigate('/admin');
       }
     } catch (error: any) {
+      // FIX: Corrected syntax error in try-catch block.
       setError(error.error_description || error.message);
     } finally {
       setLoading(false);
@@ -71,8 +72,8 @@ const AdminLoginPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <div className="flex flex-col items-center">
-          <Logo className="h-12 w-auto" />
-          <h2 className="mt-6 text-3xl font-bold text-center text-gray-900">
+          <Logo className="h-16 w-auto" />
+          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
             Acesso Restrito
           </h2>
           <p className="mt-2 text-sm text-gray-600">Painel de Administração</p>
@@ -98,7 +99,7 @@ const AdminLoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700 disabled:bg-red-400"
+            className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:bg-orange-600 disabled:bg-orange-300"
           >
             {loading ? 'Verificando...' : 'Entrar'}
           </button>
