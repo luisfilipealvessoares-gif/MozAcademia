@@ -12,6 +12,8 @@ const AdminCourseManagementPage: React.FC = () => {
   const [editingModule, setEditingModule] = useState<Partial<Module> | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const fetchModules = useCallback(async () => {
     if (!courseId) return;
@@ -42,6 +44,8 @@ const AdminCourseManagementPage: React.FC = () => {
     setEditingModule(null);
     setVideoFile(null);
     setUploading(false);
+    setUploadProgress(null);
+    setShowSuccess(false);
   };
 
   const handleSaveModule = async (e: React.FormEvent) => {
@@ -49,6 +53,8 @@ const AdminCourseManagementPage: React.FC = () => {
     if (!editingModule || !courseId) return;
 
     setUploading(true);
+    setUploadProgress(0);
+    setShowSuccess(false);
     let videoUrl = editingModule.video_url || '';
 
     if (videoFile) {
@@ -58,11 +64,22 @@ const AdminCourseManagementPage: React.FC = () => {
         
         const { error: uploadError } = await supabase.storage
             .from('course_videos')
-            .upload(filePath, videoFile);
+            .upload(filePath, videoFile, {
+                cacheControl: '3600',
+                upsert: false,
+                // Add progress tracking
+                onUploadProgress: (event) => {
+                    if (event.lengthComputable) {
+                        const percentLoaded = Math.round((event.loaded / event.total) * 100);
+                        setUploadProgress(percentLoaded);
+                    }
+                }
+            });
 
         if (uploadError) {
             alert('Erro no upload do vídeo: ' + uploadError.message);
             setUploading(false);
+            setUploadProgress(null);
             return;
         }
 
@@ -80,13 +97,17 @@ const AdminCourseManagementPage: React.FC = () => {
       ? await supabase.from('modules').update(moduleData).eq('id', editingModule.id)
       : await supabase.from('modules').insert(moduleData);
     
+    setUploading(false);
+
     if (error) {
         alert('Erro ao salvar o módulo: ' + error.message);
     } else {
+        setShowSuccess(true);
         await fetchModules();
-        handleCloseModal();
+        setTimeout(() => {
+            handleCloseModal();
+        }, 2000); // Close modal after 2 seconds of showing success
     }
-    setUploading(false);
   };
   
   const handleDeleteModule = async (moduleId: string) => {
@@ -164,30 +185,52 @@ const AdminCourseManagementPage: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
           <div className="bg-white rounded-lg p-8 w-full max-w-lg">
-            <h2 className="text-2xl font-bold mb-6">{editingModule?.id ? 'Editar' : 'Adicionar'} Módulo</h2>
-            <form onSubmit={handleSaveModule} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Título do Módulo</label>
-                <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Ordem</label>
-                <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md" required />
-              </div>
-               <div>
-                <label className="block text-sm font-medium text-gray-700">Arquivo de Vídeo (MP4)</label>
-                <p className="text-xs text-gray-500 mb-2">
-                    {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
-                </p>
-                <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
-              </div>
-              <div className="flex justify-end space-x-4 pt-4">
-                <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-                <button type="submit" disabled={uploading} className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 disabled:bg-orange-300">
-                    {uploading ? 'Salvando...' : 'Salvar Módulo'}
-                </button>
-              </div>
-            </form>
+            {showSuccess ? (
+                <div className="text-center">
+                    <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 className="text-2xl font-bold text-green-600">Upload feito com sucesso!</h2>
+                </div>
+            ) : (
+                <>
+                <h2 className="text-2xl font-bold mb-6">{editingModule?.id ? 'Editar' : 'Adicionar'} Módulo</h2>
+                <form onSubmit={handleSaveModule} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Título do Módulo</label>
+                    <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Ordem</label>
+                    <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md" required />
+                  </div>
+                   <div>
+                    <label className="block text-sm font-medium text-gray-700">Arquivo de Vídeo (MP4)</label>
+                    <p className="text-xs text-gray-500 mb-2">
+                        {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
+                    </p>
+                    <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                  </div>
+
+                  {uploading && uploadProgress !== null && (
+                    <div className="space-y-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                                className="bg-orange-500 h-2.5 rounded-full transition-all duration-300" 
+                                style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                        </div>
+                        <p className="text-center text-sm text-gray-600">{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : 'Processando...'}</p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-4 pt-4">
+                    <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" disabled={uploading} className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 disabled:bg-orange-300">
+                        {uploading ? 'Enviando...' : 'Salvar Módulo'}
+                    </button>
+                  </div>
+                </form>
+                </>
+            )}
           </div>
         </div>
       )}
