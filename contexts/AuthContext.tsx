@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { UserProfile } from '../types';
@@ -99,31 +99,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // Inactivity logout effect
+  const inactivityTimer = useRef<number>();
+
+  const handleSignOut = useCallback(() => {
+    console.log("User has been inactive for 1 minute. Logging out.");
+    supabase.auth.signOut();
+  }, []);
+
+  const resetTimer = useCallback(() => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+    inactivityTimer.current = window.setTimeout(handleSignOut, INACTIVITY_TIMEOUT);
+  }, [handleSignOut]);
+
   useEffect(() => {
-    // Only run this effect if a user is logged in.
+    // If there's no user, we don't need any timers.
+    // The cleanup function of the previous run will have cleared everything.
     if (!user) {
       return;
     }
 
-    let inactivityTimer: number;
-
-    const handleSignOut = () => {
-        console.log("User has been inactive for 1 minute. Logging out.");
-        supabase.auth.signOut();
-        // The onAuthStateChange listener will handle the rest of the state cleanup.
-    };
-    
-    const resetTimer = () => {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = window.setTimeout(handleSignOut, INACTIVITY_TIMEOUT);
-    };
-
     const activityEvents: (keyof WindowEventMap)[] = [
-      'mousemove', 
-      'mousedown', 
-      'keypress', 
-      'scroll', 
-      'touchstart'
+      'mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'
     ];
 
     // Set up event listeners to reset the timer on any user activity.
@@ -134,14 +132,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Initialize the timer when the effect runs.
     resetTimer();
 
-    // Cleanup function: remove listeners and clear the timeout.
+    // Cleanup function: this is crucial. It runs when the user logs out.
     return () => {
-      clearTimeout(inactivityTimer);
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
       activityEvents.forEach(event => {
         window.removeEventListener(event, resetTimer);
       });
     };
-  }, [user]); // This effect depends on the user's login state.
+  }, [user, resetTimer]); // Effect depends on the user's login state and the stable resetTimer function.
 
   const value = {
     user,
