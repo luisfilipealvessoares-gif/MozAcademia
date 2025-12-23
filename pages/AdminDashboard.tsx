@@ -33,24 +33,62 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
         setLoading(true);
-        const [coursesRes, enrollmentsRes, certRequestsRes, logsRes] = await Promise.all([
+
+        const [coursesRes, enrollmentsRes, certRequestsRes, logsRes, profilesRes, modulesRes] = await Promise.all([
             supabase.from('courses').select('*', { count: 'exact' }),
             supabase.from('enrollments').select('*', { count: 'exact', head: true }),
-            supabase.from('certificate_requests').select('*, user_profiles!inner(full_name), courses!inner(title)', { count: 'exact' }).eq('status', 'pending').order('requested_at', { ascending: false }),
-            supabase.from('activity_log').select('*, user_profiles!inner(full_name, company_name), courses!inner(title), modules!inner(title)').order('created_at', { ascending: false }).limit(100)
+            supabase.from('certificate_requests').select('*').eq('status', 'pending').order('requested_at', { ascending: false }),
+            supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(100),
+            supabase.from('user_profiles').select('id, full_name, company_name'),
+            supabase.from('modules').select('id, title')
         ]);
 
-        if (coursesRes.data) setCourses(coursesRes.data);
-        if (certRequestsRes.data) setCertificateRequests(certRequestsRes.data as any);
-        if (logsRes.data) {
-            setActivityLogs(logsRes.data as ActivityLog[]);
-            setFilteredLogs(logsRes.data as ActivityLog[]);
-        }
+        const coursesData = coursesRes.data || [];
+        const profilesData = profilesRes.data || [];
+        const modulesData = modulesRes.data || [];
+        
+        setCourses(coursesData);
+
+        // Manually join Certificate Requests
+        const certRequestsData = certRequestsRes.data || [];
+        const coursesMap = new Map(coursesData.map(c => [c.id, c]));
+        const profilesMap = new Map(profilesData.map(p => [p.id, p]));
+
+        // FIX: Refactored manual join to be more efficient and type-safe, avoiding multiple lookups and unsafe assertions.
+        const joinedRequests = certRequestsData.map(req => {
+            const profile = profilesMap.get(req.user_id);
+            const course = coursesMap.get(req.course_id);
+            return {
+                ...req,
+                user_profiles: profile ? { full_name: profile.full_name } : { full_name: '(Usuário Desconhecido)' },
+                courses: course ? { title: course.title } : { title: '(Curso Desconhecido)' },
+            };
+        });
+        setCertificateRequests(joinedRequests);
+
+        // Manually join Activity Logs
+        const logsData = logsRes.data || [];
+        const modulesMap = new Map(modulesData.map(m => [m.id, m]));
+
+        // FIX: Refactored manual join to be more efficient and type-safe, avoiding multiple lookups and unsafe assertions.
+        const joinedLogs = logsData.map(log => {
+            const profile = profilesMap.get(log.user_id);
+            const course = coursesMap.get(log.course_id);
+            const module = modulesMap.get(log.module_id);
+            return {
+                ...log,
+                user_profiles: profile || null,
+                courses: course ? { title: course.title } : null,
+                modules: module ? { title: module.title } : null,
+            };
+        });
+        setActivityLogs(joinedLogs);
+        setFilteredLogs(joinedLogs);
 
         setStats({
             courses: coursesRes.count ?? 0,
             enrollments: enrollmentsRes.count ?? 0,
-            certRequests: certRequestsRes.count ?? 0
+            certRequests: certRequestsData.length
         });
         setLoading(false);
     };
@@ -62,9 +100,41 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const channel = supabase.channel('admin-dashboard-realtime');
 
+    const handleNewCertRequest = async (payload: any) => {
+        const newRequest = payload.new;
+        const [profileRes, courseRes] = await Promise.all([
+            supabase.from('user_profiles').select('full_name').eq('id', newRequest.user_id).single(),
+            supabase.from('courses').select('title').eq('id', newRequest.course_id).single()
+        ]);
+        const joinedRequest = {
+            ...newRequest,
+            user_profiles: profileRes.data ? { full_name: profileRes.data.full_name } : { full_name: '(Usuário Desconhecido)' },
+            courses: courseRes.data ? { title: courseRes.data.title } : { title: '(Curso Desconhecido)' },
+        };
+        setCertificateRequests(prev => [joinedRequest as CertificateRequest, ...prev]);
+        setStats(prev => ({ ...prev, certRequests: prev.certRequests + 1 }));
+    };
+
+    const handleNewActivityLog = async (payload: any) => {
+        const newLog = payload.new;
+        const [profileRes, courseRes, moduleRes] = await Promise.all([
+            supabase.from('user_profiles').select('full_name, company_name').eq('id', newLog.user_id).single(),
+            supabase.from('courses').select('title').eq('id', newLog.course_id).single(),
+            supabase.from('modules').select('title').eq('id', newLog.module_id).single()
+        ]);
+        const joinedLog = {
+            ...newLog,
+            user_profiles: profileRes.data,
+            courses: courseRes.data ? { title: courseRes.data.title } : null,
+            modules: moduleRes.data ? { title: moduleRes.data.title } : null
+        };
+        setActivityLogs(prev => [joinedLog as ActivityLog, ...prev.slice(0, 99)]);
+    };
+
     channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
-          supabase.from('courses').select('*', { count: 'exact' }).then(({ count }) => {
+          supabase.from('courses').select('*', { count: 'exact' }).then(({ data, count }) => {
+            if(data) setCourses(data);
             setStats(prev => ({ ...prev, courses: count ?? 0 }));
           });
       })
@@ -73,25 +143,14 @@ const AdminDashboard: React.FC = () => {
             setStats(prev => ({ ...prev, enrollments: count ?? 0 }));
           });
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'certificate_requests' }, async (payload) => {
-          const { data } = await supabase.from('certificate_requests').select('*, user_profiles!inner(full_name), courses!inner(title)').eq('id', payload.new.id).single();
-          if (data) {
-            setCertificateRequests(prev => [data as any, ...prev]);
-            setStats(prev => ({...prev, certRequests: prev.certRequests + 1}));
-          }
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'certificate_requests' }, handleNewCertRequest)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'certificate_requests' }, (payload) => {
           if (payload.old.status === 'pending' && payload.new.status !== 'pending') {
               setCertificateRequests(prev => prev.filter(req => req.id !== payload.new.id));
               setStats(prev => ({...prev, certRequests: prev.certRequests - 1}));
           }
       })
-       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_log' }, async (payload) => {
-            const { data } = await supabase.from('activity_log').select('*, user_profiles!inner(full_name, company_name), courses!inner(title), modules!inner(title)').eq('id', payload.new.id).single();
-            if(data){
-                setActivityLogs(prev => [data as ActivityLog, ...prev]);
-            }
-       })
+       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_log' }, handleNewActivityLog)
       .subscribe();
 
     return () => {
@@ -167,8 +226,8 @@ const AdminDashboard: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {certificateRequests.map(req => (
                   <tr key={req.id}>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || 'Usuário não encontrado'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || 'Curso não encontrado'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '(Usuário Excluído)'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '(Curso Excluído)'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(req.requested_at).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
