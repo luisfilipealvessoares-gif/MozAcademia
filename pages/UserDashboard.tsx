@@ -1,13 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
 
+interface EnrolledCourse extends Course {}
+
 const UserDashboard: React.FC = () => {
     const { user, profile } = useAuth();
-    const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+    const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -15,31 +16,29 @@ const UserDashboard: React.FC = () => {
             if (!user) return;
             setLoading(true);
             
-            const { data: enrollments, error: enrollmentsError } = await supabase
+            // OPTIMIZATION: Fetch enrollments and the related course data in a single query.
+            const { data, error } = await supabase
                 .from('enrollments')
-                .select('course_id')
+                .select(`
+                    courses (
+                        id,
+                        title,
+                        description,
+                        created_at
+                    )
+                `)
                 .eq('user_id', user.id);
 
-            if (enrollmentsError) {
-                console.error("Error fetching enrollments:", enrollmentsError);
-                setLoading(false);
-                return;
-            }
-
-            if (enrollments && enrollments.length > 0) {
-                const courseIds = enrollments.map(e => e.course_id);
-                const { data: coursesData, error: coursesError } = await supabase
-                    .from('courses')
-                    .select('*')
-                    .in('id', courseIds);
-
-                if (coursesError) {
-                    console.error("Error fetching courses:", coursesError);
-                } else {
-                    setEnrolledCourses(coursesData || []);
-                }
-            } else {
+            if (error) {
+                console.error("Error fetching enrolled courses:", error);
                 setEnrolledCourses([]);
+            } else if (data) {
+                // The result is an array of objects like { courses: { id: '...', title: '...' } }
+                // We filter out any potential nulls and map to get the course object directly.
+                const courses = data
+                    .map(item => item.courses)
+                    .filter((course): course is EnrolledCourse => course !== null);
+                setEnrolledCourses(courses);
             }
 
             setLoading(false);

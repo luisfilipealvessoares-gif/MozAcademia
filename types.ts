@@ -65,6 +65,19 @@ export interface CertificateRequest {
     courses: { title: string } | null;
 }
 
+export interface ActivityLog {
+    id: string;
+    created_at: string;
+    user_id: string;
+    course_id: string;
+    module_id: string;
+    activity_type: string;
+    // FIX: Joined relations can be null.
+    user_profiles: { full_name: string | null, company_name: string | null } | null;
+    courses: { title: string } | null;
+    modules: { title: string } | null;
+}
+
 // Supabase generated types
 export type Json =
   | string
@@ -77,6 +90,55 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          course_id: string
+          module_id: string
+          activity_type: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          course_id: string
+          module_id: string
+          activity_type: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          course_id?: string
+          module_id?: string
+          activity_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       certificate_requests: {
         Row: {
           course_id: string
@@ -327,6 +389,7 @@ export type Database = {
           module_id: string
           user_id: string
         }
+        // FIX: Corrected syntax error 'a' to '{'.
         Insert: {
           completed_at?: string
           id?: string
@@ -451,6 +514,7 @@ export type Enums<
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
+// FIX: Corrected typo from PublicTableNameOrOptions to PublicEnumNameOrOptions.
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]

@@ -14,6 +14,8 @@ import Footer from './components/Footer';
 import UserDashboard from './pages/UserDashboard';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminLayout from './components/AdminLayout';
+import WelcomePage from './pages/WelcomePage';
+import AdminCourseManagementPage from './pages/AdminCourseManagementPage';
 
 const App: React.FC = () => {
   return (
@@ -29,6 +31,13 @@ const App: React.FC = () => {
                 </AdminLayout>
               </AdminRoute>
             } />
+             <Route path="/admin/courses/:courseId" element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminCourseManagementPage />
+                </AdminLayout>
+              </AdminRoute>
+            } />
             <Route path="/admin/login" element={<AdminLoginPage />} />
 
             {/* Public and User Routes with standard Layout */}
@@ -38,6 +47,7 @@ const App: React.FC = () => {
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                   <Routes>
                     <Route path="/login" element={<AuthPage />} />
+                    <Route path="/welcome" element={<WelcomePage />} />
                     <Route path="/" element={<HomePage />} />
                     <Route path="/profile" element={
                       <ProtectedRoute>

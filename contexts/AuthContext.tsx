@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
@@ -22,31 +21,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: userProfile, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        if (userProfile) {
-          setProfile(userProfile);
-          setIsAdmin(userProfile.is_admin);
+    const fetchSessionAndProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+  
+        if (currentUser) {
+          const { data: userProfile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+          setProfile(userProfile ?? null);
+          setIsAdmin(userProfile?.is_admin ?? false);
+        } else {
+          setProfile(null);
+          setIsAdmin(false);
         }
+      } catch (error) {
+        console.error("Error fetching initial session:", error);
+        // Clear out state on error to avoid inconsistencies
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+      } finally {
+        // Crucially, always set loading to false, even if an error occurs.
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    getSession();
+    fetchSessionAndProfile();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        const { data: userProfile, error } = await supabase
+        const { data: userProfile } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('id', session.user.id)
@@ -74,7 +87,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAdmin,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  // Display a full-page loader during the initial authentication check
+  // This prevents the app from rendering in an intermediate state or showing a blank page.
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

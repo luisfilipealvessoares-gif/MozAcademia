@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -134,10 +133,52 @@ const CoursePlayerPage: React.FC = () => {
     const [modules, setModules] = useState<Module[]>([]);
     const [completedModules, setCompletedModules] = useState<string[]>([]);
     const [activeModule, setActiveModule] = useState<Module | null>(null);
+    const [signedVideoUrl, setSignedVideoUrl] = useState<string | null>(null);
     const [view, setView] = useState<'video' | 'quiz' | 'certificate'>('video');
     const [quizPassed, setQuizPassed] = useState(false);
     const [certificateRequested, setCertificateRequested] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    const logActivity = useCallback(async (moduleId: string) => {
+        if (!user || !courseId) return;
+        await supabase.from('activity_log').insert({
+            user_id: user.id,
+            course_id: courseId,
+            module_id: moduleId,
+            activity_type: 'MODULE_VIEWED',
+        });
+    }, [user, courseId]);
+
+    useEffect(() => {
+      const generateSignedUrl = async () => {
+        if (activeModule && activeModule.video_url) {
+          setSignedVideoUrl(null); // Clear previous URL while loading the new one
+          
+          let videoPath = activeModule.video_url;
+          // For backward compatibility, parse path from old public URLs
+          if (videoPath.startsWith('http')) {
+            try {
+              const url = new URL(videoPath);
+              videoPath = url.pathname.split('/course_videos/')[1];
+            } catch (e) {
+              console.error("Invalid video URL format:", videoPath);
+              return;
+            }
+          }
+          
+          const { data, error } = await supabase.storage
+            .from('course_videos')
+            .createSignedUrl(videoPath, 3600); // URL is valid for 1 hour
+
+          if (error) {
+            console.error("Error creating signed URL:", error);
+          } else {
+            setSignedVideoUrl(data.signedUrl);
+          }
+        }
+      };
+      generateSignedUrl();
+    }, [activeModule]);
 
     const fetchCourseData = useCallback(async () => {
       if (!user || !courseId) return;
@@ -153,7 +194,7 @@ const CoursePlayerPage: React.FC = () => {
       const completedIds = progressData ? progressData.map(p => p.module_id) : [];
       setCompletedModules(completedIds);
       
-      const { data: attemptData, error: attemptError } = await supabase
+      const { data: attemptData } = await supabase
         .from('quiz_attempts')
         .select('passed')
         .eq('user_id', user.id)
@@ -169,16 +210,26 @@ const CoursePlayerPage: React.FC = () => {
         if(certReq) setCertificateRequested(true);
       } else {
         const firstUncompletedModule = modulesData?.find(m => !completedIds.includes(m.id));
-        setActiveModule(firstUncompletedModule || modulesData?.[0] || null);
+        const initialModule = firstUncompletedModule || modulesData?.[0] || null;
+        if (initialModule) {
+          setActiveModule(initialModule);
+          logActivity(initialModule.id);
+        }
       }
       
       setLoading(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, courseId]);
+    // FIX: Removed `activeModule` from dependency array to prevent infinite loop.
+    }, [user, courseId, logActivity]);
 
     useEffect(() => {
         fetchCourseData();
     }, [fetchCourseData]);
+
+    const handleSelectModule = (module: Module) => {
+        setActiveModule(module);
+        setView('video');
+        logActivity(module.id);
+    };
 
     const handleModuleComplete = async (moduleId: string) => {
         if (!user || completedModules.includes(moduleId)) return;
@@ -189,7 +240,9 @@ const CoursePlayerPage: React.FC = () => {
     
         const nextModuleIndex = modules.findIndex(m => m.id === moduleId) + 1;
         if (nextModuleIndex < modules.length) {
-          setActiveModule(modules[nextModuleIndex]);
+          const nextModule = modules[nextModuleIndex];
+          setActiveModule(nextModule);
+          logActivity(nextModule.id);
         } else {
           setView('quiz');
         }
@@ -223,11 +276,15 @@ const CoursePlayerPage: React.FC = () => {
                     {view === 'video' && activeModule && (
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-2xl font-semibold mb-4">{activeModule.title}</h2>
-                            <div className="aspect-w-16 aspect-h-9">
-                                <video key={activeModule.id} controls autoPlay className="w-full rounded-lg" onEnded={() => handleModuleComplete(activeModule.id)}>
-                                    <source src={activeModule.video_url} type="video/mp4" />
-                                    Seu navegador não suporta o vídeo.
-                                </video>
+                            <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg">
+                                {signedVideoUrl ? (
+                                    <video key={signedVideoUrl} controls autoPlay className="w-full h-full rounded-lg" onEnded={() => handleModuleComplete(activeModule.id)}>
+                                        <source src={signedVideoUrl} type="video/mp4" />
+                                        Seu navegador não suporta o vídeo.
+                                    </video>
+                                ) : (
+                                    <div className="text-white">Carregando vídeo seguro...</div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -257,7 +314,7 @@ const CoursePlayerPage: React.FC = () => {
                         return (
                         <li key={module.id}>
                             <button
-                            onClick={() => !isLocked && setActiveModule(module)}
+                            onClick={() => !isLocked && handleSelectModule(module)}
                             disabled={isLocked}
                             className={`w-full text-left p-3 rounded-md flex items-center justify-between transition ${
                                 isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-orange-100'
