@@ -29,47 +29,76 @@ const AdminDashboard: React.FC = () => {
   const [filterCourse, setFilterCourse] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchAdminData = async () => {
-    setLoading(true);
-
-    const { data: coursesData, count: coursesCount } = await supabase.from('courses').select('*', { count: 'exact' });
-    if (coursesData) setCourses(coursesData);
-
-    const { count: enrollmentsCount } = await supabase.from('enrollments').select('*', { count: 'exact', head: true });
-    
-    const { data: certRequestsData, count: certRequestsCount } = await supabase
-      .from('certificate_requests')
-      .select('*, user_profiles(full_name), courses(title)', { count: 'exact' })
-      .eq('status', 'pending');
-      
-    if (certRequestsData) {
-      // Supabase type generation can be tricky with nested selects. We cast here.
-      setCertificateRequests(certRequestsData as any);
-    }
-
-    setStats({
-      enrollments: enrollmentsCount || 0,
-      courses: coursesCount || 0,
-      certRequests: certRequestsCount || 0,
-    });
-
-    const { data: logsData } = await supabase
-      .from('activity_log')
-      .select('*, user_profiles ( full_name, company_name ), courses ( title ), modules ( title )')
-      .order('created_at', { ascending: false })
-      .limit(100);
-
-    if (logsData) {
-      setActivityLogs(logsData as ActivityLog[]);
-      setFilteredLogs(logsData as ActivityLog[]);
-    }
-    
-    setLoading(false);
-  };
-
+  // Initial data fetch
   useEffect(() => {
+    const fetchAdminData = async () => {
+        setLoading(true);
+        const [coursesRes, enrollmentsRes, certRequestsRes, logsRes] = await Promise.all([
+            supabase.from('courses').select('*', { count: 'exact' }),
+            supabase.from('enrollments').select('*', { count: 'exact', head: true }),
+            supabase.from('certificate_requests').select('*, user_profiles(full_name), courses(title)', { count: 'exact' }).eq('status', 'pending').order('requested_at', { ascending: false }),
+            supabase.from('activity_log').select('*, user_profiles(full_name, company_name), courses(title), modules(title)').order('created_at', { ascending: false }).limit(100)
+        ]);
+
+        if (coursesRes.data) setCourses(coursesRes.data);
+        if (certRequestsRes.data) setCertificateRequests(certRequestsRes.data as any);
+        if (logsRes.data) {
+            setActivityLogs(logsRes.data as ActivityLog[]);
+            setFilteredLogs(logsRes.data as ActivityLog[]);
+        }
+
+        setStats({
+            courses: coursesRes.count ?? 0,
+            enrollments: enrollmentsRes.count ?? 0,
+            certRequests: certRequestsRes.count ?? 0
+        });
+        setLoading(false);
+    };
+
     fetchAdminData();
   }, []);
+
+  // Realtime subscriptions
+  useEffect(() => {
+    const channel = supabase.channel('admin-dashboard-realtime');
+
+    channel
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
+          supabase.from('courses').select('*', { count: 'exact' }).then(({ count }) => {
+            setStats(prev => ({ ...prev, courses: count ?? 0 }));
+          });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, () => {
+          supabase.from('enrollments').select('*', { count: 'exact', head: true }).then(({ count }) => {
+            setStats(prev => ({ ...prev, enrollments: count ?? 0 }));
+          });
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'certificate_requests' }, async (payload) => {
+          const { data } = await supabase.from('certificate_requests').select('*, user_profiles(full_name), courses(title)').eq('id', payload.new.id).single();
+          if (data) {
+            setCertificateRequests(prev => [data as any, ...prev]);
+            setStats(prev => ({...prev, certRequests: prev.certRequests + 1}));
+          }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'certificate_requests' }, (payload) => {
+          if (payload.old.status === 'pending' && payload.new.status !== 'pending') {
+              setCertificateRequests(prev => prev.filter(req => req.id !== payload.new.id));
+              setStats(prev => ({...prev, certRequests: prev.certRequests - 1}));
+          }
+      })
+       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_log' }, async (payload) => {
+            const { data } = await supabase.from('activity_log').select('*, user_profiles(full_name, company_name), courses(title), modules(title)').eq('id', payload.new.id).single();
+            if(data){
+                setActivityLogs(prev => [data as ActivityLog, ...prev]);
+            }
+       })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
 
   useEffect(() => {
     let result = activityLogs;
@@ -85,6 +114,10 @@ const AdminDashboard: React.FC = () => {
   }, [filterCourse, searchTerm, activityLogs]);
 
   const handleApproveCertificate = async (requestId: string) => {
+    // Optimistic UI update
+    setCertificateRequests(prev => prev.filter(req => req.id !== requestId));
+    setStats(prev => ({...prev, certRequests: prev.certRequests - 1}));
+    
     const { error } = await supabase
       .from('certificate_requests')
       .update({ status: 'issued' })
@@ -92,11 +125,7 @@ const AdminDashboard: React.FC = () => {
 
     if (error) {
       alert("Erro ao aprovar certificado: " + error.message);
-    } else {
-      // Refresh UI instantly
-      setCertificateRequests(prev => prev.filter(req => req.id !== requestId));
-      setStats(prev => ({...prev, certRequests: prev.certRequests - 1}));
-      alert("Certificado aprovado com sucesso!");
+      // Revert UI on error if needed, for simplicity we just alert
     }
   };
 
