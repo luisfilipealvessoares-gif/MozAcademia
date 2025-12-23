@@ -21,7 +21,7 @@ const Header: React.FC = () => {
   const dashboardText = isAdmin ? 'Painel Admin' : 'Meu Painel';
 
   return (
-    <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
@@ -40,7 +40,7 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link to={dashboardLink} className="text-white font-bold py-2 px-5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                <Link to={dashboardLink} className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600 transition">
                   {dashboardText}
                 </Link>
                  <Link to="/profile" className="text-gray-600 hover:text-orange-500 font-medium hidden sm:block">
@@ -56,7 +56,7 @@ const Header: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="text-white font-bold py-2 px-5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600 transition"
               >
                 Entrar / Registrar
               </Link>

@@ -13,6 +13,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -21,6 +23,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // This function handles the initial load and checks for an existing session.
     const fetchSessionAndProfile = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -42,42 +45,103 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } catch (error) {
         console.error("Error fetching initial session:", error);
-        // Clear out state on error to avoid inconsistencies
         setSession(null);
         setUser(null);
         setProfile(null);
         setIsAdmin(false);
       } finally {
-        // Crucially, always set loading to false, even if an error occurs.
         setLoading(false);
       }
     };
 
     fetchSessionAndProfile();
 
+    // This listener handles all subsequent authentication changes (login, logout, token refresh).
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // FIX: Wrap state updates in a loading state to prevent race conditions and redirect loops.
+      // When auth state changes, we are "loading" until the user's profile and admin status are also fetched.
+      setLoading(true);
+      
       setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: userProfile } = await supabase
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const { data: userProfile, error } = await supabase
           .from('user_profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', currentUser.id)
           .single();
+          
         if (userProfile) {
           setProfile(userProfile);
           setIsAdmin(userProfile.is_admin);
+        } else {
+          // This case handles a user who is authenticated but doesn't have a profile record yet (e.g., right after signup).
+          setProfile(null);
+          setIsAdmin(false);
+          if (error) {
+            console.error("Error fetching profile on auth state change:", error.message);
+          }
         }
       } else {
+        // User is logged out.
         setProfile(null);
         setIsAdmin(false);
       }
+
+      setLoading(false);
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  // Inactivity logout effect
+  useEffect(() => {
+    // Only run this effect if a user is logged in.
+    if (!user) {
+      return;
+    }
+
+    let inactivityTimer: number;
+
+    const handleSignOut = () => {
+        console.log("User has been inactive for 1 minute. Logging out.");
+        supabase.auth.signOut();
+        // The onAuthStateChange listener will handle the rest of the state cleanup.
+    };
+    
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = window.setTimeout(handleSignOut, INACTIVITY_TIMEOUT);
+    };
+
+    const activityEvents: (keyof WindowEventMap)[] = [
+      'mousemove', 
+      'mousedown', 
+      'keypress', 
+      'scroll', 
+      'touchstart'
+    ];
+
+    // Set up event listeners to reset the timer on any user activity.
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initialize the timer when the effect runs.
+    resetTimer();
+
+    // Cleanup function: remove listeners and clear the timeout.
+    return () => {
+      clearTimeout(inactivityTimer);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user]); // This effect depends on the user's login state.
 
   const value = {
     user,

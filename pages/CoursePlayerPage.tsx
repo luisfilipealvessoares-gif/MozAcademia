@@ -138,7 +138,6 @@ const CoursePlayerPage: React.FC = () => {
     const [quizPassed, setQuizPassed] = useState(false);
     const [certificateRequested, setCertificateRequested] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [videoEnded, setVideoEnded] = useState(false);
 
     const logActivity = useCallback(async (moduleId: string) => {
         if (!user || !courseId) return;
@@ -219,6 +218,7 @@ const CoursePlayerPage: React.FC = () => {
       }
       
       setLoading(false);
+    // FIX: Removed `activeModule` from dependency array to prevent infinite loop.
     }, [user, courseId, logActivity]);
 
     useEffect(() => {
@@ -228,24 +228,20 @@ const CoursePlayerPage: React.FC = () => {
     const handleSelectModule = (module: Module) => {
         setActiveModule(module);
         setView('video');
-        setVideoEnded(false);
         logActivity(module.id);
     };
 
     const handleModuleComplete = async (moduleId: string) => {
-        if (!user) return;
+        if (!user || completedModules.includes(moduleId)) return;
     
-        if (!completedModules.includes(moduleId)) {
-            await supabase.from('user_progress').insert({ user_id: user.id, module_id: moduleId });
-            const newCompleted = [...completedModules, moduleId];
-            setCompletedModules(newCompleted);
-        }
+        await supabase.from('user_progress').insert({ user_id: user.id, module_id: moduleId });
+        const newCompleted = [...completedModules, moduleId];
+        setCompletedModules(newCompleted);
     
         const nextModuleIndex = modules.findIndex(m => m.id === moduleId) + 1;
         if (nextModuleIndex < modules.length) {
           const nextModule = modules[nextModuleIndex];
           setActiveModule(nextModule);
-          setVideoEnded(false);
           logActivity(nextModule.id);
         } else {
           setView('quiz');
@@ -278,33 +274,18 @@ const CoursePlayerPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div className="md:col-span-3">
                     {view === 'video' && activeModule && (
-                        <div>
-                            <div className="bg-white p-4 rounded-lg shadow-md">
-                                <h2 className="text-2xl font-semibold mb-4">{activeModule.title}</h2>
-                                <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg">
-                                    {signedVideoUrl ? (
-                                        <video key={signedVideoUrl} controls autoPlay className="w-full h-full rounded-lg" onEnded={() => setVideoEnded(true)}>
-                                            <source src={signedVideoUrl} type="video/mp4" />
-                                            Seu navegador não suporta o vídeo.
-                                        </video>
-                                    ) : (
-                                        <div className="text-white">Carregando vídeo seguro...</div>
-                                    )}
-                                </div>
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-semibold mb-4">{activeModule.title}</h2>
+                            <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg">
+                                {signedVideoUrl ? (
+                                    <video key={signedVideoUrl} controls autoPlay className="w-full h-full rounded-lg" onEnded={() => handleModuleComplete(activeModule.id)}>
+                                        <source src={signedVideoUrl} type="video/mp4" />
+                                        Seu navegador não suporta o vídeo.
+                                    </video>
+                                ) : (
+                                    <div className="text-white">Carregando vídeo seguro...</div>
+                                )}
                             </div>
-                            { (videoEnded || completedModules.includes(activeModule.id)) && (
-                                <div className="mt-4 flex justify-end">
-                                    <button
-                                        onClick={() => handleModuleComplete(activeModule.id)}
-                                        className="bg-orange-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-orange-600 transition inline-flex items-center shadow-lg transform hover:scale-105"
-                                    >
-                                        {modules.findIndex(m => m.id === activeModule.id) === modules.length - 1 
-                                            ? 'Ir para o Quiz Final' 
-                                            : 'Próximo Módulo'}
-                                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     )}
                     {view === 'quiz' && courseId && <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />}
