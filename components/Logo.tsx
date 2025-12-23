@@ -7,7 +7,7 @@ const Logo: React.FC<{ className?: string }> = ({ className = "h-12 w-auto" }) =
             viewBox="0 0 450 100" 
             xmlns="http://www.w3.org/2000/svg"
             className="w-full h-full"
-            aria-label="Mozup Desenvolvimento Empresarial"
+            aria-label="MozupAcademy"
         >
             <defs>
                 <style>
@@ -35,8 +35,8 @@ const Logo: React.FC<{ className?: string }> = ({ className = "h-12 w-auto" }) =
             </g>
             
             {/* Tagline */}
-            <text x="0" y="85" className="tagline-font" fill="#4B5563">
-                DESENVOLVIMENTO EMPRESARIAL
+            <text x="155" y="85" text-anchor="middle" className="tagline-font" fill="#4B5563">
+                ACADEMY
             </text>
         </svg>
     </div>

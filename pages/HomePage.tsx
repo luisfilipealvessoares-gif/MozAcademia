@@ -89,13 +89,13 @@ const HomePage: React.FC = () => {
     <div className="space-y-24">
         {/* Hero Section */}
         <div className="text-center py-16 px-4">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-4">
-                Capacitação Profissional para <span className="text-orange-500">o Futuro</span>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-gray-900 mb-4 animate-fade-in-down">
+                Capacitação Profissional para <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-orange-500">o Futuro</span>
             </h1>
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-600 mb-8">
                 Nossa missão é fornecer conhecimento acessível e de alta qualidade sobre setores vitais da economia, impulsionando sua carreira para o próximo nível.
             </p>
-            <a href="/#cursos" className="inline-block bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-orange-600 transition-transform transform hover:scale-105 shadow-lg">
+            <a href="/#cursos" className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-10 rounded-lg text-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">
                 Explorar Cursos
             </a>
         </div>
@@ -105,11 +105,11 @@ const HomePage: React.FC = () => {
         <div id="noticias">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-8 text-center">Notícias e Atualizações</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-xl">
+                <div className="bg-white p-6 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-t-4 border-orange-400">
                     <h3 className="font-semibold text-xl mb-2">Lançamento da Plataforma</h3>
                     <p className="text-gray-600">É com grande entusiasmo que lançamos a MozupAcademy! Nosso primeiro curso sobre Petróleo e Gás já está disponível para inscrição. Fique atento para mais novidades e cursos em breve.</p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-xl">
+                <div className="bg-white p-6 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-t-4 border-orange-400">
                     <h3 className="font-semibold text-xl mb-2">Perspectivas para 2024</h3>
                     <p className="text-gray-600">Analistas preveem um ano de transformações no setor de energia. Nosso curso introdutório oferece a base perfeita para entender as tendências e oportunidades que estão por vir.</p>
                 </div>
@@ -124,9 +124,9 @@ const HomePage: React.FC = () => {
                 {courses.map((course) => {
                     const isEnrolled = enrolledCourses.includes(course.id);
                     return (
-                        <div key={course.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                        <div key={course.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border-b-4 border-orange-500">
                             <div className="p-6 relative">
-                                <div className="absolute -top-5 right-5 bg-orange-500 text-white p-3 rounded-full shadow-lg">
+                                <div className="absolute -top-5 right-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-full shadow-lg">
                                     <BookOpenIcon />
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">{course.title}</h3>
@@ -134,13 +134,13 @@ const HomePage: React.FC = () => {
                             </div>
                             <div className="p-6 bg-gray-50 mt-auto">
                                 {isEnrolled ? (
-                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-orange-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-orange-600 transition">
+                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3 px-4 rounded-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
                                         Continuar Curso
                                     </Link>
                                 ) : (
                                     <button
                                         onClick={() => handleEnroll(course.id)}
-                                        className="w-full bg-green-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-600 transition"
+                                        className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white font-bold py-3 px-4 rounded-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
                                     >
                                         Inscrever-se
                                     </button>
