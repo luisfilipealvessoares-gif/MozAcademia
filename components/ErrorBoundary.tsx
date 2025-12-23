@@ -9,8 +9,10 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: Switched from a public class field for state to initializing state in the constructor.
-  // This is the canonical approach for class components and can resolve subtle type-checking issues like the one reported.
+  // FIX: Reverted to using a constructor to initialize state. The class field
+  // approach was causing a TypeScript error where `this.props` could not be
+  // found on the component instance. Using a constructor with `super(props)`
+  // is the standard way to ensure props and state are initialized correctly.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };

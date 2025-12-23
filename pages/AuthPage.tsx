@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,7 +12,16 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
   const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    if (!authLoading && user) {
+      navigate(isAdmin ? '/admin' : '/dashboard');
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +73,15 @@ const AuthPage: React.FC = () => {
     }
   };
 
+  // Show a loader while checking auth state or if a user is found (before redirect)
+  if (authLoading || user) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center py-12">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
@@ -94,48 +112,78 @@ const AuthPage: React.FC = () => {
             </div>
             
             <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-            {!isLogin && (
-                <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Nome Completo"
-                required
-                className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
-                />
-            )}
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                required
-                className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
-            />
-            <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Senha"
-                required
-                className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
-            />
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:bg-orange-600 disabled:bg-orange-300"
-            >
-                {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Registrar')}
-            </button>
-            {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
+                <div className="rounded-md shadow-sm -space-y-px">
+                    {!isLogin && (
+                    <div>
+                        <label htmlFor="full-name" className="sr-only">Nome Completo</label>
+                        <input
+                        id="full-name"
+                        name="full-name"
+                        type="text"
+                        autoComplete="name"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                        placeholder="Nome Completo"
+                        />
+                    </div>
+                    )}
+                    <div>
+                    <label htmlFor="email-address" className="sr-only">Email</label>
+                    <input
+                        id="email-address"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${!isLogin ? '' : 'rounded-t-md'} focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm`}
+                        placeholder="Endereço de e-mail"
+                    />
+                    </div>
+                    <div>
+                    <label htmlFor="password" className="sr-only">Senha</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete={isLogin ? "current-password" : "new-password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                        placeholder="Senha"
+                    />
+                    </div>
+                </div>
+
+                {error && (
+                    <p className="text-red-500 text-sm text-center mt-2">{error}</p>
+                )}
+
+                <div>
+                    <button
+                    type="submit"
+                    disabled={loading}
+                    className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
+                    >
+                    {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Registrar')}
+                    </button>
+                </div>
             </form>
-            
-            <p className="text-sm text-center text-gray-600">
-            {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}
-            <button onClick={() => setIsLogin(!isLogin)} className="ml-1 font-medium text-orange-600 hover:underline">
-                {isLogin ? 'Registre-se' : 'Entrar'}
-            </button>
-            </p>
+            <div className="text-sm text-center">
+                <button
+                    onClick={() => {
+                        setIsLogin(!isLogin);
+                        setError(null);
+                    }}
+                    className="font-medium text-orange-600 hover:text-orange-500"
+                >
+                    {isLogin ? 'Não tem uma conta? Registre-se' : 'Já tem uma conta? Faça login'}
+                </button>
+            </div>
         </>
         )}
       </div>

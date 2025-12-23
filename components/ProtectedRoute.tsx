@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +13,17 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }
     );
   }
   
-  return user ? children : <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  // If the user is an admin, they should not be on user-protected routes.
+  // Redirect them to their own dashboard to enforce role separation.
+  if (isAdmin) {
+    return <Navigate to="/admin" />;
+  }
+  
+  return children;
 };
 
 export default ProtectedRoute;

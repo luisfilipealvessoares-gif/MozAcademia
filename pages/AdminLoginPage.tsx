@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +10,19 @@ const AdminLoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    if (!authLoading && user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        // A regular user somehow got here. Send them to their dashboard.
+        navigate('/dashboard'); 
+      }
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +57,15 @@ const AdminLoginPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Show a loader while checking auth state or if a user is found (before redirect)
+  if (authLoading || user) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

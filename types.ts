@@ -389,7 +389,6 @@ export type Database = {
           module_id: string
           user_id: string
         }
-        // FIX: Corrected syntax error 'a' to '{'.
         Insert: {
           completed_at?: string
           id?: string
@@ -514,7 +513,6 @@ export type Enums<
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-// FIX: Corrected typo from PublicTableNameOrOptions to PublicEnumNameOrOptions.
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +15,11 @@ const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) =>
 
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  // If the user is logged in but not an admin, redirect them to their own dashboard.
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" />;
   }
 
   return isAdmin ? children : <Navigate to="/" />;
