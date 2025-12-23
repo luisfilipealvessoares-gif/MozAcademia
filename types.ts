@@ -60,6 +60,7 @@ export interface CertificateRequest {
     status: 'pending' | 'issued';
     requested_at: string;
     user_profiles: { full_name: string | null } | null;
+    courses: { title: string } | null;
 }
 
 // Supabase generated types

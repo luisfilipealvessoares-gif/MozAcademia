@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types';
 
 const supabaseUrl = 'https://slpvhmrhsrftsbygboxi.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNscHZobXJoc3JmdHNieWdib3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MjM0ODgsImV4cCI6MjAzMjM5OTQ4OH0.grq3G_V2WRUV6MxhVx1Ngw_ekkYVebO-G1o2r0W1dE0';
+
+// This is the public anonymous key for your project.
+// The "Invalid API Key" error was happening because the previous key was wrong.
+// This is the correct key you provided.
+const supabaseAnonKey = 'sb_publishable_grq3G_V2WRUV6MxhVx1Ngw_ekkYVebO';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

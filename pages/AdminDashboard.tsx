@@ -56,7 +56,7 @@ const AdminDashboard: React.FC = () => {
         .order('requested_at', { ascending: true });
 
       if (requestsData) {
-        setRequests(requestsData as any);
+        setRequests(requestsData as CertificateRequest[]);
       }
       setLoading(false);
     };
@@ -104,7 +104,7 @@ const AdminDashboard: React.FC = () => {
                 {requests.length > 0 ? requests.map(req => (
                     <tr key={req.id}>
                     <td className="px-6 py-4 whitespace-nowrap">{req.user_profiles?.full_name || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(req as any).courses.title}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || 'Curso não encontrado'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{new Date(req.requested_at).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
