@@ -134,6 +134,7 @@ const CoursePlayerPage: React.FC = () => {
     const [completedModules, setCompletedModules] = useState<string[]>([]);
     const [activeModule, setActiveModule] = useState<Module | null>(null);
     const [signedVideoUrl, setSignedVideoUrl] = useState<string | null>(null);
+    const [videoError, setVideoError] = useState<string | null>(null);
     const [view, setView] = useState<'video' | 'quiz' | 'certificate'>('video');
     const [quizPassed, setQuizPassed] = useState(false);
     const [certificateRequested, setCertificateRequested] = useState(false);
@@ -153,6 +154,7 @@ const CoursePlayerPage: React.FC = () => {
       const generateSignedUrl = async () => {
         if (activeModule && activeModule.video_url) {
           setSignedVideoUrl(null); // Clear previous URL while loading the new one
+          setVideoError(null); // Clear previous error
           
           let videoPath = activeModule.video_url;
           // For backward compatibility, parse path from old public URLs
@@ -162,6 +164,7 @@ const CoursePlayerPage: React.FC = () => {
               videoPath = url.pathname.split('/course_videos/')[1];
             } catch (e) {
               console.error("Invalid video URL format:", videoPath);
+              setVideoError("Formato de URL do vídeo inválido.");
               return;
             }
           }
@@ -172,6 +175,7 @@ const CoursePlayerPage: React.FC = () => {
 
           if (error) {
             console.error("Error creating signed URL:", error);
+            setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
           } else {
             setSignedVideoUrl(data.signedUrl);
           }
@@ -282,6 +286,11 @@ const CoursePlayerPage: React.FC = () => {
                                         <source src={signedVideoUrl} type="video/mp4" />
                                         Seu navegador não suporta o vídeo.
                                     </video>
+                                ) : videoError ? (
+                                    <div className="text-red-400 p-4 text-center">
+                                        <p className="font-semibold">{videoError}</p>
+                                        <p className="text-sm text-gray-400 mt-2">Se o problema persistir, por favor contacte o suporte.</p>
+                                    </div>
                                 ) : (
                                     <div className="text-white">Carregando vídeo seguro...</div>
                                 )}
