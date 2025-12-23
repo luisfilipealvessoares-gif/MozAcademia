@@ -58,39 +58,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // This listener handles all subsequent authentication changes (login, logout, token refresh).
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      // FIX: Wrap state updates in a loading state to prevent race conditions and redirect loops.
-      // When auth state changes, we are "loading" until the user's profile and admin status are also fetched.
-      setLoading(true);
-      
-      setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        const { data: userProfile, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .single();
-          
-        if (userProfile) {
-          setProfile(userProfile);
-          setIsAdmin(userProfile.is_admin);
+      // CRITICAL FIX: Wrap the entire logic in a try/catch/finally block.
+      // This prevents the app from getting stuck in a loading state if an error
+      // occurs during a background token refresh (e.g., network error fetching profile).
+      try {
+        setLoading(true);
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          const { data: userProfile, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+            
+          if (userProfile) {
+            setProfile(userProfile);
+            setIsAdmin(userProfile.is_admin);
+          } else {
+            setProfile(null);
+            setIsAdmin(false);
+            if (error) {
+              console.error("Error fetching profile on auth state change:", error.message);
+            }
+          }
         } else {
-          // This case handles a user who is authenticated but doesn't have a profile record yet (e.g., right after signup).
           setProfile(null);
           setIsAdmin(false);
-          if (error) {
-            console.error("Error fetching profile on auth state change:", error.message);
-          }
         }
-      } else {
-        // User is logged out.
-        setProfile(null);
-        setIsAdmin(false);
+      } catch (error) {
+          console.error("Critical error in onAuthStateChange listener:", error);
+          // Reset to a safe, logged-out state on failure
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsAdmin(false);
+      } finally {
+          setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => {
@@ -114,8 +121,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [handleSignOut]);
 
   useEffect(() => {
-    // If there's no user, we don't need any timers.
-    // The cleanup function of the previous run will have cleared everything.
     if (!user) {
       return;
     }
@@ -124,15 +129,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       'mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'
     ];
 
-    // Set up event listeners to reset the timer on any user activity.
     activityEvents.forEach(event => {
       window.addEventListener(event, resetTimer);
     });
-
-    // Initialize the timer when the effect runs.
     resetTimer();
 
-    // Cleanup function: this is crucial. It runs when the user logs out.
     return () => {
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
@@ -141,7 +142,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         window.removeEventListener(event, resetTimer);
       });
     };
-  }, [user, resetTimer]); // Effect depends on the user's login state and the stable resetTimer function.
+  }, [user, resetTimer]);
 
   const value = {
     user,
@@ -151,8 +152,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAdmin,
   };
 
-  // Display a full-page loader during the initial authentication check
-  // This prevents the app from rendering in an intermediate state or showing a blank page.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">

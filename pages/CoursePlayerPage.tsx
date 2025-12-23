@@ -150,84 +150,94 @@ const CoursePlayerPage: React.FC = () => {
         });
     }, [user, courseId]);
 
+    // Effect for generating signed URLs when the active module changes
     useEffect(() => {
-      const generateSignedUrl = async () => {
-        if (activeModule && activeModule.video_url) {
-          setSignedVideoUrl(null); // Clear previous URL while loading the new one
-          setVideoError(null); // Clear previous error
-          
-          let videoPath = activeModule.video_url;
-          // For backward compatibility, parse path from old public URLs
-          if (videoPath.startsWith('http')) {
-            try {
-              const url = new URL(videoPath);
-              videoPath = url.pathname.split('/course_videos/')[1];
-            } catch (e) {
-              console.error("Invalid video URL format:", videoPath);
-              setVideoError("Formato de URL do vídeo inválido.");
-              return;
+        const generateSignedUrl = async () => {
+            if (activeModule && activeModule.video_url) {
+                setSignedVideoUrl(null);
+                setVideoError(null);
+                let videoPath = activeModule.video_url;
+                if (videoPath.startsWith('http')) {
+                    try {
+                        const url = new URL(videoPath);
+                        videoPath = decodeURIComponent(url.pathname.split('/course_videos/')[1]);
+                    } catch (e) {
+                        console.error("Invalid video URL format:", videoPath);
+                        setVideoError("Formato de URL do vídeo inválido.");
+                        return;
+                    }
+                }
+                const { data, error } = await supabase.storage.from('course_videos').createSignedUrl(videoPath, 3600);
+                if (error) {
+                    console.error("Error creating signed URL:", error);
+                    setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
+                } else {
+                    setSignedVideoUrl(data.signedUrl);
+                }
             }
-          }
-          
-          const { data, error } = await supabase.storage
-            .from('course_videos')
-            .createSignedUrl(videoPath, 3600); // URL is valid for 1 hour
-
-          if (error) {
-            console.error("Error creating signed URL:", error);
-            setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
-          } else {
-            setSignedVideoUrl(data.signedUrl);
-          }
-        }
-      };
-      generateSignedUrl();
+        };
+        generateSignedUrl();
     }, [activeModule]);
 
-    const fetchCourseData = useCallback(async () => {
-      if (!user || !courseId) return;
-      setLoading(true);
-
-      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single();
-      setCourse(courseData);
-
-      const { data: modulesData } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order');
-      if (modulesData) setModules(modulesData);
-
-      const { data: progressData } = await supabase.from('user_progress').select('module_id').eq('user_id', user.id);
-      const completedIds = progressData ? progressData.map(p => p.module_id) : [];
-      setCompletedModules(completedIds);
-      
-      const { data: attemptData } = await supabase
-        .from('quiz_attempts')
-        .select('passed')
-        .eq('user_id', user.id)
-        .eq('course_id', courseId)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .single();
-    
-      if (attemptData?.passed) {
-        setQuizPassed(true);
-        setView('certificate');
-        const {data: certReq} = await supabase.from('certificate_requests').select('*').eq('user_id', user.id).eq('course_id', courseId).single();
-        if(certReq) setCertificateRequested(true);
-      } else {
-        const firstUncompletedModule = modulesData?.find(m => !completedIds.includes(m.id));
-        const initialModule = firstUncompletedModule || modulesData?.[0] || null;
-        if (initialModule) {
-          setActiveModule(initialModule);
-          logActivity(initialModule.id);
-        }
-      }
-      
-      setLoading(false);
-    // FIX: Removed `activeModule` from dependency array to prevent infinite loop.
-    }, [user, courseId, logActivity]);
-
+    // Main effect to fetch all course data and determine the initial state
     useEffect(() => {
-        fetchCourseData();
-    }, [fetchCourseData]);
+        const initializeCourseState = async () => {
+            if (!user || !courseId) return;
+            setLoading(true);
+
+            try {
+                const [courseRes, modulesRes, progressRes, attemptRes] = await Promise.all([
+                    supabase.from('courses').select('*').eq('id', courseId).single(),
+                    supabase.from('modules').select('*').eq('course_id', courseId).order('order'),
+                    supabase.from('user_progress').select('module_id').eq('user_id', user.id),
+                    supabase.from('quiz_attempts').select('passed').eq('user_id', user.id).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single()
+                ]);
+
+                const { data: courseData, error: courseError } = courseRes;
+                if (courseError) throw courseError;
+                setCourse(courseData);
+
+                const { data: modulesData, error: modulesError } = modulesRes;
+                if (modulesError) throw modulesError;
+                const modulesList = modulesData || [];
+                setModules(modulesList);
+
+                const { data: progressData, error: progressError } = progressRes;
+                if (progressError) throw progressError;
+                const completedIds = progressData ? progressData.map(p => p.module_id) : [];
+                setCompletedModules(completedIds);
+                
+                const { data: attemptData, error: attemptError } = attemptRes;
+                if (attemptError && attemptError.code !== 'PGRST116') throw attemptError;
+
+                const allModulesCompleted = modulesList.length > 0 && completedIds.length === modulesList.length;
+
+                if (attemptData?.passed) {
+                    setQuizPassed(true);
+                    setView('certificate');
+                    const { data: certReq } = await supabase.from('certificate_requests').select('id').eq('user_id', user.id).eq('course_id', courseId).single();
+                    if (certReq) setCertificateRequested(true);
+                } else if (allModulesCompleted) {
+                    setView('quiz');
+                } else {
+                    const firstUncompletedModule = modulesList.find(m => !completedIds.includes(m.id));
+                    const initialModule = firstUncompletedModule || modulesList[0] || null;
+                    if (initialModule) {
+                        setActiveModule(initialModule);
+                        setView('video');
+                        logActivity(initialModule.id);
+                    }
+                }
+            } catch (error: any) {
+                console.error("Failed to load course data:", error.message);
+                navigate('/dashboard');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initializeCourseState();
+    }, [user, courseId, navigate, logActivity]);
 
     const handleSelectModule = (module: Module) => {
         setActiveModule(module);
@@ -242,9 +252,11 @@ const CoursePlayerPage: React.FC = () => {
         const newCompleted = [...completedModules, moduleId];
         setCompletedModules(newCompleted);
     
-        const nextModuleIndex = modules.findIndex(m => m.id === moduleId) + 1;
-        if (nextModuleIndex < modules.length) {
-          const nextModule = modules[nextModuleIndex];
+        const currentModuleIndex = modules.findIndex(m => m.id === moduleId);
+        const isLastModule = currentModuleIndex === modules.length - 1;
+
+        if (!isLastModule && currentModuleIndex !== -1) {
+          const nextModule = modules[currentModuleIndex + 1];
           setActiveModule(nextModule);
           logActivity(nextModule.id);
         } else {
@@ -270,7 +282,11 @@ const CoursePlayerPage: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="text-center">Carregando curso...</div>;
+    if (loading) return (
+      <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
 
     return (
         <div>
