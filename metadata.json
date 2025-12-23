@@ -1,0 +1,5 @@
+{
+  "name": "MozupAcademy",
+  "description": "An interactive e-learning platform for professional development courses, starting with an introduction to Petroleum, Natural Gas, and LNG. The platform features user authentication, sequential course progression, quizzes, and certificate requests, all powered by Supabase.",
+  "requestFramePermissions": []
+}
