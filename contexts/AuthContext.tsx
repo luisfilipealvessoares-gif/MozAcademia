@@ -23,46 +23,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // This function handles the initial load and checks for an existing session.
-    const fetchSessionAndProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-  
-        if (currentUser) {
-          const { data: userProfile } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-          setProfile(userProfile ?? null);
-          setIsAdmin(userProfile?.is_admin ?? false);
-        } else {
-          setProfile(null);
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.error("Error fetching initial session:", error);
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Set loading to true initially. The onAuthStateChange listener will handle the rest.
+    setLoading(true);
 
-    fetchSessionAndProfile();
-
-    // This listener handles all subsequent authentication changes (login, logout, token refresh).
+    // The onAuthStateChange listener is the single source of truth for the auth state.
+    // It handles the initial session check, logins, logouts, and token refreshes.
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      // CRITICAL FIX: Wrap the entire logic in a try/catch/finally block.
-      // This prevents the app from getting stuck in a loading state if an error
-      // occurs during a background token refresh (e.g., network error fetching profile).
       try {
-        setLoading(true);
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
@@ -96,6 +63,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setProfile(null);
           setIsAdmin(false);
       } finally {
+          // Set loading to false after the initial auth state has been determined.
+          // This will only show the main loader on the first page load.
           setLoading(false);
       }
     });
