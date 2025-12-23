@@ -1,24 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Course, Enrollment } from '../types';
-import CourseCard from '../components/CourseCard';
+import { Course } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const BookOpenIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+);
+
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      
+    const fetchCourses = async () => {
       setLoading(true);
-      
-      // Fetch all courses
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*');
@@ -28,8 +31,18 @@ const HomePage: React.FC = () => {
       } else if (coursesData) {
         setCourses(coursesData);
       }
+      setLoading(false);
+    };
 
-      // Fetch user enrollments
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    const fetchEnrollments = async () => {
+      if (!user) {
+        setEnrolledCourses([]);
+        return;
+      }
       const { data: enrollmentsData, error: enrollmentsError } = await supabase
         .from('enrollments')
         .select('course_id')
@@ -40,15 +53,16 @@ const HomePage: React.FC = () => {
       } else if (enrollmentsData) {
         setEnrolledCourses(enrollmentsData.map(e => e.course_id));
       }
-      
-      setLoading(false);
     };
-
-    fetchData();
+    
+    fetchEnrollments();
   }, [user]);
 
   const handleEnroll = async (courseId: string) => {
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     const { error } = await supabase.from('enrollments').insert({
       user_id: user.id,
       course_id: courseId,
@@ -63,10 +77,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const userEnrolledCourses = courses.filter(c => enrolledCourses.includes(c.id));
-  const availableCourses = courses.filter(c => !enrolledCourses.includes(c.id));
-
-
   if (loading) {
     return (
         <div className="flex justify-center items-center h-64">
@@ -76,45 +86,72 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-12">
-        <div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Meus Cursos</h2>
-            {userEnrolledCourses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {userEnrolledCourses.map((course) => (
-                        <Link key={course.id} to={`/course/${course.id}`}>
-                            <div className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer">
-                                <div className="p-6">
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.title}</h3>
-                                    <p className="text-gray-600 mb-4 h-24 overflow-hidden">{course.description}</p>
-                                    <div className="text-center py-2 px-4 bg-orange-500 text-white rounded-md font-semibold">
-                                        Continuar Curso
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+    <div className="space-y-24">
+        {/* Hero Section */}
+        <div className="text-center py-16 px-4">
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-4">
+                Capacitação Profissional para <span className="text-orange-500">o Futuro</span>
+            </h1>
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-600 mb-8">
+                Nossa missão é fornecer conhecimento acessível e de alta qualidade sobre setores vitais da economia, impulsionando sua carreira para o próximo nível.
+            </p>
+            <a href="/#cursos" className="inline-block bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-orange-600 transition-transform transform hover:scale-105 shadow-lg">
+                Explorar Cursos
+            </a>
+        </div>
+
+
+        {/* News Section */}
+        <div id="noticias">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-8 text-center">Notícias e Atualizações</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-xl">
+                    <h3 className="font-semibold text-xl mb-2">Lançamento da Plataforma</h3>
+                    <p className="text-gray-600">É com grande entusiasmo que lançamos a MozupAcademy! Nosso primeiro curso sobre Petróleo e Gás já está disponível para inscrição. Fique atento para mais novidades e cursos em breve.</p>
                 </div>
-            ) : (
-                <p className="text-gray-500">Você ainda não se inscreveu em nenhum curso.</p>
-            )}
+                <div className="bg-white p-6 rounded-lg shadow-md transition-shadow hover:shadow-xl">
+                    <h3 className="font-semibold text-xl mb-2">Perspectivas para 2024</h3>
+                    <p className="text-gray-600">Analistas preveem um ano de transformações no setor de energia. Nosso curso introdutório oferece a base perfeita para entender as tendências e oportunidades que estão por vir.</p>
+                </div>
+            </div>
         </div>
       
-        <div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">Cursos Disponíveis</h2>
-            {availableCourses.length > 0 ? (
+        {/* Courses Section */}
+        <div id="cursos">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-8 text-center">Nossos Cursos</h2>
+            {courses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {availableCourses.map((course) => (
-                    <CourseCard 
-                        key={course.id} 
-                        course={course}
-                        onEnroll={handleEnroll}
-                        isEnrolled={false}
-                    />
-                ))}
+                {courses.map((course) => {
+                    const isEnrolled = enrolledCourses.includes(course.id);
+                    return (
+                        <div key={course.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                            <div className="p-6 relative">
+                                <div className="absolute -top-5 right-5 bg-orange-500 text-white p-3 rounded-full shadow-lg">
+                                    <BookOpenIcon />
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">{course.title}</h3>
+                                <p className="text-gray-600 mb-4 h-24 overflow-hidden">{course.description}</p>
+                            </div>
+                            <div className="p-6 bg-gray-50 mt-auto">
+                                {isEnrolled ? (
+                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-orange-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-orange-600 transition">
+                                        Continuar Curso
+                                    </Link>
+                                ) : (
+                                    <button
+                                        onClick={() => handleEnroll(course.id)}
+                                        className="w-full bg-green-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-600 transition"
+                                    >
+                                        Inscrever-se
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
                 </div>
             ) : (
-                <p className="text-gray-500">Parabéns! Você se inscreveu em todos os cursos disponíveis.</p>
+                <p className="text-gray-500 text-center">Nenhum curso disponível no momento.</p>
             )}
         </div>
     </div>

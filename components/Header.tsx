@@ -14,8 +14,14 @@ const Header: React.FC = () => {
     navigate('/login');
   };
 
+  // This header should not be rendered for admins who are in the admin section.
+  // The AdminLayout will render a different header.
+  // However, an admin might visit the public site, so we handle that case.
+  const dashboardLink = isAdmin ? '/admin' : '/dashboard';
+  const dashboardText = isAdmin ? 'Painel Admin' : 'Meu Painel';
+
   return (
-    <header className="bg-white shadow-md">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
@@ -24,22 +30,25 @@ const Header: React.FC = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-orange-500 font-medium">
+            <Link to="/#cursos" className="text-gray-600 hover:text-orange-500 font-medium">
               Cursos
             </Link>
-            {isAdmin && (
-              <Link to="/admin" className="text-gray-600 hover:text-orange-500 font-medium">
-                Admin Dashboard
-              </Link>
-            )}
+            <Link to="/#noticias" className="text-gray-600 hover:text-orange-500 font-medium">
+              Notícias
+            </Link>
           </nav>
           <div className="flex items-center">
             {user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Olá, {profile?.full_name || user.email}</span>
+                <Link to={dashboardLink} className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600 transition">
+                  {dashboardText}
+                </Link>
+                 <Link to="/profile" className="text-gray-600 hover:text-orange-500 font-medium hidden sm:block">
+                    Meu Perfil
+                </Link>
                 <button
                   onClick={handleSignOut}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition"
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 transition"
                 >
                   Sair
                 </button>

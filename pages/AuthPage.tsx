@@ -20,10 +20,24 @@ const AuthPage: React.FC = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate('/');
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+
+        if (signInData.user) {
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('is_admin')
+                .eq('id', signInData.user.id)
+                .single();
+            
+            if (profile?.is_admin) {
+                await supabase.auth.signOut(); // Log out the admin immediately
+                throw new Error("Credenciais de administrador. Por favor, use o portal de Acesso Admin.");
+            }
+        }
+        navigate('/dashboard');
       } else {
+        // Sign up logic remains the same
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -52,7 +66,7 @@ const AuthPage: React.FC = () => {
         <div className="flex flex-col items-center">
             <Logo className="h-12 w-auto" />
             <h2 className="mt-6 text-3xl font-bold text-center text-gray-900">
-            {isLogin ? 'Acesse sua conta' : 'Crie uma nova conta'}
+            {isLogin ? 'Acesse sua conta de aluno' : 'Crie uma nova conta'}
             </h2>
         </div>
         

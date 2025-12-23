@@ -4,6 +4,8 @@ import { User } from '@supabase/supabase-js';
 export interface UserProfile {
   id: string;
   full_name: string | null;
+  company_name: string | null;
+  phone_number: string | null;
   is_admin: boolean;
 }
 
@@ -288,19 +290,25 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          company_name: string | null
           full_name: string | null
           id: string
           is_admin: boolean
+          phone_number: string | null
         }
         Insert: {
+          company_name?: string | null
           full_name?: string | null
           id: string
           is_admin?: boolean
+          phone_number?: string | null
         }
         Update: {
+          company_name?: string | null
           full_name?: string | null
           id?: string
           is_admin?: boolean
+          phone_number?: string | null
         }
         Relationships: [
           {
@@ -353,7 +361,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
