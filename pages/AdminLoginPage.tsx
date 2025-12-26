@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,20 +12,7 @@ const AdminLoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    // This hook is the single source of truth for redirection.
-    // It redirects reactively after the auth state is confirmed.
-    if (!authLoading && user) {
-      if (isAdmin) {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true }); 
-      }
-    }
-  }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +39,7 @@ const AdminLoginPage: React.FC = () => {
           throw new Error("Acesso negado. Esta área é apenas para administradores.");
         }
         
-        // Navigation is removed from here. The useEffect above will handle it
-        // once the user state is updated by onAuthStateChange.
+        // Navigation is now handled by the component re-rendering and hitting the <Navigate> condition.
       }
     } catch (error: any) {
       setError(error.error_description || error.message);
@@ -62,12 +48,17 @@ const AdminLoginPage: React.FC = () => {
     }
   };
 
-  if (authLoading || user) {
+  if (authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
+  }
+
+  if (user) {
+    // If user is logged in, redirect them to the appropriate dashboard.
+    return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
   }
 
   return (

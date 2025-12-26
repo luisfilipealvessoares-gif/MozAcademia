@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,16 +16,7 @@ const AuthPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   
-  const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    // This hook is the single source of truth for redirection.
-    // It redirects reactively when the auth state is confirmed.
-    if (!authLoading && user) {
-      navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
-    }
-  }, [user, isAdmin, authLoading, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +42,7 @@ const AuthPage: React.FC = () => {
                 throw new Error("Credenciais de administrador. Por favor, use o portal de Acesso Admin.");
             }
         }
-        // Navigation is removed from here. The useEffect above will handle it
-        // once the user state is updated by onAuthStateChange.
+        // Navigation is now handled by the component re-rendering and hitting the <Navigate> condition.
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -79,13 +69,19 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  if (authLoading || user) {
+  if (authLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
   }
+
+  if (user) {
+    // If the user is logged in, redirect them away from the auth page.
+    return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
+  }
+
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-brand-light to-gray-50">
