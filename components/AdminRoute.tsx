@@ -3,26 +3,23 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin } = useAuth();
 
-  if (loading) {
-    return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
-        </div>
-    );
-  }
+  // The main AuthProvider handles the initial loading state.
+  // By the time this component renders, the auth status is definitive.
 
   if (!user) {
-    return <Navigate to="/login" />;
+    // If not logged in, redirect to the general login page.
+    return <Navigate to="/login" replace />;
   }
 
   // If the user is logged in but not an admin, redirect them to their own dashboard.
   if (!isAdmin) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return isAdmin ? children : <Navigate to="/" />;
+  // If logged in and is an admin, render the requested admin component.
+  return children;
 };
 
 export default AdminRoute;

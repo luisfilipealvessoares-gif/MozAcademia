@@ -3,24 +3,19 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
-      </div>
-    );
-  }
-  
+  // The main AuthProvider handles the initial loading state.
+  // By the time this component renders, the auth status is definitive.
+
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // If the user is an admin, they should not be on user-protected routes.
+  // If a logged-in user is an admin, they should not be on user-protected routes.
   // Redirect them to their own dashboard to enforce role separation.
   if (isAdmin) {
-    return <Navigate to="/admin" />;
+    return <Navigate to="/admin" replace />;
   }
   
   return children;

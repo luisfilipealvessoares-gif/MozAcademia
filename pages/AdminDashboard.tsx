@@ -60,8 +60,10 @@ const AdminDashboard: React.FC = () => {
             const course = coursesMap.get(req.course_id);
             return {
                 ...req,
-                user_profiles: profile ? { full_name: profile.full_name } : { full_name: '(Usuário Desconhecido)' },
-                courses: course ? { title: course.title } : { title: '(Curso Desconhecido)' },
+                // FIX: Cast `profile` to any to resolve property access on 'unknown' type.
+                user_profiles: profile ? { full_name: (profile as any).full_name } : { full_name: '(Usuário Desconhecido)' },
+                // FIX: Cast `course` to any to resolve property access on 'unknown' type.
+                courses: course ? { title: (course as any).title } : { title: '(Curso Desconhecido)' },
             };
         });
         setCertificateRequests(joinedRequests);
@@ -108,8 +110,9 @@ const AdminDashboard: React.FC = () => {
         ]);
         const joinedRequest = {
             ...newRequest,
-            user_profiles: profileRes.data ? { full_name: profileRes.data.full_name } : { full_name: '(Usuário Desconhecido)' },
-            courses: courseRes.data ? { title: courseRes.data.title } : { title: '(Curso Desconhecido)' },
+            user_profiles: profileRes.data ? { full_name: (profileRes.data as any).full_name } : { full_name: '(Usuário Desconhecido)' },
+            // FIX: Cast `courseRes.data` to any to resolve property access on 'unknown' type.
+            courses: courseRes.data ? { title: (courseRes.data as any).title } : { title: '(Curso Desconhecido)' },
         };
         setCertificateRequests(prev => [joinedRequest as CertificateRequest, ...prev]);
         setStats(prev => ({ ...prev, certRequests: prev.certRequests + 1 }));
@@ -125,8 +128,10 @@ const AdminDashboard: React.FC = () => {
         const joinedLog = {
             ...newLog,
             user_profiles: profileRes.data,
-            courses: courseRes.data ? { title: courseRes.data.title } : null,
-            modules: moduleRes.data ? { title: moduleRes.data.title } : null
+            // FIX: Cast `courseRes.data` to any to resolve property access on 'unknown' type.
+            courses: courseRes.data ? { title: (courseRes.data as any).title } : null,
+            // FIX: Cast `moduleRes.data` to any to resolve property access on 'unknown' type.
+            modules: moduleRes.data ? { title: (moduleRes.data as any).title } : null
         };
         setActivityLogs(prev => [joinedLog as ActivityLog, ...prev.slice(0, 99)]);
     };

@@ -13,7 +13,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+// Increased inactivity timeout to 30 minutes. 1 minute was too short for an e-learning platform
+// where users might be watching videos without interacting with the page. This prevents unexpected logouts.
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -78,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const inactivityTimer = useRef<number>();
 
   const handleSignOut = useCallback(() => {
-    console.log("User has been inactive for 1 minute. Logging out.");
+    console.log("User has been inactive. Logging out.");
     supabase.auth.signOut();
   }, []);
 
