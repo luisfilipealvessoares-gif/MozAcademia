@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
+import { EyeIcon, EyeSlashIcon } from '../components/Icons';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +14,7 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -149,18 +151,32 @@ const AuthPage: React.FC = () => {
                     />
                     </div>
                     <div>
-                    <label htmlFor="password" className="sr-only">Senha</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        autoComplete={isLogin ? "current-password" : "new-password"}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
-                        placeholder="Senha"
-                    />
+                        <label htmlFor="password" className="sr-only">Senha</label>
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={isPasswordVisible ? "text" : "password"}
+                                autoComplete={isLogin ? "current-password" : "new-password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
+                                placeholder="Senha"
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                                aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+                            >
+                                {isPasswordVisible ? (
+                                    <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                ) : (
+                                    <EyeIcon className="h-5 w-5 text-gray-500" />
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
