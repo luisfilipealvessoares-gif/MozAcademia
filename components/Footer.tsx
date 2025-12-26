@@ -24,13 +24,14 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/login" className="text-gray-300 hover:text-brand-moz">Login Aluno</Link></li>
               <li><Link to="/admin/login" className="text-gray-300 hover:text-brand-moz">Acesso Admin</Link></li>
+              <li><Link to="/support" className="text-gray-300 hover:text-brand-moz">Suporte</Link></li>
             </ul>
           </div>
-          <div className="md:col-span-1">
-             <h3 className="font-semibold text-white mb-4">Legal</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-brand-moz">Termos de Serviço</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-brand-moz">Política de Privacidade</a></li>
+           <div className="md:col-span-1">
+             <h3 className="font-semibold text-white mb-4">Contato</h3>
+            <ul className="space-y-2 text-sm">
+              <li><a href="mailto:mozuppemba@gmail.com" className="text-gray-300 hover:text-brand-moz">mozuppemba@gmail.com</a></li>
+              <li><a href="tel:858593163" className="text-gray-300 hover:text-brand-moz">858593163</a></li>
             </ul>
           </div>
         </div>

@@ -17,6 +17,9 @@ import AdminLayout from './components/AdminLayout';
 import WelcomePage from './pages/WelcomePage';
 import AdminCourseManagementPage from './pages/AdminCourseManagementPage';
 import AuthRedirectHandler from './components/AuthRedirectHandler';
+import SupportPage from './pages/SupportPage';
+import TicketDetailsPage from './pages/TicketDetailsPage';
+import AdminSupportPage from './pages/AdminSupportPage';
 
 const App: React.FC = () => {
   return (
@@ -36,6 +39,20 @@ const App: React.FC = () => {
             <AdminRoute>
               <AdminLayout>
                 <AdminCourseManagementPage />
+              </AdminLayout>
+            </AdminRoute>
+          } />
+          <Route path="/admin/support" element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminSupportPage />
+              </AdminLayout>
+            </AdminRoute>
+          } />
+           <Route path="/admin/support/ticket/:ticketId" element={
+            <AdminRoute>
+              <AdminLayout>
+                <TicketDetailsPage />
               </AdminLayout>
             </AdminRoute>
           } />
@@ -63,6 +80,16 @@ const App: React.FC = () => {
                   <Route path="/course/:courseId" element={
                     <ProtectedRoute>
                       <CoursePlayerPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/support" element={
+                    <ProtectedRoute>
+                      <SupportPage />
+                    </ProtectedRoute>
+                  } />
+                   <Route path="/support/ticket/:ticketId" element={
+                    <ProtectedRoute>
+                      <TicketDetailsPage />
                     </ProtectedRoute>
                   } />
                 </Routes>

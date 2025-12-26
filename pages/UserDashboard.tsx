@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
+import CompleteProfileModal from '../components/CompleteProfileModal';
 
 interface EnrolledCourse extends Course {
     module_count: number;
@@ -14,6 +15,18 @@ const UserDashboard: React.FC = () => {
     const { user, profile } = useAuth();
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isProfileComplete, setIsProfileComplete] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+
+    useEffect(() => {
+        if (profile) {
+            const complete = !!(profile.company_name && profile.phone_number);
+            setIsProfileComplete(complete);
+            // Show the modal only if the profile is incomplete.
+            setShowProfileModal(!complete); 
+        }
+    }, [profile]);
+
 
     useEffect(() => {
         const fetchEnrolledCourses = async () => {
@@ -74,8 +87,19 @@ const UserDashboard: React.FC = () => {
             setLoading(false);
         };
 
-        fetchEnrolledCourses();
-    }, [user]);
+        // Only fetch courses if the profile is complete
+        if(isProfileComplete) {
+            fetchEnrolledCourses();
+        } else if (profile) { // If profile is loaded but incomplete
+             setLoading(false);
+        }
+
+    }, [user, isProfileComplete, profile]);
+
+    const handleProfileUpdated = () => {
+        setShowProfileModal(false);
+        setIsProfileComplete(true);
+    };
 
     if (loading) {
         return (
@@ -84,6 +108,12 @@ const UserDashboard: React.FC = () => {
             </div>
         );
     }
+    
+    // Render the modal if the profile is not complete.
+    if (!isProfileComplete) {
+        return <CompleteProfileModal onSuccess={handleProfileUpdated} />;
+    }
+
 
     return (
         <div className="space-y-10">

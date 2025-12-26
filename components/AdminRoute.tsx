@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,8 +10,8 @@ const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) =>
   // By the time this component renders, the auth status is definitive.
 
   if (!user) {
-    // If not logged in, redirect to the general login page.
-    return <Navigate to="/login" replace />;
+    // If not logged in, redirect to the specific admin login page for a better UX.
+    return <Navigate to="/admin/login" replace />;
   }
 
   // If the user is logged in but not an admin, redirect them to their own dashboard.

@@ -78,6 +78,26 @@ export interface ActivityLog {
     modules: { title: string } | null;
 }
 
+export interface SupportTicket {
+    id: string;
+    created_at: string;
+    user_id: string;
+    subject: string;
+    description: string;
+    status: 'open' | 'in_progress' | 'closed';
+    user_profiles?: { full_name: string | null; email: string | null };
+}
+
+export interface TicketReply {
+    id: string;
+    created_at: string;
+    ticket_id: string;
+    user_id: string;
+    message: string;
+    user_profiles?: { full_name: string | null; is_admin: boolean };
+}
+
+
 // Supabase generated types
 export type Json =
   | string
@@ -418,6 +438,73 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          subject: string
+          description: string
+          status: 'open' | 'in_progress' | 'closed'
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          subject: string
+          description: string
+          status?: 'open' | 'in_progress' | 'closed'
+        }
+        Update: {
+          id?: string
+          status?: 'open' | 'in_progress' | 'closed'
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      ticket_replies: {
+        Row: {
+          id: string
+          created_at: string
+          ticket_id: string
+          user_id: string
+          message: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          ticket_id: string
+          user_id: string
+          message: string
+        }
+        Update: {
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_replies_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_replies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -511,6 +598,7 @@ export type Enums<
     | keyof Database["public"]["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    // FIX: Corrected a typo from PublicTableNameOrOptions to PublicEnumNameOrOptions.
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }

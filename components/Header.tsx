@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import Logo from './Logo';
@@ -21,13 +21,13 @@ const CloseIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const Header: React.FC = () => {
   const { user, isAdmin } = useAuth();
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setIsMenuOpen(false); // Close menu on sign out
-    navigate('/login');
+    // The redirect is now handled reactively by ProtectedRoute/AdminRoute
+    // when the user state becomes null. This prevents race conditions and loops.
   };
   
   const dashboardLink = isAdmin ? '/admin' : '/dashboard';
@@ -50,6 +50,11 @@ const Header: React.FC = () => {
               <Link to="/#noticias" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
                 Notícias
               </Link>
+              {user && !isAdmin && (
+                <Link to="/support" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
+                  Suporte
+                </Link>
+              )}
             </nav>
           </div>
           
@@ -111,6 +116,11 @@ const Header: React.FC = () => {
             <Link to="/#noticias" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
               Notícias
             </Link>
+             {user && !isAdmin && (
+                <Link to="/support" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
+                  Suporte
+                </Link>
+              )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="px-2 space-y-1">

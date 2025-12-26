@@ -67,32 +67,35 @@ const ProfilePage: React.FC = () => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Nome Completo <span className="text-red-500">*</span></label>
                         <input
                             id="fullName"
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
+                            required
                             className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
-                        <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Nome da Empresa (Opcional)</label>
+                        <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Nome da Empresa <span className="text-red-500">*</span></label>
                         <input
                             id="companyName"
                             type="text"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
+                            required
                             className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
-                        <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Telefone (Opcional)</label>
+                        <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Telefone <span className="text-red-500">*</span></label>
                         <input
                             id="phoneNumber"
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
+                            required
                             className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
