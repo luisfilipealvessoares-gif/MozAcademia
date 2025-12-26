@@ -153,6 +153,7 @@ const CoursePlayerPage: React.FC = () => {
     const [quizPassed, setQuizPassed] = useState(false);
     const [certificateRequested, setCertificateRequested] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
     const logActivity = useCallback(async (moduleId: string) => {
         if (!user || !courseId) return;
@@ -165,6 +166,7 @@ const CoursePlayerPage: React.FC = () => {
     }, [user, courseId]);
 
     useEffect(() => {
+        let isActive = true;
         const generateSignedUrl = async () => {
             if (activeModule && activeModule.video_url) {
                 setSignedVideoUrl(null);
@@ -176,26 +178,34 @@ const CoursePlayerPage: React.FC = () => {
                         videoPath = decodeURIComponent(url.pathname.split('/course_videos/')[1]);
                     } catch (e) {
                         console.error("Invalid video URL format:", videoPath);
-                        setVideoError("Formato de URL do vídeo inválido.");
+                        if (isActive) setVideoError("Formato de URL do vídeo inválido.");
                         return;
                     }
                 }
                 const { data, error } = await supabase.storage.from('course_videos').createSignedUrl(videoPath, 3600);
-                if (error) {
-                    console.error("Error creating signed URL:", error);
-                    setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
-                } else {
-                    setSignedVideoUrl(data.signedUrl);
+                
+                if (isActive) {
+                    if (error) {
+                        console.error("Error creating signed URL:", error);
+                        setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
+                    } else {
+                        setSignedVideoUrl(data.signedUrl);
+                    }
                 }
             }
         };
         generateSignedUrl();
+        return () => {
+            isActive = false;
+        };
     }, [activeModule]);
 
     useEffect(() => {
+        let isActive = true;
         const initializeCourseState = async () => {
             if (!user || !courseId) return;
             setLoading(true);
+            setFetchError(null);
 
             try {
                 const [courseRes, modulesRes, progressRes, attemptRes] = await Promise.all([
@@ -204,6 +214,8 @@ const CoursePlayerPage: React.FC = () => {
                     supabase.from('user_progress').select('module_id').eq('user_id', user.id),
                     supabase.from('quiz_attempts').select('passed').eq('user_id', user.id).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single()
                 ]);
+                
+                if (!isActive) return;
 
                 const { data: courseData, error: courseError } = courseRes;
                 if (courseError) throw courseError;
@@ -242,13 +254,19 @@ const CoursePlayerPage: React.FC = () => {
                 }
             } catch (error: any) {
                 console.error("Failed to load course data:", error.message);
-                navigate('/dashboard');
+                if (isActive) {
+                    setFetchError("Não foi possível carregar os dados do curso. Isso pode ser um problema temporário de conexão ou permissão. Por favor, tente recarregar a página.");
+                }
             } finally {
-                setLoading(false);
+                if (isActive) setLoading(false);
             }
         };
 
         initializeCourseState();
+        
+        return () => {
+            isActive = false;
+        };
     }, [user, courseId, navigate, logActivity]);
 
     const handleSelectModule = (module: Module) => {
@@ -299,6 +317,23 @@ const CoursePlayerPage: React.FC = () => {
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
+
+    if (fetchError) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
+              <div className="bg-white p-8 rounded-xl shadow-lg border max-w-lg">
+                <h2 className="text-2xl font-bold text-red-600 mb-4">Ocorreu um Erro</h2>
+                <p className="text-gray-700 mb-6">{fetchError}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="bg-brand-moz text-white font-semibold py-2 px-6 rounded-lg hover:bg-brand-up transition"
+                >
+                    Tentar Novamente
+                </button>
+              </div>
+            </div>
+        );
+    }
 
     const totalModules = modules.length;
     const progressPercentage = totalModules > 0 ? (completedModules.length / totalModules) * 100 : 0;
