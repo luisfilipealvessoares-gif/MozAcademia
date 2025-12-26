@@ -8,7 +8,7 @@ const LockIcon = () => (
     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
 );
 const CheckCircleIcon = () => (
-    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 );
 
 const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boolean) => void }> = ({ courseId, onQuizComplete }) => {
@@ -69,7 +69,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
           <h3 className="text-2xl font-bold mb-4">Resultados do Quiz</h3>
           <p className="text-xl mb-4">Sua pontuação: <span className="font-bold text-orange-500">{score.toFixed(2)}%</span></p>
           {score >= 70 ? (
-            <p className="text-green-600 font-semibold">Parabéns, você passou!</p>
+            <p className="text-orange-600 font-semibold">Parabéns, você passou!</p>
           ) : (
             <p className="text-red-600 font-semibold">Você não atingiu a pontuação mínima de 70%. Tente novamente.</p>
           )}
@@ -114,7 +114,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
           ) : (
             <button 
               onClick={handleSubmit}
-              className="px-4 py-2 bg-green-500 text-white rounded-md"
+              className="px-4 py-2 bg-orange-500 text-white rounded-md"
             >
               Finalizar
             </button>
@@ -316,7 +316,7 @@ const CoursePlayerPage: React.FC = () => {
                     {view === 'quiz' && courseId && <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />}
                     {view === 'certificate' && quizPassed && (
                         <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                            <h2 className="text-3xl font-bold text-green-600 mb-4">Parabéns!</h2>
+                            <h2 className="text-3xl font-bold text-orange-600 mb-4">Parabéns!</h2>
                             <p className="text-lg mb-6">Você concluiu o curso "{course?.title}" e passou no quiz!</p>
                             {certificateRequested ? (
                                 <p className="text-blue-600 font-semibold">Seu pedido de certificado foi recebido. Ele será processado em breve.</p>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../services/supabase';
-import { CertificateRequest, Course, ActivityLog } from '../types';
+// FIX: Added UserProfile and Module to imports for strong typing of fetched data.
+import { CertificateRequest, Course, ActivityLog, UserProfile, Module } from '../types';
 import { Link } from 'react-router-dom';
 
 interface StatCardProps {
@@ -43,9 +44,10 @@ const AdminDashboard: React.FC = () => {
             supabase.from('modules').select('id, title')
         ]);
 
-        const coursesData = coursesRes.data || [];
-        const profilesData = profilesRes.data || [];
-        const modulesData = modulesRes.data || [];
+        // FIX: Strongly typed the data arrays to ensure type safety in subsequent operations.
+        const coursesData: Course[] = coursesRes.data || [];
+        const profilesData: Pick<UserProfile, 'id' | 'full_name' | 'company_name'>[] = profilesRes.data || [];
+        const modulesData: Pick<Module, 'id' | 'title'>[] = modulesRes.data || [];
         
         setCourses(coursesData);
 
@@ -54,16 +56,14 @@ const AdminDashboard: React.FC = () => {
         const coursesMap = new Map(coursesData.map(c => [c.id, c]));
         const profilesMap = new Map(profilesData.map(p => [p.id, p]));
 
-        // FIX: Refactored manual join to be more efficient and type-safe, avoiding multiple lookups and unsafe assertions.
         const joinedRequests = certRequestsData.map(req => {
             const profile = profilesMap.get(req.user_id);
             const course = coursesMap.get(req.course_id);
             return {
                 ...req,
-                // FIX: Cast `profile` to any to resolve property access on 'unknown' type.
-                user_profiles: profile ? { full_name: (profile as any).full_name } : { full_name: '(Usuário Desconhecido)' },
-                // FIX: Cast `course` to any to resolve property access on 'unknown' type.
-                courses: course ? { title: (course as any).title } : { title: '(Curso Desconhecido)' },
+                // FIX: Removed `as any` cast by using strongly typed maps, allowing direct property access.
+                user_profiles: profile ? { full_name: profile.full_name } : { full_name: '(Usuário Desconhecido)' },
+                courses: course ? { title: course.title } : { title: '(Curso Desconhecido)' },
             };
         });
         setCertificateRequests(joinedRequests);
@@ -72,7 +72,6 @@ const AdminDashboard: React.FC = () => {
         const logsData = logsRes.data || [];
         const modulesMap = new Map(modulesData.map(m => [m.id, m]));
 
-        // FIX: Refactored manual join to be more efficient and type-safe, avoiding multiple lookups and unsafe assertions.
         const joinedLogs = logsData.map(log => {
             const profile = profilesMap.get(log.user_id);
             const course = coursesMap.get(log.course_id);
@@ -110,9 +109,9 @@ const AdminDashboard: React.FC = () => {
         ]);
         const joinedRequest = {
             ...newRequest,
-            user_profiles: profileRes.data ? { full_name: (profileRes.data as any).full_name } : { full_name: '(Usuário Desconhecido)' },
-            // FIX: Cast `courseRes.data` to any to resolve property access on 'unknown' type.
-            courses: courseRes.data ? { title: (courseRes.data as any).title } : { title: '(Curso Desconhecido)' },
+            // FIX: Removed `as any` cast. Supabase response is typed, allowing direct property access.
+            user_profiles: profileRes.data ? { full_name: profileRes.data.full_name } : { full_name: '(Usuário Desconhecido)' },
+            courses: courseRes.data ? { title: courseRes.data.title } : { title: '(Curso Desconhecido)' },
         };
         setCertificateRequests(prev => [joinedRequest as CertificateRequest, ...prev]);
         setStats(prev => ({ ...prev, certRequests: prev.certRequests + 1 }));
@@ -128,10 +127,9 @@ const AdminDashboard: React.FC = () => {
         const joinedLog = {
             ...newLog,
             user_profiles: profileRes.data,
-            // FIX: Cast `courseRes.data` to any to resolve property access on 'unknown' type.
-            courses: courseRes.data ? { title: (courseRes.data as any).title } : null,
-            // FIX: Cast `moduleRes.data` to any to resolve property access on 'unknown' type.
-            modules: moduleRes.data ? { title: (moduleRes.data as any).title } : null
+            // FIX: Removed `as any` cast. Supabase response is typed, allowing direct property access.
+            courses: courseRes.data ? { title: courseRes.data.title } : null,
+            modules: moduleRes.data ? { title: moduleRes.data.title } : null
         };
         setActivityLogs(prev => [joinedLog as ActivityLog, ...prev.slice(0, 99)]);
     };
@@ -237,7 +235,7 @@ const AdminDashboard: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => handleApproveCertificate(req.id)}
-                        className="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600"
+                        className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600"
                       >
                         Aprovar
                       </button>

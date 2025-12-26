@@ -140,7 +140,7 @@ const HomePage: React.FC = () => {
                                 ) : (
                                     <button
                                         onClick={() => handleEnroll(course.id)}
-                                        className="w-full bg-green-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-600 transition"
+                                        className="w-full bg-orange-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-orange-600 transition"
                                     >
                                         Inscrever-se
                                     </button>

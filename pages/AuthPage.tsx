@@ -31,6 +31,8 @@ const AuthPage: React.FC = () => {
 
     try {
       if (isLogin) {
+        // Clear any pending confirmation flags on a manual login attempt.
+        localStorage.removeItem('awaiting_confirmation');
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
 
@@ -60,6 +62,8 @@ const AuthPage: React.FC = () => {
         });
         if (error) throw error;
         if(data.user){
+            // Set a flag to indicate that the user needs to confirm their email.
+            localStorage.setItem('awaiting_confirmation', 'true');
             setSuccessMessage('Registro bem-sucedido! Verifique sua caixa de entrada para confirmar seu e-mail. Você já pode fechar esta aba.');
             setEmail('');
             setPassword('');
@@ -88,9 +92,9 @@ const AuthPage: React.FC = () => {
         {successMessage ? (
            <div className="text-center">
              <div className="flex justify-center mb-4">
-                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg className="w-12 h-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
              </div>
-             <h2 className="text-2xl font-bold text-green-600">Quase lá!</h2>
+             <h2 className="text-2xl font-bold text-orange-600">Quase lá!</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
              <button
                onClick={() => {

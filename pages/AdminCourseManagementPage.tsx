@@ -153,7 +153,7 @@ const AdminCourseManagementPage: React.FC = () => {
       <h1 className="text-3xl font-bold">Gerenciar Módulos: {course?.title}</h1>
       
       <div className="text-right">
-        <button onClick={() => handleOpenModal()} className="bg-green-500 text-white px-4 py-2 rounded-md font-medium hover:bg-green-600">
+        <button onClick={() => handleOpenModal()} className="bg-orange-500 text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600">
             Adicionar Módulo
         </button>
       </div>
@@ -187,8 +187,8 @@ const AdminCourseManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg p-8 w-full max-w-lg">
             {showSuccess ? (
                 <div className="text-center">
-                    <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h2 className="text-2xl font-bold text-green-600">Upload feito com sucesso!</h2>
+                    <svg className="w-16 h-16 text-orange-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 className="text-2xl font-bold text-orange-600">Upload feito com sucesso!</h2>
                 </div>
             ) : (
                 <>

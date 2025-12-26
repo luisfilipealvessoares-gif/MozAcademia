@@ -2,40 +2,41 @@ import React from 'react';
 
 const Logo: React.FC<{ className?: string }> = ({ className = "h-12 w-auto" }) => {
   return (
-    <div className={className} style={{ lineHeight: 1 }}>
+    <div className={className}>
         <svg 
-            viewBox="0 0 450 100" 
+            viewBox="0 0 480 120" 
             xmlns="http://www.w3.org/2000/svg"
             className="w-full h-full"
-            aria-label="MozupAcademy"
+            aria-label="Mozup Academy Logo"
         >
             <defs>
                 <style>
                 {`
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-                    .mozup-font { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 60px; letter-spacing: -2px; }
-                    .tagline-font { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px; letter-spacing: 2px; }
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap');
+                    .mozup-text { font-family: 'Inter', sans-serif; font-size: 80px; font-weight: 800; letter-spacing: -2px; }
+                    /* Style for "ACADEMY" inspired by the image's tagline */
+                    .academy-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; fill: #4D4D4D; }
                 `}
                 </style>
             </defs>
             
-            {/* MOZUP wordmark */}
             <g>
-                <text x="0" y="60" className="mozup-font" fill="#F27A24">MOZ</text>
+                {/* MOZ text */}
+                <text x="0" y="75" className="mozup-text" fill="#F15A24">MOZ</text>
                 
-                {/* The 'U' with arrow */}
-                <g transform="translate(155, 6)">
-                    {/* U shape */}
-                    <path d="M12 0 V 30 C 12 50 30 62 45 62 S 78 50 78 30 V 0 H 60 V 30 C 60 42 52 50 45 50 S 30 42 30 30 V 0 Z" fill="#C85B2B"/>
-                    {/* Arrow shape (white cutout) */}
-                    <path d="M45 5 L35 20 H 40 V 38 H 50 V 20 H 55 Z" fill="white"/>
+                {/* U with integrated arrow - using a darker, reddish orange */}
+                <g transform="translate(200, 0)">
+                    <path d="M15 0 V 40 C 15 72.6 37.4 95 65 95 S 115 72.6 115 40 V 0 H 90 V 40 C 90 59.4 78.4 75 65 75 S 40 59.4 40 40 V 0 Z" fill="#D73327"/>
+                    {/* White arrow inside the U */}
+                    <path d="M65 15 L50 40 H 80 Z" fill="white"/>
                 </g>
                 
-                <text x="250" y="60" className="mozup-font" fill="#C85B2B">P</text>
+                {/* P text */}
+                <text x="320" y="75" className="mozup-text" fill="#F15A24">P</text>
             </g>
             
-            {/* Tagline */}
-            <text x="155" y="85" text-anchor="middle" className="tagline-font" fill="#4B5563">
+            {/* ACADEMY tagline, centered under MOZUP */}
+            <text x="240" y="115" textAnchor="middle" className="academy-text">
                 ACADEMY
             </text>
         </svg>

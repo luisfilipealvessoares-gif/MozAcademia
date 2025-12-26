@@ -106,7 +106,7 @@ const ProfilePage: React.FC = () => {
                         </button>
                     </div>
                 </form>
-                {message && <p className={`mt-4 text-center text-sm ${message.includes('Erro') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
+                {message && <p className={`mt-4 text-center text-sm ${message.includes('Erro') ? 'text-red-600' : 'text-orange-600'}`}>{message}</p>}
             </div>
         </div>
     );

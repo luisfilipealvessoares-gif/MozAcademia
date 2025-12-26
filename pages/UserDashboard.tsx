@@ -84,7 +84,7 @@ const UserDashboard: React.FC = () => {
                 ) : (
                     <div className="text-center py-10 border-2 border-dashed rounded-lg">
                         <p className="text-gray-500">Você ainda não se inscreveu em nenhum curso.</p>
-                        <Link to="/#cursos" className="mt-4 inline-block bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition">
+                        <Link to="/#cursos" className="mt-4 inline-block bg-orange-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-600 transition">
                             Explorar Cursos
                         </Link>
                     </div>
