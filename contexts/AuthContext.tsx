@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
   const inactivityTimer = useRef<number>();
 
-  const fetchProfile = useCallback(async (userId: string | undefined) => {
+  const fetchAndSetProfile = useCallback(async (userId: string | undefined) => {
     if (!userId) {
       setProfile(null);
       setIsAdmin(false);
@@ -36,36 +37,62 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       .eq('id', userId)
       .single();
 
+    if (error) {
+      // Propagate the error to be caught by the listener
+      throw new Error(`Failed to fetch profile: ${error.message}`);
+    }
+    
     if (userProfile) {
       setProfile(userProfile);
       setIsAdmin(userProfile.is_admin);
     } else {
-      setProfile(null);
-      setIsAdmin(false);
-      if (error) console.error("Error fetching profile:", error.message);
+      // This is a critical state inconsistency. The user exists in auth but has no profile.
+      throw new Error("User profile not found for an authenticated user.");
     }
   }, []);
 
+
   useEffect(() => {
-    setLoading(true);
+    // This is the single point of truth for determining auth state.
+    // It runs once on initial load and then listens for changes.
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       try {
-        setSession(session);
         const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        await fetchProfile(currentUser?.id);
+        
+        if (currentUser) {
+          // If a user session exists, we MUST successfully fetch their profile.
+          // This is now an atomic operation.
+          await fetchAndSetProfile(currentUser.id);
+          setUser(currentUser);
+          setSession(session);
+        } else {
+          // If no session, clear everything.
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setIsAdmin(false);
+        }
+
       } catch (error) {
-        console.error("Critical error in onAuthStateChange listener:", error);
-        setSession(null);
+        console.error("Critical auth error, forcing sign out:", error);
+        // If anything fails (e.g., profile fetch), force a clean, signed-out state.
+        // This prevents loops from inconsistent states (e.g., user logged in but profile is null).
+        await supabase.auth.signOut();
         setUser(null);
+        setSession(null);
         setProfile(null);
         setIsAdmin(false);
       } finally {
+        // This guarantees the app will always proceed past the loading screen,
+        // after the session has been definitively resolved.
         setLoading(false);
       }
     });
-    return () => authListener.subscription.unsubscribe();
-  }, [fetchProfile]);
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [fetchAndSetProfile]);
 
   const handleSignOut = useCallback(() => {
     console.log("User has been inactive. Logging out.");
@@ -89,11 +116,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user, resetTimer]);
 
   const refreshProfile = useCallback(async () => {
-    await fetchProfile(user?.id);
-  }, [user, fetchProfile]);
+    // This function is now only for explicit refreshes (e.g., after profile update),
+    // not for initial auth.
+    if (user) {
+      await fetchAndSetProfile(user.id);
+    }
+  }, [user, fetchAndSetProfile]);
 
   const value = { user, session, profile, loading, isAdmin, refreshProfile };
 
+  // This loading screen is crucial. It acts as a gatekeeper, preventing any part
+  // of the app from rendering until the auth state has been definitively determined.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
