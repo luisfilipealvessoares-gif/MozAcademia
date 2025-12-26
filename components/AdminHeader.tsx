@@ -19,7 +19,7 @@ const AdminHeader: React.FC = () => {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-4">
             <Link to="/admin">
-              <Logo className="h-14 w-auto" />
+              <Logo className="h-14 w-auto" variant="dark" />
             </Link>
           </div>
           

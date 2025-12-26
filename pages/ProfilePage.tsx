@@ -54,7 +54,7 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">Meu Perfil</h1>
-            <div className="bg-white p-8 rounded-lg shadow-md">
+            <div className="bg-brand-light p-8 rounded-lg shadow-md border border-brand-moz/20">
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -73,7 +73,7 @@ const ProfilePage: React.FC = () => {
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
                             type="text"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -93,7 +93,7 @@ const ProfilePage: React.FC = () => {
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                     <div>

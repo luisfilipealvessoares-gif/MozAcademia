@@ -304,10 +304,10 @@ const CoursePlayerPage: React.FC = () => {
     const progressPercentage = totalModules > 0 ? (completedModules.length / totalModules) * 100 : 0;
 
     return (
-        <div>
-            <div className="mb-6">
-                <p className="text-brand-moz font-semibold">CURSO</p>
-                <h1 className="text-4xl font-extrabold text-gray-900">{course?.title}</h1>
+        <div className="bg-brand-light -mx-8 -my-8 p-8 rounded-xl">
+            <div className="mb-8 p-6 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
+                <p className="font-semibold opacity-90 tracking-wider">CURSO</p>
+                <h1 className="text-4xl font-extrabold drop-shadow-md">{course?.title}</h1>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <main className="lg:col-span-3">

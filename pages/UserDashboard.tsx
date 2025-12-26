@@ -92,8 +92,8 @@ const UserDashboard: React.FC = () => {
                 <p className="text-xl text-gray-600 mt-2">Bem-vindo(a) de volta, <span className="font-semibold text-brand-moz">{profile?.full_name || user?.email}</span>!</p>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-                <h2 className="text-2xl font-bold mb-6">Meus Cursos</h2>
+            <div className="bg-brand-light p-8 rounded-xl shadow-lg border border-brand-moz/20">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Meus Cursos</h2>
                 {enrolledCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {enrolledCourses.map(course => {
@@ -120,7 +120,7 @@ const UserDashboard: React.FC = () => {
                         )})}
                     </div>
                 ) : (
-                    <div className="text-center py-12 border-2 border-dashed rounded-xl bg-brand-light/50">
+                    <div className="text-center py-12 border-2 border-dashed border-brand-up/30 rounded-xl bg-white">
                          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                         </svg>

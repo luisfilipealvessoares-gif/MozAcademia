@@ -63,7 +63,7 @@ const AdminLoginPage: React.FC = () => {
   if (authLoading || user) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ const AdminLoginPage: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email de Administrador"
             required
-            className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+            className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
           />
           <input
             type="password"
@@ -94,19 +94,19 @@ const AdminLoginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Senha"
             required
-            className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+            className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:bg-orange-600 disabled:bg-orange-300"
+            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz/50"
           >
             {loading ? 'Verificando...' : 'Entrar'}
           </button>
           {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
         </form>
         <div className="text-center">
-            <Link to="/" className="text-sm text-orange-600 hover:underline">
+            <Link to="/" className="text-sm text-brand-up hover:text-brand-moz hover:underline">
                 Voltar ao site principal
             </Link>
         </div>

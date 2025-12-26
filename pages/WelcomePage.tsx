@@ -12,7 +12,7 @@ const CheckIcon: React.FC = () => (
 
 const WelcomePage: React.FC = () => {
   return (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex items-center justify-center py-12 bg-brand-light -mx-8 -my-8 rounded-xl min-h-[60vh]">
       <div className="w-full max-w-lg p-8 text-center bg-white rounded-xl shadow-lg">
         <div className="flex justify-center mb-6">
           <CheckIcon />

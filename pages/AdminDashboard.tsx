@@ -204,129 +204,131 @@ const AdminDashboard: React.FC = () => {
   }, [activityLogs]);
 
   return (
-    <div className="space-y-12">
-      <h1 className="text-3xl font-extrabold">Painel de Administração</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total de Cursos" value={stats.courses} icon={<BookOpenIcon />} />
-        <StatCard title="Total de Inscrições" value={stats.enrollments} icon={<UserGroupIcon />} />
-        <StatCard title="Pedidos de Certificado" value={stats.certRequests} icon={<AcademicCapIcon />} />
-      </div>
-
-      <div id="certificate-requests">
-        <h2 className="text-2xl font-bold mb-4">Pedidos de Certificado Pendentes</h2>
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {certificateRequests.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data do Pedido</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {certificateRequests.map(req => (
-                  <tr key={req.id}>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '(Usuário Excluído)'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '(Curso Excluído)'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(req.requested_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button 
-                        onClick={() => handleApproveCertificate(req.id)}
-                        className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up"
-                      >
-                        Aprovar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="p-6 text-center text-gray-500">Nenhum pedido de certificado pendente.</p>
-          )}
+    <div className="bg-brand-light -mx-8 -my-8 p-8 rounded-xl">
+        <div className="space-y-12">
+        <h1 className="text-3xl font-extrabold">Painel de Administração</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard title="Total de Cursos" value={stats.courses} icon={<BookOpenIcon />} />
+            <StatCard title="Total de Inscrições" value={stats.enrollments} icon={<UserGroupIcon />} />
+            <StatCard title="Pedidos de Certificado" value={stats.certRequests} icon={<AcademicCapIcon />} />
         </div>
-      </div>
 
-      <div id="course-management">
-        <h2 className="text-2xl font-bold mb-4">Gerenciamento de Cursos</h2>
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
+        <div id="certificate-requests">
+            <h2 className="text-2xl font-bold mb-4">Pedidos de Certificado Pendentes</h2>
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            {certificateRequests.length > 0 ? (
+                <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data do Pedido</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {courses.map(course => (
-                        <tr key={course.id}>
-                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{course.title}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <Link to={`/admin/courses/${course.id}`} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up">
-                                    Gerenciar
-                                </Link>
-                            </td>
-                        </tr>
+                    {certificateRequests.map(req => (
+                    <tr key={req.id}>
+                        <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '(Usuário Excluído)'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '(Curso Excluído)'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(req.requested_at).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <button 
+                            onClick={() => handleApproveCertificate(req.id)}
+                            className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up"
+                        >
+                            Aprovar
+                        </button>
+                        </td>
+                    </tr>
                     ))}
                 </tbody>
-            </table>
+                </table>
+            ) : (
+                <p className="p-6 text-center text-gray-500">Nenhum pedido de certificado pendente.</p>
+            )}
+            </div>
         </div>
-      </div>
 
-      <div id="analytics">
-        <h2 className="text-2xl font-bold mb-4">Análise de Atividade Recente</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <select onChange={(e) => setFilterCourse(e.target.value)} value={filterCourse} className="w-full md:w-1/3 p-2 border rounded-md">
-                  <option value="">Todos os Cursos</option>
-                  {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
-                <input type="text" placeholder="Buscar por nome do aluno..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full md:w-2/3 p-2 border rounded-md" />
-              </div>
+        <div id="course-management">
+            <h2 className="text-2xl font-bold mb-4">Gerenciamento de Cursos</h2>
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {courses.map(course => (
+                            <tr key={course.id}>
+                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{course.title}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                    <Link to={`/admin/courses/${course.id}`} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up">
+                                        Gerenciar
+                                    </Link>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
-            <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Módulo Acessado</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredLogs.map(log => (
-                    <tr key={log.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.full_name || '(Usuário Excluído)'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.company_name || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                        {log.courses?.title || '(Curso Excluído)'} - {log.modules?.title || '(Módulo Excluído)'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold mb-4">Cursos Mais Acessados</h3>
-            <ul className="space-y-3">
-              {mostAccessedCourses.map(([title, count], index) => (
-                <li key={index} className="flex justify-between items-center text-sm">
-                  <span className="font-medium text-gray-800">{title}</span>
-                  <span className="font-bold text-brand-moz bg-brand-light px-2 py-1 rounded-full">{count} acessos</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
-      </div>
+
+        <div id="analytics">
+            <h2 className="text-2xl font-bold mb-4">Análise de Atividade Recente</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+                <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <select onChange={(e) => setFilterCourse(e.target.value)} value={filterCourse} className="w-full md:w-1/3 p-2 border rounded-md">
+                    <option value="">Todos os Cursos</option>
+                    {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    </select>
+                    <input type="text" placeholder="Buscar por nome do aluno..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full md:w-2/3 p-2 border rounded-md" />
+                </div>
+                </div>
+                <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Módulo Acessado</th>
+                    </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredLogs.map(log => (
+                        <tr key={log.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">{log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.full_name || '(Usuário Excluído)'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">{log.user_profiles?.company_name || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                            {log.courses?.title || '(Curso Excluído)'} - {log.modules?.title || '(Módulo Excluído)'}
+                        </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-bold mb-4">Cursos Mais Acessados</h3>
+                <ul className="space-y-3">
+                {mostAccessedCourses.map(([title, count], index) => (
+                    <li key={index} className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-gray-800">{title}</span>
+                    <span className="font-bold text-brand-moz bg-brand-light px-2 py-1 rounded-full">{count} acessos</span>
+                    </li>
+                ))}
+                </ul>
+            </div>
+            </div>
+        </div>
+        </div>
     </div>
   );
 };

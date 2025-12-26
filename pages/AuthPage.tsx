@@ -88,7 +88,7 @@ const AuthPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-orange-50 to-gray-100">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-brand-light to-gray-50">
       <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
         {successMessage ? (
            <div className="text-center">
