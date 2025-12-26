@@ -79,9 +79,9 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
         <div className="text-center p-8 bg-white rounded-xl shadow-lg border">
           <h3 className="text-3xl font-bold mb-4">Resultados do Quiz</h3>
           <p className="text-xl mb-2">Sua pontuação final:</p>
-          <p className={`text-6xl font-bold mb-6 ${passed ? 'text-orange-500' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
+          <p className={`text-6xl font-bold mb-6 ${passed ? 'text-brand-moz' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
           {passed ? (
-            <p className="text-orange-600 font-semibold text-lg">Parabéns, você passou! Pode solicitar seu certificado.</p>
+            <p className="text-brand-up font-semibold text-lg">Parabéns, você passou! Pode solicitar seu certificado.</p>
           ) : (
             <p className="text-red-600 font-semibold text-lg">Você não atingiu a pontuação mínima de 70%.</p>
           )}
@@ -93,17 +93,17 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
   
     return currentQuestion ? (
       <div className="p-8 bg-white rounded-xl shadow-lg border">
-        <p className="text-sm font-semibold text-orange-500 mb-2">PERGUNTA {currentQuestionIndex + 1} DE {questions.length}</p>
+        <p className="text-sm font-semibold text-brand-moz mb-2">PERGUNTA {currentQuestionIndex + 1} DE {questions.length}</p>
         <h3 className="text-2xl font-bold mb-6">{currentQuestion.question_text}</h3>
         <div className="space-y-4">
           {currentQuestion.options.map((option, index) => (
-            <label key={index} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}>
+            <label key={index} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-brand-moz bg-brand-light' : 'border-gray-200 hover:border-brand-moz/50'}`}>
               <input
                 type="radio"
                 name={`question-${currentQuestion.id}`}
                 checked={answers[currentQuestionIndex] === index}
                 onChange={() => handleAnswer(index)}
-                className="h-5 w-5 text-orange-600 focus:ring-orange-500"
+                className="h-5 w-5 text-brand-up focus:ring-brand-moz"
               />
               <span className="ml-4 text-lg text-gray-800">{option}</span>
             </label>
@@ -120,7 +120,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
           {currentQuestionIndex < questions.length - 1 ? (
             <button 
               onClick={() => setCurrentQuestionIndex(i => Math.min(questions.length - 1, i + 1))}
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold shadow-sm hover:bg-orange-600"
+              className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up"
             >
               Próximo
             </button>
@@ -128,7 +128,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
             <button 
               onClick={handleSubmit}
               disabled={answers.includes(null)}
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold shadow-sm hover:bg-orange-600 disabled:bg-orange-300"
+              className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50"
             >
               Finalizar Quiz
             </button>
@@ -296,7 +296,7 @@ const CoursePlayerPage: React.FC = () => {
 
     if (loading) return (
       <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
 
@@ -306,7 +306,7 @@ const CoursePlayerPage: React.FC = () => {
     return (
         <div>
             <div className="mb-6">
-                <p className="text-orange-500 font-semibold">CURSO</p>
+                <p className="text-brand-moz font-semibold">CURSO</p>
                 <h1 className="text-4xl font-extrabold text-gray-900">{course?.title}</h1>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -339,12 +339,12 @@ const CoursePlayerPage: React.FC = () => {
                     {view === 'quiz' && courseId && <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />}
                     {view === 'certificate' && quizPassed && (
                         <div className="bg-white p-8 rounded-xl shadow-lg border text-center">
-                            <h2 className="text-4xl font-bold text-orange-600 mb-4">Parabéns!</h2>
+                            <h2 className="text-4xl font-bold text-brand-up mb-4">Parabéns!</h2>
                             <p className="text-xl mb-6">Você concluiu o curso "{course?.title}" e passou no quiz!</p>
                             {certificateRequested ? (
                                 <p className="text-blue-600 font-semibold text-lg">Seu pedido de certificado foi recebido e será processado em breve.</p>
                             ) : (
-                                <button onClick={handleRequestCertificate} className="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                                     Solicitar Certificado
                                 </button>
                             )}
@@ -354,7 +354,7 @@ const CoursePlayerPage: React.FC = () => {
                 <aside className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border">
                     <h3 className="text-xl font-bold mb-4">Progresso</h3>
                      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                        <div className="bg-orange-500 h-2.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
+                        <div className="bg-brand-moz h-2.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
                     </div>
                     <p className="text-sm text-gray-600 mb-6 text-center">{completedModules.length} de {totalModules} módulos completos</p>
 
@@ -369,10 +369,10 @@ const CoursePlayerPage: React.FC = () => {
                         let iconClasses = "w-5 h-5 mr-3 ";
                         if (isActive) {
                           Icon = PlayCircleIcon;
-                          iconClasses += "text-orange-500";
+                          iconClasses += "text-brand-moz";
                         } else if (isCompleted) {
                           Icon = CheckCircleIcon;
-                           iconClasses += "text-orange-500";
+                           iconClasses += "text-brand-moz";
                         } else if (isLocked) {
                           Icon = LockIcon;
                           iconClasses += "text-gray-400";
@@ -384,8 +384,8 @@ const CoursePlayerPage: React.FC = () => {
                             onClick={() => !isLocked && handleSelectModule(module)}
                             disabled={isLocked}
                             className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
-                                isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-orange-100'
-                            } ${isActive ? 'bg-orange-100 ring-2 ring-orange-400 font-semibold text-orange-800' : 'text-gray-700'}`}
+                                isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-brand-light'
+                            } ${isActive ? 'bg-brand-light ring-2 ring-brand-moz font-semibold text-brand-up' : 'text-gray-700'}`}
                             >
                             {Icon && <Icon className={iconClasses} />}
                             <span className="flex-1 truncate">{index + 1}. {module.title}</span>

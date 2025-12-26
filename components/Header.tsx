@@ -27,20 +27,20 @@ const Header: React.FC = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-10">
-            <Link to="/#cursos" className="text-gray-600 hover:text-orange-500 font-medium transition-colors duration-300">
+            <Link to="/#cursos" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
               Cursos
             </Link>
-            <Link to="/#noticias" className="text-gray-600 hover:text-orange-500 font-medium transition-colors duration-300">
+            <Link to="/#noticias" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
               Notícias
             </Link>
           </nav>
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Link to={dashboardLink} className="hidden sm:inline-block bg-orange-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Link to={dashboardLink} className="hidden sm:inline-block bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md">
                   {dashboardText}
                 </Link>
-                 <Link to="/profile" className="hidden sm:inline-block text-gray-600 hover:text-orange-500 font-medium">
+                 <Link to="/profile" className="hidden sm:inline-block text-gray-600 hover:text-brand-moz font-medium">
                     Meu Perfil
                 </Link>
                 <button
@@ -53,7 +53,7 @@ const Header: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-orange-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                className="bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
               >
                 Entrar / Registrar
               </Link>

@@ -89,7 +89,7 @@ const HomePage: React.FC = () => {
   if (loading && courses.length === 0) {
     return (
         <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-orange-500"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
         </div>
     );
   }
@@ -102,12 +102,12 @@ const HomePage: React.FC = () => {
             <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" alt="Profissionais em reunião" className="absolute inset-0 w-full h-full object-cover"/>
             <div className="relative z-20">
                 <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-4 drop-shadow-lg">
-                    Capacitação Profissional para <span className="text-orange-400">o Futuro</span>
+                    Capacitação Profissional para <span className="text-brand-moz">o Futuro</span>
                 </h1>
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-200 mb-8 drop-shadow-md">
                     Nossa missão é fornecer conhecimento acessível e de alta qualidade sobre setores vitais da economia, impulsionando sua carreira para o próximo nível.
                 </p>
-                <a href="/#cursos" className="inline-block bg-orange-500 text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-orange-600 transition-transform transform hover:scale-105 shadow-xl">
+                <a href="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-transform transform hover:scale-105 shadow-xl">
                     Explorar Cursos
                 </a>
             </div>
@@ -118,21 +118,21 @@ const HomePage: React.FC = () => {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Por que escolher a MozupAcademy?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                    <div className="inline-block bg-brand-light text-brand-moz p-4 rounded-full mb-4">
                         <BookOpenIcon className="h-8 w-8"/>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Conteúdo Especializado</h3>
                     <p className="text-gray-600">Cursos desenvolvidos por especialistas da indústria para garantir conhecimento prático e atualizado.</p>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                    <div className="inline-block bg-brand-light text-brand-moz p-4 rounded-full mb-4">
                         <LightBulbIcon className="h-8 w-8"/>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Aprendizagem Flexível</h3>
                     <p className="text-gray-600">Aprenda no seu próprio ritmo, de qualquer lugar, com acesso vitalício aos materiais do curso.</p>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-orange-100 text-orange-500 p-4 rounded-full mb-4">
+                    <div className="inline-block bg-brand-light text-brand-moz p-4 rounded-full mb-4">
                         <ChartBarIcon className="h-8 w-8"/>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Crescimento de Carreira</h3>
@@ -153,19 +153,19 @@ const HomePage: React.FC = () => {
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                   <h3 className="text-xl font-bold text-gray-800 ">{course.title}</h3>
-                                  <div className="bg-orange-100 text-orange-600 text-xs font-semibold px-2.5 py-1 rounded-full">NOVO</div>
+                                  <div className="bg-brand-light text-brand-up text-xs font-semibold px-2.5 py-1 rounded-full">NOVO</div>
                                 </div>
                                 <p className="text-gray-600 mb-4 h-24 overflow-hidden text-ellipsis">{course.description}</p>
                             </div>
                             <div className="p-6 bg-gray-50 mt-auto">
                                 {isEnrolled ? (
-                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg">
+                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
                                         Continuar Curso
                                     </Link>
                                 ) : (
                                     <button
                                         onClick={() => handleEnroll(course.id)}
-                                        className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                                        className="w-full bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
                                         Inscrever-se
                                     </button>
@@ -185,7 +185,7 @@ const HomePage: React.FC = () => {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Notícias e Atualizações</h2>
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
-                    <p className="text-sm text-orange-500 font-semibold mb-2">LANÇAMENTO</p>
+                    <p className="text-sm text-brand-moz font-semibold mb-2">LANÇAMENTO</p>
                     <h3 className="font-semibold text-2xl mb-3">Lançamento da Plataforma</h3>
                     <p className="text-gray-600">É com grande entusiasmo que lançamos a MozupAcademy! Nosso primeiro curso sobre Petróleo e Gás já está disponível para inscrição. Fique atento para mais novidades e cursos em breve.</p>
                 </div>

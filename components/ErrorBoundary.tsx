@@ -9,9 +9,7 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: The class component was missing a constructor. Adding one to call `super(props)`
-  // and initialize `this.state` resolves errors related to accessing props and state
-  // before they are defined.
+  // FIX: The component's state was not initialized correctly, causing type errors. Using a constructor ensures `this.state` is properly set up when the component is created.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -36,7 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
           <p className="text-gray-700 mb-6">Nossa equipe foi notificada. Por favor, tente recarregar a página.</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-orange-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-orange-600 transition"
+            className="bg-brand-moz text-white font-semibold py-2 px-6 rounded-lg hover:bg-brand-up transition"
           >
             Recarregar Página
           </button>

@@ -46,7 +46,7 @@ const ProfilePage: React.FC = () => {
     if (authLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-orange-500"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
             </div>
         );
     }
@@ -73,7 +73,7 @@ const ProfilePage: React.FC = () => {
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
                             type="text"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -93,20 +93,20 @@ const ProfilePage: React.FC = () => {
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-gray-50 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                     <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:bg-orange-600 disabled:bg-orange-300"
+                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50"
                         >
                             {loading ? 'Salvando...' : 'Salvar Alterações'}
                         </button>
                     </div>
                 </form>
-                {message && <p className={`mt-4 text-center text-sm ${message.includes('Erro') ? 'text-red-600' : 'text-orange-600'}`}>{message}</p>}
+                {message && <p className={`mt-4 text-center text-sm ${message.includes('Erro') ? 'text-red-600' : 'text-brand-up'}`}>{message}</p>}
             </div>
         </div>
     );

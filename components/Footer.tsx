@@ -15,22 +15,22 @@ const Footer: React.FC = () => {
           <div className="md:col-span-1">
             <h3 className="font-semibold text-gray-800 mb-4">Navegação</h3>
             <ul className="space-y-2">
-              <li><a href="/#cursos" className="text-gray-600 hover:text-orange-500">Cursos</a></li>
-              <li><a href="/#noticias" className="text-gray-600 hover:text-orange-500">Notícias</a></li>
+              <li><a href="/#cursos" className="text-gray-600 hover:text-brand-moz">Cursos</a></li>
+              <li><a href="/#noticias" className="text-gray-600 hover:text-brand-moz">Notícias</a></li>
             </ul>
           </div>
           <div className="md:col-span-1">
             <h3 className="font-semibold text-gray-800 mb-4">Conta</h3>
             <ul className="space-y-2">
-              <li><Link to="/login" className="text-gray-600 hover:text-orange-500">Login Aluno</Link></li>
-              <li><Link to="/admin/login" className="text-gray-600 hover:text-orange-500">Acesso Admin</Link></li>
+              <li><Link to="/login" className="text-gray-600 hover:text-brand-moz">Login Aluno</Link></li>
+              <li><Link to="/admin/login" className="text-gray-600 hover:text-brand-moz">Acesso Admin</Link></li>
             </ul>
           </div>
           <div className="md:col-span-1">
              <h3 className="font-semibold text-gray-800 mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-orange-500">Termos de Serviço</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-orange-500">Política de Privacidade</a></li>
+              <li><a href="#" className="text-gray-600 hover:text-brand-moz">Termos de Serviço</a></li>
+              <li><a href="#" className="text-gray-600 hover:text-brand-moz">Política de Privacidade</a></li>
             </ul>
           </div>
         </div>

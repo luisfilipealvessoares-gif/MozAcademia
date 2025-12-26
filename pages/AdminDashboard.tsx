@@ -12,7 +12,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => (
     <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4">
-        <div className="bg-orange-100 p-3 rounded-full">{icon}</div>
+        <div className="bg-brand-light p-3 rounded-full">{icon}</div>
         <div>
             <p className="text-sm font-medium text-gray-500">{title}</p>
             <p className="text-2xl font-bold text-gray-900">{value}</p>
@@ -235,7 +235,7 @@ const AdminDashboard: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => handleApproveCertificate(req.id)}
-                        className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600"
+                        className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up"
                       >
                         Aprovar
                       </button>
@@ -265,7 +265,7 @@ const AdminDashboard: React.FC = () => {
                         <tr key={course.id}>
                             <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{course.title}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <Link to={`/admin/courses/${course.id}`} className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600">
+                                <Link to={`/admin/courses/${course.id}`} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up">
                                     Gerenciar
                                 </Link>
                             </td>
@@ -320,7 +320,7 @@ const AdminDashboard: React.FC = () => {
               {mostAccessedCourses.map(([title, count], index) => (
                 <li key={index} className="flex justify-between items-center text-sm">
                   <span className="font-medium text-gray-800">{title}</span>
-                  <span className="font-bold text-orange-500 bg-orange-100 px-2 py-1 rounded-full">{count} acessos</span>
+                  <span className="font-bold text-brand-moz bg-brand-light px-2 py-1 rounded-full">{count} acessos</span>
                 </li>
               ))}
             </ul>
@@ -332,8 +332,8 @@ const AdminDashboard: React.FC = () => {
 };
 
 // Icons
-const UserGroupIcon = () => <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a3.002 3.002 0 013.4-1.857m-3.4 1.857a3 3 0 00-3.4-1.857M12 6V3m0 3h-3m3 0h3m-3 0v3m0-3V3m0 3H9m3 0h3m0-3h-3m3 0h3m0 0v3"></path></svg>;
-const BookOpenIcon = () => <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
-const AcademicCapIcon = () => <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
+const UserGroupIcon = () => <svg className="w-6 h-6 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a3.002 3.002 0 013.4-1.857m-3.4 1.857a3 3 0 00-3.4-1.857M12 6V3m0 3h-3m3 0h3m-3 0v3m0-3V3m0 3H9m3 0h3m0-3h-3m3 0h3m0 0v3"></path></svg>;
+const BookOpenIcon = () => <svg className="w-6 h-6 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
+const AcademicCapIcon = () => <svg className="w-6 h-6 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
 
 export default AdminDashboard;

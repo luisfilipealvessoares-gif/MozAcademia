@@ -149,11 +149,11 @@ const AdminCourseManagementPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Link to="/admin" className="text-orange-500 hover:underline">&larr; Voltar ao Painel</Link>
+      <Link to="/admin" className="text-brand-moz hover:underline">&larr; Voltar ao Painel</Link>
       <h1 className="text-3xl font-bold">Gerenciar Módulos: {course?.title}</h1>
       
       <div className="text-right">
-        <button onClick={() => handleOpenModal()} className="bg-orange-500 text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600">
+        <button onClick={() => handleOpenModal()} className="bg-brand-moz text-white px-4 py-2 rounded-md font-medium hover:bg-brand-up">
             Adicionar Módulo
         </button>
       </div>
@@ -187,8 +187,8 @@ const AdminCourseManagementPage: React.FC = () => {
           <div className="bg-white rounded-lg p-8 w-full max-w-lg">
             {showSuccess ? (
                 <div className="text-center">
-                    <svg className="w-16 h-16 text-orange-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h2 className="text-2xl font-bold text-orange-600">Upload feito com sucesso!</h2>
+                    <svg className="w-16 h-16 text-brand-moz mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 className="text-2xl font-bold text-brand-up">Upload feito com sucesso!</h2>
                 </div>
             ) : (
                 <>
@@ -207,14 +207,14 @@ const AdminCourseManagementPage: React.FC = () => {
                     <p className="text-xs text-gray-500 mb-2">
                         {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
                     </p>
-                    <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                    <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-up hover:file:bg-brand-light/75" />
                   </div>
 
                   {uploading && uploadProgress !== null && (
                     <div className="space-y-2">
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                             <div 
-                                className="bg-orange-500 h-2.5 rounded-full transition-all duration-300" 
+                                className="bg-brand-moz h-2.5 rounded-full transition-all duration-300" 
                                 style={{ width: `${uploadProgress}%` }}
                             ></div>
                         </div>
@@ -224,7 +224,7 @@ const AdminCourseManagementPage: React.FC = () => {
 
                   <div className="flex justify-end space-x-4 pt-4">
                     <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button type="submit" disabled={uploading} className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 disabled:bg-orange-300">
+                    <button type="submit" disabled={uploading} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
                         {uploading ? 'Enviando...' : 'Salvar Módulo'}
                     </button>
                   </div>

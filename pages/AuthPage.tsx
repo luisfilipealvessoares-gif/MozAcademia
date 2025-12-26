@@ -82,7 +82,7 @@ const AuthPage: React.FC = () => {
   if (authLoading || user) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
       </div>
     );
   }
@@ -93,16 +93,16 @@ const AuthPage: React.FC = () => {
         {successMessage ? (
            <div className="text-center">
              <div className="flex justify-center mb-4">
-                <svg className="w-16 h-16 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg className="w-16 h-16 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
              </div>
-             <h2 className="text-2xl font-bold text-orange-600">Quase lá!</h2>
+             <h2 className="text-2xl font-bold text-brand-up">Quase lá!</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
              <button
                onClick={() => {
                  setSuccessMessage(null);
                  setIsLogin(true);
                }}
-               className="mt-6 w-full px-4 py-3 text-white bg-orange-500 rounded-lg font-semibold hover:bg-orange-600 shadow-sm hover:shadow-lg transition-all"
+               className="mt-6 w-full px-4 py-3 text-white bg-brand-moz rounded-lg font-semibold hover:bg-brand-up shadow-sm hover:shadow-lg transition-all"
              >
                Voltar para Login
              </button>
@@ -129,7 +129,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Nome Completo"
                         />
                     </div>
@@ -144,7 +144,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Endereço de e-mail"
                     />
                     </div>
@@ -158,7 +158,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Senha"
                     />
                     </div>
@@ -172,7 +172,7 @@ const AuthPage: React.FC = () => {
                     <button
                     type="submit"
                     disabled={loading}
-                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                     {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Registrar')}
                     </button>
@@ -184,7 +184,7 @@ const AuthPage: React.FC = () => {
                         setIsLogin(!isLogin);
                         setError(null);
                     }}
-                    className="font-medium text-orange-600 hover:text-orange-500"
+                    className="font-medium text-brand-up hover:text-brand-moz"
                 >
                     {isLogin ? 'Não tem uma conta? Registre-se' : 'Já tem uma conta? Faça login'}
                 </button>
