@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -24,9 +24,21 @@ const ChartBarIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const HomePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Handle scrolling to anchor links
+    if (!loading && location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [location, loading]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -107,9 +119,9 @@ const HomePage: React.FC = () => {
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-200 mb-8 drop-shadow-md">
                     Nossa missão é fornecer conhecimento acessível e de alta qualidade sobre setores vitais da economia, impulsionando sua carreira para o próximo nível.
                 </p>
-                <a href="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-transform transform hover:scale-105 shadow-xl">
+                <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-transform transform hover:scale-105 shadow-xl">
                     Explorar Cursos
-                </a>
+                </Link>
             </div>
         </section>
 

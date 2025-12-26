@@ -15,8 +15,8 @@ const Footer: React.FC = () => {
           <div className="md:col-span-1">
             <h3 className="font-semibold text-white mb-4">Navegação</h3>
             <ul className="space-y-2">
-              <li><a href="/#cursos" className="text-gray-300 hover:text-brand-moz">Cursos</a></li>
-              <li><a href="/#noticias" className="text-gray-300 hover:text-brand-moz">Notícias</a></li>
+              <li><Link to="/#cursos" className="text-gray-300 hover:text-brand-moz">Cursos</Link></li>
+              <li><Link to="/#noticias" className="text-gray-300 hover:text-brand-moz">Notícias</Link></li>
             </ul>
           </div>
           <div className="md:col-span-1">
