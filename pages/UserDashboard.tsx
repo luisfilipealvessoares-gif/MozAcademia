@@ -1,10 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
 
-interface EnrolledCourse extends Course {}
+interface EnrolledCourse extends Course {
+    module_count: number;
+    completed_modules_count: number;
+}
 
 const UserDashboard: React.FC = () => {
     const { user, profile } = useAuth();
@@ -16,31 +20,57 @@ const UserDashboard: React.FC = () => {
             if (!user) return;
             setLoading(true);
             
-            // OPTIMIZATION: Fetch enrollments and the related course data in a single query.
-            const { data, error } = await supabase
+            const { data: enrollments, error: enrollmentsError } = await supabase
                 .from('enrollments')
-                .select(`
-                    courses (
-                        id,
-                        title,
-                        description,
-                        created_at
-                    )
-                `)
+                .select('course_id')
                 .eq('user_id', user.id);
 
-            if (error) {
-                console.error("Error fetching enrolled courses:", error);
-                setEnrolledCourses([]);
-            } else if (data) {
-                // The result is an array of objects like { courses: { id: '...', title: '...' } }
-                // We filter out any potential nulls and map to get the course object directly.
-                const courses = data
-                    .map(item => item.courses)
-                    .filter((course): course is EnrolledCourse => course !== null);
-                setEnrolledCourses(courses);
+            if (enrollmentsError) {
+                console.error("Error fetching enrollments:", enrollmentsError);
+                setLoading(false);
+                return;
             }
 
+            if (!enrollments || enrollments.length === 0) {
+                setEnrolledCourses([]);
+                setLoading(false);
+                return;
+            }
+            
+            const courseIds = enrollments.map(e => e.course_id);
+
+            const { data: coursesData, error: coursesError } = await supabase
+                .from('courses')
+                .select('*')
+                .in('id', courseIds);
+
+            if (coursesError) {
+                console.error("Error fetching courses:", coursesError);
+                setLoading(false);
+                return;
+            }
+
+            const coursePromises = coursesData.map(async (course) => {
+                const { count: module_count } = await supabase
+                    .from('modules')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('course_id', course.id);
+
+                const { data: progressData } = await supabase
+                    .from('user_progress')
+                    .select('module_id')
+                    .eq('user_id', user.id)
+                    .in('module_id', (await supabase.from('modules').select('id').eq('course_id', course.id)).data?.map(m => m.id) || []);
+                
+                return {
+                    ...course,
+                    module_count: module_count || 0,
+                    completed_modules_count: progressData?.length || 0,
+                };
+            });
+            
+            const finalCourses = await Promise.all(coursePromises);
+            setEnrolledCourses(finalCourses as EnrolledCourse[]);
             setLoading(false);
         };
 
@@ -56,37 +86,51 @@ const UserDashboard: React.FC = () => {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             <div>
-                <h1 className="text-3xl font-bold">Meu Painel</h1>
-                <p className="text-gray-600 mt-1">Bem-vindo de volta, {profile?.full_name || user?.email}!</p>
+                <h1 className="text-4xl font-extrabold text-gray-900">Meu Painel</h1>
+                <p className="text-xl text-gray-600 mt-2">Bem-vindo(a) de volta, <span className="font-semibold text-orange-500">{profile?.full_name || user?.email}</span>!</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold mb-4">Meus Cursos</h2>
+            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                <h2 className="text-2xl font-bold mb-6">Meus Cursos</h2>
                 {enrolledCourses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {enrolledCourses.map(course => (
-                            <div key={course.id} className="border rounded-lg p-4 flex flex-col justify-between hover:shadow-lg transition-shadow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {enrolledCourses.map(course => {
+                            const progress = course.module_count > 0 ? (course.completed_modules_count / course.module_count) * 100 : 0;
+                            return (
+                            <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                 <div>
-                                    <h3 className="font-bold text-lg">{course.title}</h3>
-                                    <p className="text-gray-500 text-sm mt-1 h-20 overflow-hidden">{course.description}</p>
+                                    <h3 className="font-bold text-xl text-gray-800 mb-2">{course.title}</h3>
+                                    <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{course.description}</p>
+                                    <div className="space-y-2">
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div className="bg-orange-500 h-2 rounded-full" style={{width: `${progress}%`}}></div>
+                                        </div>
+                                        <p className="text-xs text-gray-500 font-medium">{course.completed_modules_count} de {course.module_count} módulos completos</p>
+                                    </div>
                                 </div>
                                 <Link
                                     to={`/course/${course.id}`}
-                                    className="mt-4 block w-full text-center bg-orange-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-orange-600 transition"
+                                    className="mt-6 block w-full text-center bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg"
                                 >
-                                    Continuar Curso
+                                    {progress > 0 ? 'Continuar Curso' : 'Iniciar Curso'}
                                 </Link>
                             </div>
-                        ))}
+                        )})}
                     </div>
                 ) : (
-                    <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                        <p className="text-gray-500">Você ainda não se inscreveu em nenhum curso.</p>
-                        <Link to="/#cursos" className="mt-4 inline-block bg-orange-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-600 transition">
-                            Explorar Cursos
-                        </Link>
+                    <div className="text-center py-12 border-2 border-dashed rounded-xl bg-orange-50">
+                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <h3 className="mt-2 text-sm font-semibold text-gray-900">Nenhum curso inscrito</h3>
+                        <p className="mt-1 text-sm text-gray-500">Você ainda não se inscreveu em nenhum curso.</p>
+                        <div className="mt-6">
+                            <Link to="/#cursos" className="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+                                Explorar Cursos
+                            </Link>
+                        </div>
                     </div>
                 )}
             </div>

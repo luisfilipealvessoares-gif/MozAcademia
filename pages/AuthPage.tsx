@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -87,12 +88,12 @@ const AuthPage: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center py-12">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-orange-50 to-gray-100">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
         {successMessage ? (
            <div className="text-center">
              <div className="flex justify-center mb-4">
-                <svg className="w-12 h-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg className="w-16 h-16 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
              </div>
              <h2 className="text-2xl font-bold text-orange-600">Quase lá!</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
@@ -101,7 +102,7 @@ const AuthPage: React.FC = () => {
                  setSuccessMessage(null);
                  setIsLogin(true);
                }}
-               className="mt-6 w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600"
+               className="mt-6 w-full px-4 py-3 text-white bg-orange-500 rounded-lg font-semibold hover:bg-orange-600 shadow-sm hover:shadow-lg transition-all"
              >
                Voltar para Login
              </button>
@@ -111,12 +112,12 @@ const AuthPage: React.FC = () => {
             <div className="flex flex-col items-center">
                 <Logo className="h-16 w-auto" />
                 <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
-                {isLogin ? 'Acesse sua conta de aluno' : 'Crie uma nova conta'}
+                {isLogin ? 'Acesse sua conta' : 'Crie uma nova conta'}
                 </h2>
             </div>
             
             <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-                <div className="rounded-md shadow-sm -space-y-px">
+                <div className="space-y-4">
                     {!isLogin && (
                     <div>
                         <label htmlFor="full-name" className="sr-only">Nome Completo</label>
@@ -128,7 +129,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Nome Completo"
                         />
                     </div>
@@ -143,7 +144,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${!isLogin ? '' : 'rounded-t-md'} focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm`}
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Endereço de e-mail"
                     />
                     </div>
@@ -157,7 +158,7 @@ const AuthPage: React.FC = () => {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-shadow"
                         placeholder="Senha"
                     />
                     </div>
@@ -171,7 +172,7 @@ const AuthPage: React.FC = () => {
                     <button
                     type="submit"
                     disabled={loading}
-                    className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
+                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                     {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Registrar')}
                     </button>

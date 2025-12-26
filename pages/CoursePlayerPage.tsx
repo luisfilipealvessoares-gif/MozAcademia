@@ -1,14 +1,24 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Module, UserProgress, Course, QuizQuestion, QuizAttempt } from '../types';
 
-const LockIcon = () => (
-    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+    </svg>
 );
-const CheckCircleIcon = () => (
-    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+    </svg>
+);
+const PlayCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.027l3.5 2.25a.75.75 0 010 1.262l-3.5 2.25A.75.75 0 018 12.25v-4.5a.75.75 0 01.39-.658z" clipRule="evenodd" />
+    </svg>
 );
 
 const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boolean) => void }> = ({ courseId, onQuizComplete }) => {
@@ -64,14 +74,16 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     };
   
     if (showResults) {
+      const passed = score >= 70;
       return (
-        <div className="text-center p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">Resultados do Quiz</h3>
-          <p className="text-xl mb-4">Sua pontuação: <span className="font-bold text-orange-500">{score.toFixed(2)}%</span></p>
-          {score >= 70 ? (
-            <p className="text-orange-600 font-semibold">Parabéns, você passou!</p>
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg border">
+          <h3 className="text-3xl font-bold mb-4">Resultados do Quiz</h3>
+          <p className="text-xl mb-2">Sua pontuação final:</p>
+          <p className={`text-6xl font-bold mb-6 ${passed ? 'text-orange-500' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
+          {passed ? (
+            <p className="text-orange-600 font-semibold text-lg">Parabéns, você passou! Pode solicitar seu certificado.</p>
           ) : (
-            <p className="text-red-600 font-semibold">Você não atingiu a pontuação mínima de 70%. Tente novamente.</p>
+            <p className="text-red-600 font-semibold text-lg">Você não atingiu a pontuação mínima de 70%.</p>
           )}
         </div>
       );
@@ -80,43 +92,45 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     const currentQuestion = questions[currentQuestionIndex];
   
     return currentQuestion ? (
-      <div className="p-6 bg-white rounded-lg shadow-md">
-        <h3 className="text-xl font-bold mb-4">{currentQuestion.question_text}</h3>
-        <div className="space-y-3">
+      <div className="p-8 bg-white rounded-xl shadow-lg border">
+        <p className="text-sm font-semibold text-orange-500 mb-2">PERGUNTA {currentQuestionIndex + 1} DE {questions.length}</p>
+        <h3 className="text-2xl font-bold mb-6">{currentQuestion.question_text}</h3>
+        <div className="space-y-4">
           {currentQuestion.options.map((option, index) => (
-            <label key={index} className="flex items-center p-3 rounded-lg border hover:bg-gray-100 cursor-pointer">
+            <label key={index} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}>
               <input
                 type="radio"
                 name={`question-${currentQuestion.id}`}
                 checked={answers[currentQuestionIndex] === index}
                 onChange={() => handleAnswer(index)}
-                className="form-radio h-5 w-5 text-orange-600"
+                className="h-5 w-5 text-orange-600 focus:ring-orange-500"
               />
-              <span className="ml-3 text-gray-700">{option}</span>
+              <span className="ml-4 text-lg text-gray-800">{option}</span>
             </label>
           ))}
         </div>
-        <div className="mt-6 flex justify-between">
+        <div className="mt-8 flex justify-between items-center">
           <button 
             onClick={() => setCurrentQuestionIndex(i => Math.max(0, i - 1))} 
             disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50"
+            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50 font-semibold"
           >
             Anterior
           </button>
           {currentQuestionIndex < questions.length - 1 ? (
             <button 
               onClick={() => setCurrentQuestionIndex(i => Math.min(questions.length - 1, i + 1))}
-              className="px-4 py-2 bg-orange-500 text-white rounded-md"
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold shadow-sm hover:bg-orange-600"
             >
               Próximo
             </button>
           ) : (
             <button 
               onClick={handleSubmit}
-              className="px-4 py-2 bg-orange-500 text-white rounded-md"
+              disabled={answers.includes(null)}
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold shadow-sm hover:bg-orange-600 disabled:bg-orange-300"
             >
-              Finalizar
+              Finalizar Quiz
             </button>
           )}
         </div>
@@ -150,7 +164,6 @@ const CoursePlayerPage: React.FC = () => {
         });
     }, [user, courseId]);
 
-    // Effect for generating signed URLs when the active module changes
     useEffect(() => {
         const generateSignedUrl = async () => {
             if (activeModule && activeModule.video_url) {
@@ -179,7 +192,6 @@ const CoursePlayerPage: React.FC = () => {
         generateSignedUrl();
     }, [activeModule]);
 
-    // Main effect to fetch all course data and determine the initial state
     useEffect(() => {
         const initializeCourseState = async () => {
             if (!user || !courseId) return;
@@ -288,17 +300,22 @@ const CoursePlayerPage: React.FC = () => {
       </div>
     );
 
+    const totalModules = modules.length;
+    const progressPercentage = totalModules > 0 ? (completedModules.length / totalModules) * 100 : 0;
+
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-2">{course?.title}</h1>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="md:col-span-3">
+            <div className="mb-6">
+                <p className="text-orange-500 font-semibold">CURSO</p>
+                <h1 className="text-4xl font-extrabold text-gray-900">{course?.title}</h1>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <main className="lg:col-span-3">
                     {view === 'video' && activeModule && (
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-2xl font-semibold mb-4">{activeModule.title}</h2>
-                            <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg">
+                        <div className="bg-white p-4 rounded-xl shadow-lg border">
+                            <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden">
                                 {signedVideoUrl ? (
-                                    <video key={signedVideoUrl} controls autoPlay className="w-full h-full rounded-lg" onEnded={() => handleModuleComplete(activeModule.id)}>
+                                    <video key={signedVideoUrl} controls autoPlay className="w-full h-full" onEnded={() => handleModuleComplete(activeModule.id)}>
                                         <source src={signedVideoUrl} type="video/mp4" />
                                         Seu navegador não suporta o vídeo.
                                     </video>
@@ -308,57 +325,82 @@ const CoursePlayerPage: React.FC = () => {
                                         <p className="text-sm text-gray-400 mt-2">Se o problema persistir, por favor contacte o suporte.</p>
                                     </div>
                                 ) : (
-                                    <div className="text-white">Carregando vídeo seguro...</div>
+                                    <div className="text-white flex items-center space-x-2">
+                                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                      <span>Carregando vídeo seguro...</span>
+                                    </div>
                                 )}
+                            </div>
+                             <div className="p-4">
+                                <h2 className="text-2xl font-bold mt-2">{activeModule.title}</h2>
                             </div>
                         </div>
                     )}
                     {view === 'quiz' && courseId && <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />}
                     {view === 'certificate' && quizPassed && (
-                        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                            <h2 className="text-3xl font-bold text-orange-600 mb-4">Parabéns!</h2>
-                            <p className="text-lg mb-6">Você concluiu o curso "{course?.title}" e passou no quiz!</p>
+                        <div className="bg-white p-8 rounded-xl shadow-lg border text-center">
+                            <h2 className="text-4xl font-bold text-orange-600 mb-4">Parabéns!</h2>
+                            <p className="text-xl mb-6">Você concluiu o curso "{course?.title}" e passou no quiz!</p>
                             {certificateRequested ? (
-                                <p className="text-blue-600 font-semibold">Seu pedido de certificado foi recebido. Ele será processado em breve.</p>
+                                <p className="text-blue-600 font-semibold text-lg">Seu pedido de certificado foi recebido e será processado em breve.</p>
                             ) : (
-                                <button onClick={handleRequestCertificate} className="bg-orange-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-orange-600 transition">
+                                <button onClick={handleRequestCertificate} className="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                                     Solicitar Certificado
                                 </button>
                             )}
                         </div>
                     )}
-                </div>
-                <aside className="md:col-span-1 bg-white p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-bold mb-4">Módulos do Curso</h3>
+                </main>
+                <aside className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border">
+                    <h3 className="text-xl font-bold mb-4">Progresso</h3>
+                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div className="bg-orange-500 h-2.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-6 text-center">{completedModules.length} de {totalModules} módulos completos</p>
+
+                    <h3 className="text-xl font-bold mb-4">Módulos</h3>
                     <ul className="space-y-2">
                     {modules.map((module, index) => {
                         const isCompleted = completedModules.includes(module.id);
                         const isLocked = index > 0 && !completedModules.includes(modules[index - 1].id);
-                        const isActive = activeModule?.id === module.id;
+                        const isActive = activeModule?.id === module.id && view === 'video';
+                        
+                        let Icon;
+                        let iconClasses = "w-5 h-5 mr-3 ";
+                        if (isActive) {
+                          Icon = PlayCircleIcon;
+                          iconClasses += "text-orange-500";
+                        } else if (isCompleted) {
+                          Icon = CheckCircleIcon;
+                           iconClasses += "text-orange-500";
+                        } else if (isLocked) {
+                          Icon = LockIcon;
+                          iconClasses += "text-gray-400";
+                        }
 
                         return (
                         <li key={module.id}>
                             <button
                             onClick={() => !isLocked && handleSelectModule(module)}
                             disabled={isLocked}
-                            className={`w-full text-left p-3 rounded-md flex items-center justify-between transition ${
+                            className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
                                 isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-orange-100'
-                            } ${isActive ? 'bg-orange-200 font-semibold' : ''}`}
+                            } ${isActive ? 'bg-orange-100 ring-2 ring-orange-400 font-semibold text-orange-800' : 'text-gray-700'}`}
                             >
-                            <span className="truncate">{index + 1}. {module.title}</span>
-                            {isCompleted ? <CheckCircleIcon /> : (isLocked && <LockIcon />)}
+                            {Icon && <Icon className={iconClasses} />}
+                            <span className="flex-1 truncate">{index + 1}. {module.title}</span>
                             </button>
                         </li>
                         );
                     })}
-                    <li className="mt-4">
+                    <li className="mt-4 pt-4 border-t">
                         <button 
                             disabled={completedModules.length !== modules.length}
                             onClick={() => setView('quiz')}
-                            className="w-full text-left p-3 rounded-md flex items-center justify-between transition bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed font-semibold"
+                            className="w-full text-left p-3 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
+                             <LockIcon className={`w-5 h-5 mr-3 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
                             Quiz Final
-                            {completedModules.length !== modules.length && <LockIcon />}
                         </button>
                     </li>
                     </ul>

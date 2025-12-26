@@ -6,15 +6,36 @@ import { Link } from 'react-router-dom';
 const Footer: React.FC = () => {
   return (
     <footer className="bg-white border-t mt-16">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <Logo className="h-10 w-auto" />
-          <p className="text-gray-500 text-sm">&copy; {new Date().getFullYear()} MozupAcademy. Todos os direitos reservados.</p>
-          <div className="flex space-x-4">
-            <Link to="/admin/login" className="text-sm text-gray-500 hover:text-orange-500 transition">
-              Acesso Admin
-            </Link>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-1 space-y-4">
+            <Logo className="h-12 w-auto" />
+            <p className="text-gray-500 text-sm">Capacitação profissional para o futuro, hoje.</p>
           </div>
+          <div className="md:col-span-1">
+            <h3 className="font-semibold text-gray-800 mb-4">Navegação</h3>
+            <ul className="space-y-2">
+              <li><a href="/#cursos" className="text-gray-600 hover:text-orange-500">Cursos</a></li>
+              <li><a href="/#noticias" className="text-gray-600 hover:text-orange-500">Notícias</a></li>
+            </ul>
+          </div>
+          <div className="md:col-span-1">
+            <h3 className="font-semibold text-gray-800 mb-4">Conta</h3>
+            <ul className="space-y-2">
+              <li><Link to="/login" className="text-gray-600 hover:text-orange-500">Login Aluno</Link></li>
+              <li><Link to="/admin/login" className="text-gray-600 hover:text-orange-500">Acesso Admin</Link></li>
+            </ul>
+          </div>
+          <div className="md:col-span-1">
+             <h3 className="font-semibold text-gray-800 mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li><a href="#" className="text-gray-600 hover:text-orange-500">Termos de Serviço</a></li>
+              <li><a href="#" className="text-gray-600 hover:text-orange-500">Política de Privacidade</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} MozupAcademy. Todos os direitos reservados.
         </div>
       </div>
     </footer>
