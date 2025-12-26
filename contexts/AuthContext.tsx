@@ -25,75 +25,85 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
   const inactivityTimer = useRef<number>();
 
-  const fetchAndSetProfile = useCallback(async (userId: string | undefined) => {
-    if (!userId) {
-      setProfile(null);
-      setIsAdmin(false);
-      return;
-    }
-    const { data: userProfile, error } = await supabase
+  const fetchProfile = useCallback(async (user: User) => {
+    const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('id', user.id)
       .single();
 
     if (error) {
-      // Propagate the error to be caught by the listener
-      throw new Error(`Failed to fetch profile: ${error.message}`);
+      console.error("Critical Error: User profile not found or RLS blocks access. Forcing sign out.", error);
+      await supabase.auth.signOut();
+      return null;
     }
-    
-    if (userProfile) {
-      setProfile(userProfile);
-      setIsAdmin(userProfile.is_admin);
-    } else {
-      // This is a critical state inconsistency. The user exists in auth but has no profile.
-      throw new Error("User profile not found for an authenticated user.");
-    }
+    return data;
   }, []);
 
-
   useEffect(() => {
-    // This is the single point of truth for determining auth state.
-    // It runs once on initial load and then listens for changes.
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        const currentUser = session?.user ?? null;
-        
-        if (currentUser) {
-          // If a user session exists, we MUST successfully fetch their profile.
-          // This is now an atomic operation.
-          await fetchAndSetProfile(currentUser.id);
-          setUser(currentUser);
-          setSession(session);
+    const setupAuth = async () => {
+      // 1. Get the initial session from Supabase.
+      const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Error getting initial session:", error);
+        setLoading(false);
+        return;
+      }
+
+      // 2. If a session exists, fetch the corresponding profile.
+      if (initialSession?.user) {
+        const userProfile = await fetchProfile(initialSession.user);
+        // If fetchProfile fails, it signs the user out and returns null.
+        // The onAuthStateChange listener below will then handle clearing the state.
+        if (userProfile) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+          setProfile(userProfile);
+          setIsAdmin(userProfile.is_admin);
+        }
+      }
+      
+      // 3. The initial check is complete. The app can now be displayed.
+      setLoading(false);
+
+      // 4. Set up a listener for any future auth state changes.
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+        if (newSession?.user) {
+          // A user is logged in. Fetch their profile.
+          const userProfile = await fetchProfile(newSession.user);
+          if (userProfile) {
+            setSession(newSession);
+            setUser(newSession.user);
+            setProfile(userProfile);
+            setIsAdmin(userProfile.is_admin);
+          } else {
+            // This case occurs if fetchProfile failed and signed the user out.
+            // Clear all local state to match.
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setIsAdmin(false);
+          }
         } else {
-          // If no session, clear everything.
-          setUser(null);
+          // The user has signed out. Clear all state.
           setSession(null);
+          setUser(null);
           setProfile(null);
           setIsAdmin(false);
         }
-
-      } catch (error) {
-        console.error("Critical auth error, forcing sign out:", error);
-        // If anything fails (e.g., profile fetch), force a clean, signed-out state.
-        // This prevents loops from inconsistent states (e.g., user logged in but profile is null).
-        await supabase.auth.signOut();
-        setUser(null);
-        setSession(null);
-        setProfile(null);
-        setIsAdmin(false);
-      } finally {
-        // This guarantees the app will always proceed past the loading screen,
-        // after the session has been definitively resolved.
-        setLoading(false);
-      }
-    });
+      });
+      
+      return subscription;
+    };
+    
+    const subscriptionPromise = setupAuth();
 
     return () => {
-      authListener.subscription.unsubscribe();
+      subscriptionPromise.then(subscription => subscription?.unsubscribe());
     };
-  }, [fetchAndSetProfile]);
-
+  }, [fetchProfile]);
+  
   const handleSignOut = useCallback(() => {
     console.log("User has been inactive. Logging out.");
     supabase.auth.signOut();
@@ -116,17 +126,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user, resetTimer]);
 
   const refreshProfile = useCallback(async () => {
-    // This function is now only for explicit refreshes (e.g., after profile update),
-    // not for initial auth.
     if (user) {
-      await fetchAndSetProfile(user.id);
+      const userProfile = await fetchProfile(user);
+      if (userProfile) {
+        setProfile(userProfile);
+        setIsAdmin(userProfile.is_admin);
+      }
     }
-  }, [user, fetchAndSetProfile]);
+  }, [user, fetchProfile]);
 
   const value = { user, session, profile, loading, isAdmin, refreshProfile };
 
-  // This loading screen is crucial. It acts as a gatekeeper, preventing any part
-  // of the app from rendering until the auth state has been definitively determined.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">

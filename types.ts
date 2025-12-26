@@ -25,7 +25,7 @@ export interface Module {
 }
 
 export interface QuizQuestion {
-  id: string;
+  id:string;
   course_id: string;
   question_text: string;
   options: string[];
