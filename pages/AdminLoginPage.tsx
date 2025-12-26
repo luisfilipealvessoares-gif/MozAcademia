@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -15,13 +16,13 @@ const AdminLoginPage: React.FC = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Redirect if user is already logged in
+    // This hook is the single source of truth for redirection.
+    // It redirects reactively after the auth state is confirmed.
     if (!authLoading && user) {
       if (isAdmin) {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        // A regular user somehow got here. Send them to their dashboard.
-        navigate('/dashboard'); 
+        navigate('/dashboard', { replace: true }); 
       }
     }
   }, [user, isAdmin, authLoading, navigate]);
@@ -51,17 +52,16 @@ const AdminLoginPage: React.FC = () => {
           throw new Error("Acesso negado. Esta área é apenas para administradores.");
         }
         
-        navigate('/admin');
+        // Navigation is removed from here. The useEffect above will handle it
+        // once the user state is updated by onAuthStateChange.
       }
     } catch (error: any) {
-      // FIX: Corrected syntax error in try-catch block.
       setError(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Show a loader while checking auth state or if a user is found (before redirect)
   if (authLoading || user) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">

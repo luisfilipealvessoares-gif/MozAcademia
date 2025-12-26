@@ -20,9 +20,10 @@ const AuthPage: React.FC = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Redirect if user is already logged in
+    // This hook is the single source of truth for redirection.
+    // It redirects reactively when the auth state is confirmed.
     if (!authLoading && user) {
-      navigate(isAdmin ? '/admin' : '/dashboard');
+      navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
     }
   }, [user, isAdmin, authLoading, navigate]);
 
@@ -34,7 +35,6 @@ const AuthPage: React.FC = () => {
 
     try {
       if (isLogin) {
-        // Clear any pending confirmation flags on a manual login attempt.
         localStorage.removeItem('awaiting_confirmation');
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
@@ -47,13 +47,13 @@ const AuthPage: React.FC = () => {
                 .single();
             
             if (profile?.is_admin) {
-                await supabase.auth.signOut(); // Log out the admin immediately
+                await supabase.auth.signOut();
                 throw new Error("Credenciais de administrador. Por favor, use o portal de Acesso Admin.");
             }
         }
-        navigate('/dashboard');
+        // Navigation is removed from here. The useEffect above will handle it
+        // once the user state is updated by onAuthStateChange.
       } else {
-        // Sign up logic
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -65,7 +65,6 @@ const AuthPage: React.FC = () => {
         });
         if (error) throw error;
         if(data.user){
-            // Set a flag to indicate that the user needs to confirm their email.
             localStorage.setItem('awaiting_confirmation', 'true');
             setSuccessMessage('Registro bem-sucedido! Verifique sua caixa de entrada para confirmar seu e-mail. Você já pode fechar esta aba.');
             setEmail('');
@@ -80,7 +79,6 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  // Show a loader while checking auth state or if a user is found (before redirect)
   if (authLoading || user) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">

@@ -4,12 +4,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import Logo from './Logo';
 
-interface Props {
-  onSuccess: () => void;
-}
-
-const CompleteProfileModal: React.FC<Props> = ({ onSuccess }) => {
-  const { user, profile } = useAuth();
+// This component no longer needs an `onSuccess` prop, as it now directly
+// triggers a state update in the parent context, causing it to be unmounted.
+const CompleteProfileModal: React.FC = () => {
+  const { user, profile, refreshProfile } = useAuth();
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,12 +40,13 @@ const CompleteProfileModal: React.FC<Props> = ({ onSuccess }) => {
 
     if (error) {
       setError('Erro ao atualizar o perfil: ' + error.message);
+      setLoading(false);
     } else {
-      // FIX: Use a reload to ensure the entire app state (including AuthContext) is refreshed with the new profile data.
-      // This is more reliable than trying to selectively update context state from a child component.
-      window.location.reload();
+      // Re-fetch the profile in the AuthContext. This will cause the UserDashboard
+      // to re-render without this modal, fixing the loop.
+      await refreshProfile();
+      // No reload or callback is needed; the component will unmount automatically.
     }
-    setLoading(false);
   };
 
   return (

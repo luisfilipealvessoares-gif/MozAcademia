@@ -9,12 +9,11 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Increased inactivity timeout to 30 minutes. 1 minute was too short for an e-learning platform
-// where users might be watching videos without interacting with the page. This prevents unexpected logouts.
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -23,61 +22,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const inactivityTimer = useRef<number>();
+
+  const fetchProfile = useCallback(async (userId: string | undefined) => {
+    if (!userId) {
+      setProfile(null);
+      setIsAdmin(false);
+      return;
+    }
+    const { data: userProfile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userProfile) {
+      setProfile(userProfile);
+      setIsAdmin(userProfile.is_admin);
+    } else {
+      setProfile(null);
+      setIsAdmin(false);
+      if (error) console.error("Error fetching profile:", error.message);
+    }
+  }, []);
 
   useEffect(() => {
-    // Set loading to true initially. The onAuthStateChange listener will handle the rest.
     setLoading(true);
-
-    // The onAuthStateChange listener is the single source of truth for the auth state.
-    // It handles the initial session check, logins, logouts, and token refreshes.
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       try {
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        
-        if (currentUser) {
-          const { data: userProfile, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-            
-          if (userProfile) {
-            setProfile(userProfile);
-            setIsAdmin(userProfile.is_admin);
-          } else {
-            setProfile(null);
-            setIsAdmin(false);
-            if (error) {
-              console.error("Error fetching profile on auth state change:", error.message);
-            }
-          }
-        } else {
-          setProfile(null);
-          setIsAdmin(false);
-        }
+        await fetchProfile(currentUser?.id);
       } catch (error) {
-          console.error("Critical error in onAuthStateChange listener:", error);
-          // Reset to a safe, logged-out state on failure
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setIsAdmin(false);
+        console.error("Critical error in onAuthStateChange listener:", error);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
       } finally {
-          // Set loading to false after the initial auth state has been determined.
-          // This will only show the main loader on the first page load.
-          setLoading(false);
+        setLoading(false);
       }
     });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Inactivity logout effect
-  const inactivityTimer = useRef<number>();
+    return () => authListener.subscription.unsubscribe();
+  }, [fetchProfile]);
 
   const handleSignOut = useCallback(() => {
     console.log("User has been inactive. Logging out.");
@@ -85,43 +73,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const resetTimer = useCallback(() => {
-    if (inactivityTimer.current) {
-      clearTimeout(inactivityTimer.current);
-    }
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     inactivityTimer.current = window.setTimeout(handleSignOut, INACTIVITY_TIMEOUT);
   }, [handleSignOut]);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    const activityEvents: (keyof WindowEventMap)[] = [
-      'mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'
-    ];
-
-    activityEvents.forEach(event => {
-      window.addEventListener(event, resetTimer);
-    });
+    if (!user) return;
+    const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
+    activityEvents.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
-
     return () => {
-      if (inactivityTimer.current) {
-        clearTimeout(inactivityTimer.current);
-      }
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, resetTimer);
-      });
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      activityEvents.forEach(event => window.removeEventListener(event, resetTimer));
     };
   }, [user, resetTimer]);
 
-  const value = {
-    user,
-    session,
-    profile,
-    loading,
-    isAdmin,
-  };
+  const refreshProfile = useCallback(async () => {
+    await fetchProfile(user?.id);
+  }, [user, fetchProfile]);
+
+  const value = { user, session, profile, loading, isAdmin, refreshProfile };
 
   if (loading) {
     return (

@@ -12,26 +12,16 @@ interface EnrolledCourse extends Course {
 }
 
 const UserDashboard: React.FC = () => {
-    const { user, profile } = useAuth();
+    const { user, profile, loading: authLoading } = useAuth();
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isProfileComplete, setIsProfileComplete] = useState(false);
-    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [loadingCourses, setLoadingCourses] = useState(true);
 
-    useEffect(() => {
-        if (profile) {
-            const complete = !!(profile.company_name && profile.phone_number);
-            setIsProfileComplete(complete);
-            // Show the modal only if the profile is incomplete.
-            setShowProfileModal(!complete); 
-        }
-    }, [profile]);
-
+    const isProfileComplete = !!(profile && profile.company_name && profile.phone_number);
 
     useEffect(() => {
         const fetchEnrolledCourses = async () => {
             if (!user) return;
-            setLoading(true);
+            setLoadingCourses(true);
             
             const { data: enrollments, error: enrollmentsError } = await supabase
                 .from('enrollments')
@@ -40,13 +30,13 @@ const UserDashboard: React.FC = () => {
 
             if (enrollmentsError) {
                 console.error("Error fetching enrollments:", enrollmentsError);
-                setLoading(false);
+                setLoadingCourses(false);
                 return;
             }
 
             if (!enrollments || enrollments.length === 0) {
                 setEnrolledCourses([]);
-                setLoading(false);
+                setLoadingCourses(false);
                 return;
             }
             
@@ -59,7 +49,7 @@ const UserDashboard: React.FC = () => {
 
             if (coursesError) {
                 console.error("Error fetching courses:", coursesError);
-                setLoading(false);
+                setLoadingCourses(false);
                 return;
             }
 
@@ -84,24 +74,17 @@ const UserDashboard: React.FC = () => {
             
             const finalCourses = await Promise.all(coursePromises);
             setEnrolledCourses(finalCourses as EnrolledCourse[]);
-            setLoading(false);
+            setLoadingCourses(false);
         };
 
-        // Only fetch courses if the profile is complete
-        if(isProfileComplete) {
+        if (!authLoading && isProfileComplete) {
             fetchEnrolledCourses();
-        } else if (profile) { // If profile is loaded but incomplete
-             setLoading(false);
+        } else if (!isProfileComplete) {
+            setLoadingCourses(false);
         }
+    }, [user, isProfileComplete, authLoading]);
 
-    }, [user, isProfileComplete, profile]);
-
-    const handleProfileUpdated = () => {
-        setShowProfileModal(false);
-        setIsProfileComplete(true);
-    };
-
-    if (loading) {
+    if (authLoading) {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
@@ -109,9 +92,16 @@ const UserDashboard: React.FC = () => {
         );
     }
     
-    // Render the modal if the profile is not complete.
     if (!isProfileComplete) {
-        return <CompleteProfileModal onSuccess={handleProfileUpdated} />;
+        return <CompleteProfileModal />;
+    }
+    
+    if (loadingCourses) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
+            </div>
+        );
     }
 
 

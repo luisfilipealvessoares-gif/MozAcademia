@@ -9,8 +9,7 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: State is initialized in the constructor to ensure compatibility.
-  // The class property initializer syntax (`state = { hasError: false }`) can sometimes cause issues with certain build tool configurations, leading to errors where `this.state` or `this.props` are not recognized.
+  // FIX: Using a standard constructor to initialize state. This ensures that 'this.props' is also correctly recognized by TypeScript, resolving an error where it was previously considered non-existent on the component type.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
