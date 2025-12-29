@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { UserProfile } from '../types';
@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   refreshProfile: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,9 +41,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return data;
   }, []);
 
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    // Manually clear state for immediate UI update, ensuring responsiveness.
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+  }, []);
+
   useEffect(() => {
     const setupAuth = async () => {
-      // 1. Get the initial session from Supabase.
       const { data: { session: initialSession }, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -51,11 +60,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
-      // 2. If a session exists, fetch the corresponding profile.
       if (initialSession?.user) {
         const userProfile = await fetchProfile(initialSession.user);
-        // If fetchProfile fails, it signs the user out and returns null.
-        // The onAuthStateChange listener below will then handle clearing the state.
         if (userProfile) {
           setSession(initialSession);
           setUser(initialSession.user);
@@ -64,13 +70,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
       
-      // 3. The initial check is complete. The app can now be displayed.
       setLoading(false);
 
-      // 4. Set up a listener for any future auth state changes.
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
         if (newSession?.user) {
-          // A user is logged in. Fetch their profile.
           const userProfile = await fetchProfile(newSession.user);
           if (userProfile) {
             setSession(newSession);
@@ -78,17 +81,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setProfile(userProfile);
             setIsAdmin(userProfile.is_admin);
           } else {
-            // This case occurs if fetchProfile failed and signed the user out.
-            // Clear all local state to match.
-            setSession(null);
-            setUser(null);
-            setProfile(null);
-            setIsAdmin(false);
+            signOut();
           }
         } else {
-          // The user has signed out. Clear all state.
-          setSession(null);
+          // Explicitly clear state on sign out event
           setUser(null);
+          setSession(null);
           setProfile(null);
           setIsAdmin(false);
         }
@@ -102,16 +100,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       subscriptionPromise.then(subscription => subscription?.unsubscribe());
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, signOut]);
   
-  const handleSignOut = useCallback(() => {
-    supabase.auth.signOut();
-  }, []);
-
   const resetTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-    inactivityTimer.current = window.setTimeout(handleSignOut, INACTIVITY_TIMEOUT);
-  }, [handleSignOut]);
+    inactivityTimer.current = window.setTimeout(signOut, INACTIVITY_TIMEOUT);
+  }, [signOut]);
 
   useEffect(() => {
     if (!user) return;
@@ -134,7 +128,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [user, fetchProfile]);
 
-  const value = { user, session, profile, loading, isAdmin, refreshProfile };
+  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut }), 
+    [user, session, profile, loading, isAdmin, refreshProfile, signOut]
+  );
 
   if (loading) {
     return (

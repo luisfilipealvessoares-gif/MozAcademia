@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../services/supabase';
 import Logo from './Logo';
 
 // Icons for hamburger menu
@@ -20,14 +19,14 @@ const CloseIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 const Header: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     setIsMenuOpen(false); // Close menu on sign out
-    // The redirect is now handled reactively by ProtectedRoute/AdminRoute
-    // when the user state becomes null. This prevents race conditions and loops.
+    navigate('/', { replace: true }); // Ensure user is redirected to a public page
   };
   
   const dashboardLink = isAdmin ? '/admin' : '/dashboard';

@@ -97,9 +97,6 @@ const AdminAnalyticsPage: React.FC = () => {
                     acc[date] = (acc[date] || 0) + 1;
                     return acc;
                 }, {} as Record<string, number>);
-                // FIX: Used getTime() for explicit date comparison. Subtracting Date objects
-                // directly can cause type errors in strict TypeScript configurations. Using
-                // getTime() returns a number and ensures type-safe arithmetic.
                  setEnrollmentsOverTime(Object.entries(countsByDate).map(([date, count]) => ({ date, count })).sort((a,b) => {
                     const partsA = a.date.split('/');
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));

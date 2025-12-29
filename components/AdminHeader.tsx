@@ -2,21 +2,16 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../services/supabase';
 
 const AdminHeader: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-        // Explicitly navigate to the admin login page to ensure a clean redirect.
-        // This prevents the user from being stuck on a page if the reactive state change is slow.
-        navigate('/admin/login', { replace: true });
-    } else {
-        console.error("Logout failed:", error);
-    }
+    await signOut();
+    // Explicitly navigate to the admin login page to ensure a clean redirect.
+    // This prevents the user from being stuck on a page if the reactive state change is slow.
+    navigate('/admin/login', { replace: true });
   };
 
   return (
