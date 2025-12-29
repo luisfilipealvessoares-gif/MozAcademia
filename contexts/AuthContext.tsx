@@ -120,15 +120,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [signOut]);
 
   useEffect(() => {
-    if (!user) return;
+    // O temporizador de inatividade não deve ser executado se não houver usuário ou
+    // se o usuário estiver no meio de um fluxo de recuperação de senha.
+    // A sessão de recuperação é temporária e não deve expirar por inatividade.
+    if (!user || isPasswordRecovery) {
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
+      return; // Sai sem configurar o temporizador.
+    }
+
     const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
     activityEvents.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
+    
+    // Função de limpeza para remover os ouvintes de eventos e o temporizador.
     return () => {
-      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
       activityEvents.forEach(event => window.removeEventListener(event, resetTimer));
     };
-  }, [user, resetTimer]);
+  }, [user, isPasswordRecovery, resetTimer]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {

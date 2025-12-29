@@ -9,8 +9,11 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: Initialize state using a class property to resolve issues with property access.
-  state: State = { hasError: false };
+  // FIX: Refactored state initialization to use the constructor, which can resolve subtle property access issues in some environments.
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
