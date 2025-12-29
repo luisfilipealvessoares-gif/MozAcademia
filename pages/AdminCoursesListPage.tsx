@@ -11,6 +11,7 @@ const AdminCoursesListPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [editingCourse, setEditingCourse] = useState<EditableCourse | null>(null);
     const [showCourseEditModal, setShowCourseEditModal] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const fetchCourses = async () => {
         setLoading(true);
@@ -31,7 +32,11 @@ const AdminCoursesListPage: React.FC = () => {
     const handleUpdateCourse = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingCourse) return;
+        
+        setIsSaving(true);
         const { error } = await supabase.from('courses').update({ title: editingCourse.title, description: editingCourse.description }).eq('id', editingCourse.id);
+        setIsSaving(false);
+
         if (!error) {
             setShowCourseEditModal(false);
             setEditingCourse(null);
@@ -85,15 +90,17 @@ const AdminCoursesListPage: React.FC = () => {
                         <form onSubmit={handleUpdateCourse} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Título</label>
-                                <input type="text" value={editingCourse.title} onChange={e => setEditingCourse({...editingCourse, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md" required />
+                                <input type="text" value={editingCourse.title} onChange={e => setEditingCourse({...editingCourse, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={isSaving}/>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Descrição</label>
-                                <textarea value={editingCourse.description} onChange={e => setEditingCourse({...editingCourse, description: e.target.value})} rows={4} className="mt-1 w-full p-2 border rounded-md" required></textarea>
+                                <textarea value={editingCourse.description} onChange={e => setEditingCourse({...editingCourse, description: e.target.value})} rows={4} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={isSaving}></textarea>
                             </div>
                             <div className="flex justify-end space-x-4 pt-4">
-                                <button type="button" onClick={() => setShowCourseEditModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-                                <button type="submit" className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up">Salvar Alterações</button>
+                                <button type="button" onClick={() => setShowCourseEditModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50" disabled={isSaving}>Cancelar</button>
+                                <button type="submit" className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:opacity-50" disabled={isSaving}>
+                                    {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                                </button>
                             </div>
                         </form>
                     </div>

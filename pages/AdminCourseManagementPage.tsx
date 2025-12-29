@@ -12,7 +12,7 @@ const AdminCourseManagementPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingModule, setEditingModule] = useState<Partial<Module> | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const fetchModules = useCallback(async () => {
@@ -43,7 +43,7 @@ const AdminCourseManagementPage: React.FC = () => {
     setShowModal(false);
     setEditingModule(null);
     setVideoFile(null);
-    setUploading(false);
+    setIsSaving(false);
     setShowSuccess(false);
   };
 
@@ -51,7 +51,7 @@ const AdminCourseManagementPage: React.FC = () => {
     e.preventDefault();
     if (!editingModule || !courseId) return;
 
-    setUploading(true);
+    setIsSaving(true);
     setShowSuccess(false);
     let videoUrl = editingModule.video_url || '';
 
@@ -69,7 +69,7 @@ const AdminCourseManagementPage: React.FC = () => {
 
         if (uploadError) {
             alert('Erro no upload do vídeo: ' + uploadError.message);
-            setUploading(false);
+            setIsSaving(false);
             return;
         }
 
@@ -87,7 +87,7 @@ const AdminCourseManagementPage: React.FC = () => {
       ? await supabase.from('modules').update(moduleData).eq('id', editingModule.id)
       : await supabase.from('modules').insert(moduleData);
     
-    setUploading(false);
+    setIsSaving(false);
 
     if (error) {
         alert('Erro ao salvar o módulo: ' + error.message);
@@ -186,31 +186,33 @@ const AdminCourseManagementPage: React.FC = () => {
                   <form onSubmit={handleSaveModule} className="space-y-4">
                   <div>
                       <label className="block text-sm font-medium text-gray-700">Título do Módulo</label>
-                      <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
+                      <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={isSaving} />
                   </div>
                   <div>
                       <label className="block text-sm font-medium text-gray-700">Ordem</label>
-                      <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
+                      <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={isSaving} />
                   </div>
                   <div>
                       <label className="block text-sm font-medium text-gray-700">Arquivo de Vídeo (MP4)</label>
                       <p className="text-xs text-gray-500 mb-2">
                           {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
                       </p>
-                      <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-up hover:file:bg-brand-light/75 disabled:opacity-50" disabled={uploading} />
+                      <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-up hover:file:bg-brand-light/75 disabled:opacity-50" disabled={isSaving} />
                   </div>
 
-                  {uploading && (
+                  {isSaving && (
                       <div className="flex flex-col items-center justify-center space-y-2 text-center py-4">
                           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-moz"></div>
-                          <p className="text-sm text-gray-600">Enviando vídeo... Por favor, aguarde.<br/>Isso pode levar alguns minutos.</p>
+                          <p className="text-sm text-gray-600">
+                            {videoFile ? 'Enviando vídeo... Por favor, aguarde.' : 'Salvando alterações...'}
+                          </p>
                       </div>
                   )}
 
                   <div className="flex justify-end space-x-4 pt-4">
-                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" disabled={uploading}>Cancelar</button>
-                      <button type="submit" disabled={uploading} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
-                          {uploading ? 'Enviando...' : 'Salvar Módulo'}
+                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" disabled={isSaving}>Cancelar</button>
+                      <button type="submit" disabled={isSaving} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
+                          {isSaving ? 'Salvando...' : 'Salvar Módulo'}
                       </button>
                   </div>
                   </form>
