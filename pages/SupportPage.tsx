@@ -76,13 +76,6 @@ const SupportPage: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-brand-light p-6 rounded-lg border border-brand-moz/20">
-                <h3 className="font-bold text-lg mb-2">Precisa de Ajuda?</h3>
-                <p className="text-gray-700">Se preferir, entre em contato conosco diretamente:</p>
-                <p className="mt-2">Email: <a href="mailto:mozuppemba@gmail.com" className="text-brand-up font-semibold hover:underline">mozuppemba@gmail.com</a></p>
-                <p>Telefone: <a href="tel:858593163" className="text-brand-up font-semibold hover:underline">858593163</a></p>
-            </div>
-
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">

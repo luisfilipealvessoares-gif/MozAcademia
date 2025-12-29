@@ -155,13 +155,6 @@ const UserDashboard: React.FC = () => {
                     </div>
                 )}
             </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
-                <h3 className="font-bold text-lg mb-2">Precisa de Ajuda?</h3>
-                <p className="text-gray-700">Entre em contato conosco diretamente:</p>
-                <p className="mt-2">Email: <a href="mailto:mozuppemba@gmail.com" className="text-brand-up font-semibold hover:underline">mozuppemba@gmail.com</a></p>
-                <p>Telefone: <a href="tel:858593163" className="text-brand-up font-semibold hover:underline">858593163</a></p>
-            </div>
         </div>
     );
 };

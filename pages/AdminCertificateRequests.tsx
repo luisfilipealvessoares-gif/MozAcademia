@@ -9,34 +9,46 @@ import * as XLSX from 'xlsx';
 const AdminCertificateRequests: React.FC = () => {
     const [requests, setRequests] = useState<CertificateRequest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchRequests = async () => {
             setLoading(true);
-            const { data: certRequestsData } = await supabase
-                .from('certificate_requests')
-                .select('*, user_profiles(full_name, company_name), courses(title)')
-                .eq('status', 'pending')
-                .order('requested_at', { ascending: false });
-            
-            if (certRequestsData && certRequestsData.length > 0) {
-                const userIds = [...new Set(certRequestsData.map(req => req.user_id))];
-                const { data: enrollmentsData } = await supabase
-                    .from('enrollments')
-                    .select('user_id, course_id, enrolled_at')
-                    .in('user_id', userIds);
-                
-                const enrollmentsMap = new Map(enrollmentsData?.map(e => [`${e.user_id}-${e.course_id}`, e.enrolled_at]));
+            setError(null);
+            try {
+                const { data: certRequestsData, error: certError } = await supabase
+                    .from('certificate_requests')
+                    .select('*, user_profiles(full_name, company_name), courses(title)')
+                    .eq('status', 'pending')
+                    .order('requested_at', { ascending: false });
 
-                const joinedRequests = certRequestsData.map(req => ({
-                    ...req,
-                    enrolled_at: enrollmentsMap.get(`${req.user_id}-${req.course_id}`)
-                }));
-                setRequests(joinedRequests as CertificateRequest[]);
-            } else {
-                setRequests([]);
+                if (certError) throw certError;
+                
+                if (certRequestsData && certRequestsData.length > 0) {
+                    const userIds = [...new Set(certRequestsData.map(req => req.user_id))];
+                    const { data: enrollmentsData, error: enrollError } = await supabase
+                        .from('enrollments')
+                        .select('user_id, course_id, enrolled_at')
+                        .in('user_id', userIds);
+                    
+                    if (enrollError) throw enrollError;
+
+                    const enrollmentsMap = new Map(enrollmentsData?.map(e => [`${e.user_id}-${e.course_id}`, e.enrolled_at]));
+
+                    const joinedRequests = certRequestsData.map(req => ({
+                        ...req,
+                        enrolled_at: enrollmentsMap.get(`${req.user_id}-${req.course_id}`)
+                    }));
+                    setRequests(joinedRequests as CertificateRequest[]);
+                } else {
+                    setRequests([]);
+                }
+            } catch (err: any) {
+                console.error("Erro ao buscar pedidos:", err);
+                setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchRequests();
     }, []);
@@ -103,12 +115,14 @@ const AdminCertificateRequests: React.FC = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
                             <tr><td colSpan={5} className="text-center p-6 text-gray-500">Carregando...</td></tr>
+                        ) : error ? (
+                            <tr><td colSpan={5} className="text-center p-6 text-red-500">{error}</td></tr>
                         ) : requests.length > 0 ? (
                             requests.map(req => (
                                 <tr key={req.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.user_profiles?.company_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '[Aluno não encontrado]'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{req.user_profiles?.company_name || 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '[Curso não encontrado]'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up">Aprovar</button>

@@ -350,7 +350,15 @@ const CoursePlayerPage: React.FC = () => {
                         <div className="bg-white p-4 rounded-xl shadow-lg border">
                             <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden">
                                 {signedVideoUrl ? (
-                                    <video key={signedVideoUrl} controls autoPlay className="w-full h-full" onEnded={() => handleModuleComplete(activeModule.id)}>
+                                    <video 
+                                        key={signedVideoUrl} 
+                                        controls 
+                                        autoPlay 
+                                        className="w-full h-full" 
+                                        onEnded={() => handleModuleComplete(activeModule.id)}
+                                        controlsList="nodownload"
+                                        onContextMenu={(e) => e.preventDefault()}
+                                    >
                                         <source src={signedVideoUrl} type="video/mp4" />
                                         Seu navegador não suporta o vídeo.
                                     </video>

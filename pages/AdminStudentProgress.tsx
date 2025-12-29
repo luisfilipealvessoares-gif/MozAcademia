@@ -5,15 +5,15 @@ import { UserProfile, Course } from '../types';
 
 interface StudentProgressInfo {
   enrollmentId: string;
-  user: UserProfile;
-  course: Course;
+  user: Partial<UserProfile>;
+  course: Partial<Course>;
   progress: number;
 }
 
 const AdminStudentProgress: React.FC = () => {
     const [studentProgress, setStudentProgress] = useState<StudentProgressInfo[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedStudent, setSelectedStudent] = useState<UserProfile | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<Partial<UserProfile> | null>(null);
     const [showStudentDetailModal, setShowStudentDetailModal] = useState(false);
 
     useEffect(() => {
@@ -22,8 +22,7 @@ const AdminStudentProgress: React.FC = () => {
             const { data: enrollments, error } = await supabase
                 .from('enrollments')
                 .select('id, course_id, user_id, user_profiles(*), courses(*)')
-                .order('created_at', { ascending: false })
-                .limit(50); // Fetch more for a comprehensive view
+                .order('enrolled_at', { ascending: false });
 
             if (error || !enrollments) {
                 setLoading(false);
@@ -31,43 +30,40 @@ const AdminStudentProgress: React.FC = () => {
             }
             
             const progressPromises = enrollments.map(async (enr) => {
-                if (!enr.user_profiles || !enr.courses) return null;
+                const user = enr.user_profiles ? enr.user_profiles as UserProfile : { id: enr.user_id, full_name: '[Usuário Removido]' };
+                const course = enr.courses ? enr.courses as Course : { id: enr.course_id, title: '[Curso Removido]' };
+
                 const { count: total } = await supabase.from('modules').select('id', { count: 'exact', head: true }).eq('course_id', enr.course_id);
                 
-                // Fetch completed modules for this enrollment
-                const { data: moduleIds } = await supabase.from('modules').select('id').eq('course_id', enr.course_id);
-                if (!moduleIds || moduleIds.length === 0) {
-                     return {
-                        enrollmentId: enr.id,
-                        user: enr.user_profiles as UserProfile,
-                        course: enr.courses as Course,
-                        progress: 0
-                    };
+                if (total === 0) {
+                     return { enrollmentId: enr.id, user, course, progress: 0 };
                 }
 
-                const { count: completedCount } = await supabase.from('user_progress')
-                    .select('module_id', { count: 'exact', head: true })
-                    .eq('user_id', enr.user_id)
-                    .in('module_id', moduleIds.map(m => m.id));
+                const { data: moduleIdsData } = await supabase.from('modules').select('id').eq('course_id', enr.course_id);
+                const moduleIds = moduleIdsData?.map(m => m.id) || [];
+                
+                const { count: completedCount } = moduleIds.length > 0 
+                    ? await supabase.from('user_progress').select('module_id', { count: 'exact', head: true }).eq('user_id', enr.user_id).in('module_id', moduleIds)
+                    : { count: 0 };
 
                 const progress = (total && completedCount) ? (completedCount / total) * 100 : 0;
 
                 return {
                     enrollmentId: enr.id,
-                    user: enr.user_profiles as UserProfile,
-                    course: enr.courses as Course,
+                    user,
+                    course,
                     progress: Math.round(progress)
                 };
             });
             
-            const results = (await Promise.all(progressPromises)).filter(Boolean);
+            const results = await Promise.all(progressPromises);
             setStudentProgress(results as StudentProgressInfo[]);
             setLoading(false);
         };
         fetchProgress();
     }, []);
     
-    const handleShowStudentDetails = (student: UserProfile) => {
+    const handleShowStudentDetails = (student: Partial<UserProfile>) => {
         setSelectedStudent(student);
         setShowStudentDetailModal(true);
     };
@@ -95,16 +91,18 @@ const AdminStudentProgress: React.FC = () => {
                             studentProgress.map(item => (
                                 <tr key={item.enrollmentId}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <button onClick={() => handleShowStudentDetails(item.user)} className="font-medium text-brand-up hover:underline">{item.user.full_name}</button>
+                                        <button onClick={() => handleShowStudentDetails(item.user)} className="font-medium text-brand-up hover:underline" disabled={!item.user.full_name}>
+                                            {item.user.full_name || 'N/A'}
+                                        </button>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{item.user.company_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{item.course.title}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{item.user.company_name || 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{item.course.title || 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="w-full bg-gray-200 rounded-full h-2.5 mr-3">
                                                 <div className="bg-brand-moz h-2.5 rounded-full" style={{width: `${item.progress}%`}}></div>
                                             </div>
-                                            <span className="text-sm text-gray-600 font-semibold">{item.progress}%</span>
+                                            <span className="text-sm text-gray-600 font-semibold w-10 text-right">{item.progress}%</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -121,9 +119,9 @@ const AdminStudentProgress: React.FC = () => {
                     <div className="bg-white rounded-lg p-8 w-full max-w-md shadow-xl">
                         <h2 className="text-2xl font-bold mb-6">Detalhes do Aluno</h2>
                         <div className="space-y-3 text-gray-700">
-                           <p><strong>Nome:</strong> {selectedStudent.full_name}</p>
-                           <p><strong>Empresa:</strong> {selectedStudent.company_name}</p>
-                           <p><strong>Telefone:</strong> {selectedStudent.phone_number}</p>
+                           <p><strong>Nome:</strong> {selectedStudent.full_name || 'N/A'}</p>
+                           <p><strong>Empresa:</strong> {selectedStudent.company_name || 'N/A'}</p>
+                           <p><strong>Telefone:</strong> {selectedStudent.phone_number || 'N/A'}</p>
                         </div>
                         <div className="text-right mt-8">
                             <button onClick={() => setShowStudentDetailModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Fechar</button>
