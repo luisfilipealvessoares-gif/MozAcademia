@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
@@ -197,9 +196,14 @@ const HomePage: React.FC = () => {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Notícias e Atualizações</h2>
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
-                    <p className="text-sm text-brand-moz font-semibold mb-2">LANÇAMENTO</p>
-                    <h3 className="font-semibold text-2xl mb-3">Lançamento da Plataforma</h3>
-                    <p className="text-gray-600">É com grande entusiasmo que lançamos a MozupAcademy! Nosso primeiro curso sobre Petróleo e Gás já está disponível para inscrição. Fique atento para mais novidades e cursos em breve.</p>
+                    <p className="text-sm text-brand-moz font-semibold mb-2">COMO FUNCIONA</p>
+                    <h3 className="font-semibold text-2xl mb-3">MozupAcademy: Capacitação Digital para o Crescimento Empresarial</h3>
+                    <p className="text-gray-600 mb-4">
+                        A MozupAcademy é a plataforma de e-learning do MozUp, o centro de excelência dedicado a tornar as empresas moçambicanas mais competitivas. A nossa academia é uma extensão digital da missão do MozUp: transferir competências e conhecimentos essenciais para apoiar o desenvolvimento económico local.
+                    </p>
+                     <p className="text-gray-600">
+                        Através de cursos online desenvolvidos por especialistas, focados em setores estratégicos como o de GNL, capacitamos profissionais e PMEs para que possam competir em oportunidades de negócios locais e internacionais. A MozupAcademy oferece a flexibilidade necessária para que você aprenda no seu ritmo, preparando-o para os desafios do mercado atual.
+                    </p>
                 </div>
             </div>
         </section>
