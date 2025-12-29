@@ -24,6 +24,7 @@ import UserLayout from './components/UserLayout';
 import SupportPage from './pages/SupportPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 
 const App: React.FC = () => {
   return (
@@ -50,6 +51,7 @@ const App: React.FC = () => {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/login" element={<AuthPage />} />
                   <Route path="/welcome" element={<WelcomePage />} />
+                  <Route path="/how-it-works" element={<HowItWorksPage />} />
 
                   {/* User Protected Routes */}
                   <Route path="/course/:courseId" element={<ProtectedRoute><CoursePlayerPage /></ProtectedRoute>} />

@@ -30,7 +30,7 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     // Handle scrolling to anchor links
-    if (!loading && location.hash) {
+    if (!loading && location.hash === '#cursos') {
       const id = location.hash.replace('#', '');
       const element = document.getElementById(id);
       if (element) {
@@ -191,13 +191,13 @@ const HomePage: React.FC = () => {
             )}
         </section>
 
-        {/* News Section */}
-        <section id="noticias">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Notícias e Atualizações</h2>
+        {/* About Academy Section */}
+        <section id="about-academy">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">A Nossa Missão</h2>
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
-                    <p className="text-sm text-brand-moz font-semibold mb-2">COMO FUNCIONA</p>
-                    <h3 className="font-semibold text-2xl mb-3">MozupAcademy: Capacitação Digital para o Crescimento Empresarial</h3>
+                    <p className="text-sm text-brand-moz font-semibold mb-2">SOBRE A ACADEMIA</p>
+                    <h3 className="font-semibold text-2xl mb-3">Capacitação Digital para o Crescimento Empresarial</h3>
                     <p className="text-gray-600 mb-4">
                         A MozupAcademy é a plataforma de e-learning do MozUp, o centro de excelência dedicado a tornar as empresas moçambicanas mais competitivas. A nossa academia é uma extensão digital da missão do MozUp: transferir competências e conhecimentos essenciais para apoiar o desenvolvimento económico local.
                     </p>

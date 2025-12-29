@@ -102,7 +102,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
                     const partsB = b.date.split('/');
                     const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                    // FIX: Used getTime() for explicit date comparison. Subtracting Date objects directly can cause type errors.
+                    // FIX: Used getTime() for explicit date comparison. Subtracting Date objects directly is not supported and causes a type error.
                     return dateA.getTime() - dateB.getTime();
                  }));
             }
