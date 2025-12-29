@@ -124,35 +124,7 @@ const HomePage: React.FC = () => {
                 </Link>
             </div>
         </section>
-
-        {/* Why Us Section */}
-        <section id="porque-nos" className="bg-brand-light py-20 px-8 rounded-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Por que escolher a MozupAcademy?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
-                        <BookOpenIcon className="h-8 w-8"/>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Conteúdo Especializado</h3>
-                    <p className="text-gray-600">Cursos desenvolvidos por especialistas da indústria para garantir conhecimento prático e atualizado.</p>
-                </div>
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
-                        <LightBulbIcon className="h-8 w-8"/>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Aprendizagem Flexível</h3>
-                    <p className="text-gray-600">Aprenda no seu próprio ritmo, de qualquer lugar, com acesso vitalício aos materiais do curso.</p>
-                </div>
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
-                        <ChartBarIcon className="h-8 w-8"/>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Crescimento de Carreira</h3>
-                    <p className="text-gray-600">Adquira as habilidades necessárias para se destacar e avançar no seu campo profissional.</p>
-                </div>
-            </div>
-        </section>
-
+        
         {/* Courses Section */}
         <section id="cursos">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Nossos Cursos</h2>
@@ -190,6 +162,34 @@ const HomePage: React.FC = () => {
             ) : (
                 <p className="text-gray-500 text-center">Nenhum curso disponível no momento.</p>
             )}
+        </section>
+
+        {/* Why Us Section */}
+        <section id="porque-nos" className="bg-brand-light py-20 px-8 rounded-2xl">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Por que escolher a MozupAcademy?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
+                        <BookOpenIcon className="h-8 w-8"/>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Conteúdo Especializado</h3>
+                    <p className="text-gray-600">Cursos desenvolvidos por especialistas da indústria para garantir conhecimento prático e atualizado.</p>
+                </div>
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
+                        <LightBulbIcon className="h-8 w-8"/>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Aprendizagem Flexível</h3>
+                    <p className="text-gray-600">Aprenda no seu próprio ritmo, de qualquer lugar, com acesso vitalício aos materiais do curso.</p>
+                </div>
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
+                        <ChartBarIcon className="h-8 w-8"/>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Crescimento de Carreira</h3>
+                    <p className="text-gray-600">Adquira as habilidades necessárias para se destacar e avançar no seu campo profissional.</p>
+                </div>
+            </div>
         </section>
     </div>
   );

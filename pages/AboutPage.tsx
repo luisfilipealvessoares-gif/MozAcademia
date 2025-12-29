@@ -17,9 +17,9 @@ const AboutPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="p-8 md:p-12 space-y-12">
+            <div className="p-8 md:p-12 space-y-16">
                 <section>
-                    <p className="text-sm text-brand-moz font-semibold mb-2">A NOSSA MISSÃO</p>
+                    <p className="text-sm text-brand-moz font-semibold mb-2 uppercase tracking-wider">A Nossa Missão</p>
                     <h2 className="text-3xl font-bold text-brand-up mb-4 tracking-tight">Capacitação Digital para o Crescimento Empresarial</h2>
                     <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                         <p>
