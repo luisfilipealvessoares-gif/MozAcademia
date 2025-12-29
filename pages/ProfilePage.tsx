@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 
 const ProfilePage: React.FC = () => {
-    const { user, profile, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, refreshProfile } = useAuth();
     const [fullName, setFullName] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -39,6 +39,8 @@ const ProfilePage: React.FC = () => {
             setMessage('Erro ao atualizar o perfil: ' + error.message);
         } else {
             setMessage('Perfil atualizado com sucesso!');
+            // Refresh the profile data in the global context to reflect changes instantly.
+            await refreshProfile();
         }
         setLoading(false);
     };

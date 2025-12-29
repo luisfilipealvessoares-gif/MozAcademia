@@ -348,7 +348,10 @@ const CoursePlayerPage: React.FC = () => {
                 <main className="lg:col-span-3">
                     {view === 'video' && activeModule && (
                         <div className="bg-white p-4 rounded-xl shadow-lg border">
-                            <div className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden">
+                            <div 
+                                className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden"
+                                onContextMenu={(e) => e.preventDefault()}
+                            >
                                 {signedVideoUrl ? (
                                     <video 
                                         key={signedVideoUrl} 

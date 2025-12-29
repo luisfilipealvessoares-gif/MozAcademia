@@ -105,6 +105,9 @@ const AdminAnalyticsPage: React.FC = () => {
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
                     const partsB = b.date.split('/');
                     const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
+                    // FIX: Used getTime() for explicit date comparison. Subtracting Date objects
+                    // directly can cause type errors in strict TypeScript configurations. Using
+                    // getTime() returns a number and ensures type-safe arithmetic.
                     return dateA.getTime() - dateB.getTime();
                  }));
             }
