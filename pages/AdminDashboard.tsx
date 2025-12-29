@@ -1,5 +1,5 @@
 
-import React, 'react';
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { Link } from 'react-router-dom';
@@ -13,16 +13,16 @@ const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props}
 
 // --- Helper Components ---
 const ActionStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; to: string; }> = ({ title, value, icon, to }) => (
-    <Link to={to} className="bg-white p-6 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+    <Link to={to} className="bg-white p-4 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
         <div className="flex items-start justify-between">
-            <div className="bg-brand-light p-4 rounded-full group-hover:bg-brand-moz transition-colors duration-300">
-                {React.cloneElement(icon as React.ReactElement, { className: "w-8 h-8 text-brand-moz group-hover:text-white transition-colors duration-300"})}
+            <div className="bg-brand-light p-2.5 rounded-full group-hover:bg-brand-moz transition-colors duration-300">
+                {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6 text-brand-moz group-hover:text-white transition-colors duration-300"})}
             </div>
-            <p className="text-4xl font-extrabold text-gray-800">{value}</p>
+            <p className="text-3xl font-extrabold text-gray-700">{value}</p>
         </div>
-        <div className="mt-4">
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-            <div className="mt-2 flex items-center text-brand-up font-semibold text-sm">
+        <div className="mt-2">
+            <h3 className="text-base font-bold text-gray-800">{title}</h3>
+            <div className="mt-1 flex items-center text-brand-up font-semibold text-sm">
                 Gerenciar <ArrowRightIcon className="w-4 h-4 ml-1.5 transform transition-transform duration-300 group-hover:translate-x-1" />
             </div>
         </div>
@@ -71,7 +71,7 @@ const AdminDashboard: React.FC = () => {
             {/* Stats & Navigation */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ActionStatCard title="Total de Cursos" value={stats.courses} icon={<BookOpenIcon />} to="/admin/courses" />
-                <ActionStatCard title="Progresso dos Alunos" value={stats.enrollments} icon={<UserGroupIcon />} to="/admin/progress" />
+                <ActionStatCard title="Total de Inscrições" value={stats.enrollments} icon={<UserGroupIcon />} to="/admin/progress" />
                 <ActionStatCard title="Certificados Pendentes" value={stats.certRequests} icon={<AcademicCapIcon />} to="/admin/certificates" />
             </div>
 

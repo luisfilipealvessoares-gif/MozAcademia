@@ -16,9 +16,10 @@ const AdminCertificateRequests: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
+                // Step 1: Fetch base certificate requests
                 const { data: certRequestsData, error: certError } = await supabase
                     .from('certificate_requests')
-                    .select('*, user_profiles(full_name, company_name), courses(title)')
+                    .select('*')
                     .eq('status', 'pending')
                     .order('requested_at', { ascending: false });
 
@@ -26,19 +27,32 @@ const AdminCertificateRequests: React.FC = () => {
                 
                 if (certRequestsData && certRequestsData.length > 0) {
                     const userIds = [...new Set(certRequestsData.map(req => req.user_id))];
-                    const { data: enrollmentsData, error: enrollError } = await supabase
-                        .from('enrollments')
-                        .select('user_id, course_id, enrolled_at')
-                        .in('user_id', userIds);
+                    const courseIds = [...new Set(certRequestsData.map(req => req.course_id))];
+
+                    // Step 2: Fetch related data in batches
+                    const [usersRes, coursesRes, enrollmentsRes] = await Promise.all([
+                        supabase.from('user_profiles').select('id, full_name, company_name').in('id', userIds),
+                        supabase.from('courses').select('id, title').in('id', courseIds),
+                        supabase.from('enrollments').select('user_id, course_id, enrolled_at').in('user_id', userIds)
+                    ]);
+
+                    if (usersRes.error) throw usersRes.error;
+                    if (coursesRes.error) throw coursesRes.error;
+                    if (enrollmentsRes.error) throw enrollmentsRes.error;
                     
-                    if (enrollError) throw enrollError;
-
-                    const enrollmentsMap = new Map(enrollmentsData?.map(e => [`${e.user_id}-${e.course_id}`, e.enrolled_at]));
-
+                    // Step 3: Create maps for efficient lookup
+                    const usersMap = new Map(usersRes.data.map(u => [u.id, u]));
+                    const coursesMap = new Map(coursesRes.data.map(c => [c.id, c]));
+                    const enrollmentsMap = new Map(enrollmentsRes.data.map(e => [`${e.user_id}-${e.course_id}`, e.enrolled_at]));
+                    
+                    // Step 4: Join the data in JavaScript
                     const joinedRequests = certRequestsData.map(req => ({
                         ...req,
+                        user_profiles: usersMap.get(req.user_id) || null,
+                        courses: coursesMap.get(req.course_id) || null,
                         enrolled_at: enrollmentsMap.get(`${req.user_id}-${req.course_id}`)
                     }));
+
                     setRequests(joinedRequests as CertificateRequest[]);
                 } else {
                     setRequests([]);
@@ -120,9 +134,9 @@ const AdminCertificateRequests: React.FC = () => {
                         ) : requests.length > 0 ? (
                             requests.map(req => (
                                 <tr key={req.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '[Aluno não encontrado]'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '[Aluno Removido]'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">{req.user_profiles?.company_name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '[Curso não encontrado]'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '[Curso Removido]'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up">Aprovar</button>

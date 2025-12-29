@@ -23,7 +23,7 @@ import AdminCoursesListPage from './pages/AdminCoursesListPage';
 import UserLayout from './components/UserLayout';
 import SupportPage from './pages/SupportPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
-import AdminSupportPage from './pages/AdminSupportPage';
+import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 
 const App: React.FC = () => {
   return (
@@ -37,8 +37,7 @@ const App: React.FC = () => {
           <Route path="/admin/courses/:courseId" element={<AdminRoute><AdminLayout><AdminCourseManagementPage /></AdminLayout></AdminRoute>} />
           <Route path="/admin/certificates" element={<AdminRoute><AdminLayout><AdminCertificateRequests /></AdminLayout></AdminRoute>} />
           <Route path="/admin/progress" element={<AdminRoute><AdminLayout><AdminStudentProgress /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/support" element={<AdminRoute><AdminLayout><AdminSupportPage /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/support/ticket/:ticketId" element={<AdminRoute><AdminLayout><TicketDetailsPage /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AdminAnalyticsPage /></AdminLayout></AdminRoute>} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
           {/* Public and User Routes with standard Header/Footer Layout */}

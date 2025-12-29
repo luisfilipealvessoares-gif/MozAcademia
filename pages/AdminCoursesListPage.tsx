@@ -55,13 +55,18 @@ const AdminCoursesListPage: React.FC = () => {
                 </div>
                 {/* Future "Add Course" button can go here */}
             </div>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden border">
-                <table className="min-w-full divide-y divide-gray-200">
+            <div className="bg-white shadow-md rounded-lg overflow-x-auto border">
+                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                    <colgroup>
+                        <col className="w-1/4" />
+                        <col className="w-1/2" />
+                        <col className="w-1/4" />
+                    </colgroup>
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -69,11 +74,11 @@ const AdminCoursesListPage: React.FC = () => {
                              <tr><td colSpan={3} className="text-center p-6 text-gray-500">Carregando...</td></tr>
                         ) : courses.map(course => (
                             <tr key={course.id}>
-                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{course.title}</td>
-                                <td className="px-6 py-4 max-w-md">
+                                <td className="px-4 py-3 align-top font-medium text-gray-900 break-words">{course.title}</td>
+                                <td className="px-4 py-3 align-top">
                                     <p className="text-sm text-gray-600 truncate">{course.description}</p>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                                <td className="px-4 py-3 whitespace-nowrap text-right space-x-2 align-top">
                                     <button onClick={() => handleOpenCourseEditModal(course)} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm hover:bg-blue-200 font-semibold">Editar</button>
                                     <Link to={`/admin/courses/${course.id}`} className="bg-brand-moz text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-brand-up">Módulos</Link>
                                 </td>
