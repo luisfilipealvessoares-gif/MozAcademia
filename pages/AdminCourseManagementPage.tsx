@@ -137,7 +137,7 @@ const AdminCourseManagementPage: React.FC = () => {
       <Link to="/admin/courses" className="text-brand-moz hover:underline font-semibold">&larr; Voltar para Cursos</Link>
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Gerenciar Módulos: {course?.title}</h1>
-        <button onClick={() => handleOpenModal()} className="bg-brand-moz text-white px-5 py-2 rounded-lg font-semibold hover:bg-brand-up shadow-sm">
+        <button onClick={() => handleOpenModal()} className="bg-brand-moz text-white px-5 py-2 rounded-lg font-semibold hover:bg-brand-up shadow-sm transition-transform duration-200 hover:scale-105">
             Adicionar Módulo
         </button>
       </div>
@@ -153,12 +153,12 @@ const AdminCourseManagementPage: React.FC = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
               {modules.length > 0 ? modules.map(module => (
-              <tr key={module.id}>
+              <tr key={module.id} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="px-6 py-4 whitespace-nowrap">{module.order}</td>
                   <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{module.title}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                  <button onClick={() => handleOpenModal(module)} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm hover:bg-blue-200 font-semibold">Editar</button>
-                  <button onClick={() => handleDeleteModule(module.id)} className="bg-red-100 text-red-800 px-3 py-1 rounded-md text-sm hover:bg-red-200 font-semibold">Excluir</button>
+                  <button onClick={() => handleOpenModal(module)} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm hover:bg-blue-200 font-semibold transition-transform duration-200 hover:scale-105">Editar</button>
+                  <button onClick={() => handleDeleteModule(module.id)} className="bg-red-100 text-red-800 px-3 py-1 rounded-md text-sm hover:bg-red-200 font-semibold transition-transform duration-200 hover:scale-105">Excluir</button>
                   </td>
               </tr>
               )) : (
@@ -210,8 +210,8 @@ const AdminCourseManagementPage: React.FC = () => {
                   )}
 
                   <div className="flex justify-end space-x-4 pt-4">
-                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" disabled={isSaving}>Cancelar</button>
-                      <button type="submit" disabled={isSaving} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
+                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200" disabled={isSaving}>Cancelar</button>
+                      <button type="submit" disabled={isSaving} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 transition-colors duration-200">
                           {isSaving ? 'Salvando...' : 'Salvar Módulo'}
                       </button>
                   </div>

@@ -13,7 +13,7 @@ const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props}
 
 // --- Helper Components ---
 const ActionStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; to: string; }> = ({ title, value, icon, to }) => (
-    <Link to={to} className="bg-white p-4 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+    <Link to={to} className="bg-white p-4 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-lg transition-all duration-300 flex flex-col justify-between hover:-translate-y-1">
         <div className="flex items-start justify-between">
             <div className="bg-brand-light p-2.5 rounded-full group-hover:bg-brand-moz transition-colors duration-300">
                 {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6 text-brand-moz group-hover:text-white transition-colors duration-300"})}
@@ -90,7 +90,7 @@ const AdminDashboard: React.FC = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {recentActivity.length > 0 ? recentActivity.map(log => (
-                                    <tr key={log.id}>
+                                    <tr key={log.id} className="hover:bg-gray-50 transition-colors duration-200">
                                         <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{log.user_profiles?.full_name || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                             Visualizou "{log.modules?.title}" no curso "{log.courses?.title}"

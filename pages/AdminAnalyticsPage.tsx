@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
@@ -21,7 +20,7 @@ interface EnrollmentsOverTime {
 }
 
 const StatCard: React.FC<{ title: string; value: string | number; description: string }> = ({ title, value, description }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md border">
+    <div className="bg-white p-6 rounded-lg shadow-md border hover:-translate-y-1 transition-transform duration-300">
         <h3 className="text-gray-500 text-sm font-semibold uppercase">{title}</h3>
         <p className="text-3xl font-bold text-gray-800 mt-2">{value}</p>
         <p className="text-gray-500 text-xs mt-1">{description}</p>
@@ -31,7 +30,7 @@ const StatCard: React.FC<{ title: string; value: string | number; description: s
 const BarChart: React.FC<{ title: string; data: { label: string; value: number }[] }> = ({ title, data }) => {
     const maxValue = Math.max(...data.map(d => d.value), 1);
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md border">
+        <div className="bg-white p-6 rounded-lg shadow-md border hover:-translate-y-1 transition-transform duration-300">
             <h3 className="font-bold text-lg mb-4">{title}</h3>
             <div className="space-y-3">
                 {data.length > 0 ? data.map(item => (
@@ -169,7 +168,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     <h1 className="text-3xl font-bold">Análise de Dados</h1>
                     <p className="text-gray-600 mt-1">Insights sobre o desempenho da plataforma.</p>
                 </div>
-                 <button onClick={exportToPDF} className="bg-brand-moz text-white font-semibold py-2 px-5 rounded-lg hover:bg-brand-up transition-all shadow-sm">
+                 <button onClick={exportToPDF} className="bg-brand-moz text-white font-semibold py-2 px-5 rounded-lg hover:bg-brand-up transition-all shadow-sm transform hover:-translate-y-0.5">
                     Exportar Relatório PDF
                 </button>
             </div>

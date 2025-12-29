@@ -9,25 +9,25 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: Added a constructor to explicitly initialize state. While class
-  // field syntax is modern, an explicit constructor can resolve environment-specific
-  // compilation issues where 'this.props' might not be correctly inferred.
+  // FIX: Switched from a class property to a constructor for state initialization.
+  // This is a more explicit way of setting up the component and ensures `this.props` is correctly handled
+  // by the time the state is initialized, resolving potential issues with property access.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(_: Error): State {
+  public static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // You can also log the error to an error reporting service
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  render() {
+  public render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return (

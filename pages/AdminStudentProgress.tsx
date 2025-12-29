@@ -126,8 +126,8 @@ const AdminStudentProgress: React.FC = () => {
                     <p className="text-gray-600 mt-1">Acompanhe o andamento dos alunos nos cursos.</p>
                 </div>
                  <div className="space-x-2">
-                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm">Exportar PDF</button>
-                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm">Exportar Excel</button>
+                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-transform duration-200 hover:scale-105">Exportar PDF</button>
+                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-transform duration-200 hover:scale-105">Exportar Excel</button>
                 </div>
             </div>
             <div className="bg-white shadow-md rounded-lg overflow-x-auto border">
@@ -147,7 +147,7 @@ const AdminStudentProgress: React.FC = () => {
                             <tr><td colSpan={4} className="text-center p-6 text-red-500">{error}</td></tr>
                         ) : studentProgress.length > 0 ? (
                             studentProgress.map(item => (
-                                <tr key={item.enrollmentId}>
+                                <tr key={item.enrollmentId} className="hover:bg-gray-50 transition-colors duration-200">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <button onClick={() => handleShowStudentDetails(item.user)} className="font-medium text-brand-up hover:underline" disabled={item.user.full_name === '[Usuário Removido]'}>
                                             {item.user.full_name}
