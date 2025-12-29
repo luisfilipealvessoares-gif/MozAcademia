@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,15 +12,16 @@ const TicketDetailsPage: React.FC = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const userId = user?.id;
 
     const fetchTicketAndReplies = useCallback(async () => {
-        if (!user || !ticketId) return;
+        if (!userId || !ticketId) return;
 
         // Fetch ticket details
         const ticketQuery = supabase.from('support_tickets').select('*, user_profiles(full_name, id)').eq('id', ticketId);
         // Security: Non-admins can only fetch their own tickets
         if (!isAdmin) {
-            ticketQuery.eq('user_id', user.id);
+            ticketQuery.eq('user_id', userId);
         }
         const { data: ticketData, error: ticketError } = await ticketQuery.single();
 
@@ -41,7 +41,7 @@ const TicketDetailsPage: React.FC = () => {
 
         if (repliesData) setReplies(repliesData as any);
         setLoading(false);
-    }, [ticketId, user, isAdmin]);
+    }, [ticketId, userId, isAdmin]);
 
     useEffect(() => {
         fetchTicketAndReplies();

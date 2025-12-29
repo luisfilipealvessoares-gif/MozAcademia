@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -142,6 +141,7 @@ const CoursePlayerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const userId = user?.id;
 
     const [course, setCourse] = useState<Course | null>(null);
     const [modules, setModules] = useState<Module[]>([]);
@@ -156,14 +156,14 @@ const CoursePlayerPage: React.FC = () => {
     const [fetchError, setFetchError] = useState<string | null>(null);
 
     const logActivity = useCallback(async (moduleId: string) => {
-        if (!user || !courseId) return;
+        if (!userId || !courseId) return;
         await supabase.from('activity_log').insert({
-            user_id: user.id,
+            user_id: userId,
             course_id: courseId,
             module_id: moduleId,
             activity_type: 'MODULE_VIEWED',
         });
-    }, [user, courseId]);
+    }, [userId, courseId]);
 
     useEffect(() => {
         let isActive = true;
@@ -203,7 +203,7 @@ const CoursePlayerPage: React.FC = () => {
     useEffect(() => {
         let isActive = true;
         const initializeCourseState = async () => {
-            if (!user || !courseId) return;
+            if (!userId || !courseId) return;
             setLoading(true);
             setFetchError(null);
 
@@ -211,8 +211,8 @@ const CoursePlayerPage: React.FC = () => {
                 const [courseRes, modulesRes, progressRes, attemptRes] = await Promise.all([
                     supabase.from('courses').select('*').eq('id', courseId).single(),
                     supabase.from('modules').select('*').eq('course_id', courseId).order('order'),
-                    supabase.from('user_progress').select('module_id').eq('user_id', user.id),
-                    supabase.from('quiz_attempts').select('passed').eq('user_id', user.id).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single()
+                    supabase.from('user_progress').select('module_id').eq('user_id', userId),
+                    supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single()
                 ]);
                 
                 if (!isActive) return;
@@ -239,7 +239,7 @@ const CoursePlayerPage: React.FC = () => {
                 if (attemptData?.passed) {
                     setQuizPassed(true);
                     setView('certificate');
-                    const { data: certReq } = await supabase.from('certificate_requests').select('id').eq('user_id', user.id).eq('course_id', courseId).single();
+                    const { data: certReq } = await supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single();
                     if (certReq) setCertificateRequested(true);
                 } else if (allModulesCompleted) {
                     setView('quiz');
@@ -267,7 +267,7 @@ const CoursePlayerPage: React.FC = () => {
         return () => {
             isActive = false;
         };
-    }, [user, courseId, navigate, logActivity]);
+    }, [userId, courseId, navigate, logActivity]);
 
     const handleSelectModule = (module: Module) => {
         setActiveModule(module);
@@ -276,9 +276,9 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     const handleModuleComplete = async (moduleId: string) => {
-        if (!user || completedModules.includes(moduleId)) return;
+        if (!userId || completedModules.includes(moduleId)) return;
     
-        await supabase.from('user_progress').insert({ user_id: user.id, module_id: moduleId });
+        await supabase.from('user_progress').insert({ user_id: userId, module_id: moduleId });
         const newCompleted = [...completedModules, moduleId];
         setCompletedModules(newCompleted);
     
@@ -302,8 +302,8 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     const handleRequestCertificate = async () => {
-        if (!user || !courseId) return;
-        const { error } = await supabase.from('certificate_requests').insert({user_id: user.id, course_id: courseId});
+        if (!userId || !courseId) return;
+        const { error } = await supabase.from('certificate_requests').insert({user_id: userId, course_id: courseId});
         if(!error) {
             setCertificateRequested(true);
             alert("Pedido de certificado enviado com sucesso!");

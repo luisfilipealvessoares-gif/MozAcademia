@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -59,8 +60,6 @@ const AdminCourseManagementPage: React.FC = () => {
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${courseId}/${fileName}`;
         
-        // FIX: Removed the unsupported `onUploadProgress` callback from the `upload` method.
-        // This was causing the progress to appear stuck at 0%.
         const { error: uploadError } = await supabase.storage
             .from('course_videos')
             .upload(filePath, videoFile, {
@@ -74,7 +73,7 @@ const AdminCourseManagementPage: React.FC = () => {
             return;
         }
 
-        videoUrl = filePath; // Store the path, not a public URL.
+        videoUrl = filePath;
     }
     
     const moduleData = {
@@ -97,7 +96,7 @@ const AdminCourseManagementPage: React.FC = () => {
         await fetchModules();
         setTimeout(() => {
             handleCloseModal();
-        }, 2000); // Close modal after 2 seconds of showing success
+        }, 2000);
     }
   };
   
@@ -106,17 +105,14 @@ const AdminCourseManagementPage: React.FC = () => {
     if (!moduleToDelete) return;
   
     if (window.confirm('Tem certeza que deseja excluir este módulo? O vídeo associado também será removido permanentemente.')) {
-      // 1. Delete the database record
       const { error: dbError } = await supabase.from('modules').delete().eq('id', moduleId);
       
       if (dbError) {
         alert('Erro ao excluir módulo do banco de dados: ' + dbError.message);
-        return; // Stop if the DB deletion fails
+        return;
       }
       
-      // 2. If DB deletion is successful, delete the video from storage
       if (moduleToDelete.video_url) {
-        // Ensure we don't try to delete old full URLs
         const isPath = !moduleToDelete.video_url.startsWith('http');
         if (isPath) {
           const { error: storageError } = await supabase.storage
@@ -124,14 +120,12 @@ const AdminCourseManagementPage: React.FC = () => {
             .remove([moduleToDelete.video_url]);
             
           if (storageError) {
-            // Log the error but don't block the UI, as the primary record is deleted.
             console.error("Error deleting video from storage:", storageError);
             alert('Módulo excluído, mas houve um erro ao remover o arquivo de vídeo. Verifique o armazenamento.');
           }
         }
       }
       
-      // 3. Refresh the module list
       fetchModules();
     }
   }
@@ -139,90 +133,93 @@ const AdminCourseManagementPage: React.FC = () => {
   if (loading) return <div>Carregando...</div>;
 
   return (
-    <div className="bg-brand-light -mx-8 -my-8 p-8 rounded-xl">
-        <div className="space-y-6">
-        <Link to="/admin" className="text-brand-moz hover:underline">&larr; Voltar ao Painel</Link>
+    <div className="space-y-6">
+      <Link to="/admin/courses" className="text-brand-moz hover:underline font-semibold">&larr; Voltar para Cursos</Link>
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Gerenciar Módulos: {course?.title}</h1>
-        
-        <div className="text-right">
-            <button onClick={() => handleOpenModal()} className="bg-brand-moz text-white px-4 py-2 rounded-md font-medium hover:bg-brand-up">
-                Adicionar Módulo
-            </button>
-        </div>
+        <button onClick={() => handleOpenModal()} className="bg-brand-moz text-white px-5 py-2 rounded-lg font-semibold hover:bg-brand-up shadow-sm">
+            Adicionar Módulo
+        </button>
+      </div>
 
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden border">
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+              <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordem</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+              </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+              {modules.length > 0 ? modules.map(module => (
+              <tr key={module.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{module.order}</td>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{module.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                  <button onClick={() => handleOpenModal(module)} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm hover:bg-blue-200 font-semibold">Editar</button>
+                  <button onClick={() => handleDeleteModule(module.id)} className="bg-red-100 text-red-800 px-3 py-1 rounded-md text-sm hover:bg-red-200 font-semibold">Excluir</button>
+                  </td>
+              </tr>
+              )) : (
                 <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordem</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                  <td colSpan={3} className="text-center py-10 text-gray-500">
+                    Nenhum módulo encontrado. Adicione o primeiro!
+                  </td>
                 </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-                {modules.map(module => (
-                <tr key={module.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{module.order}</td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{module.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                    <button onClick={() => handleOpenModal(module)} className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600">Editar</button>
-                    <button onClick={() => handleDeleteModule(module.id)} className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
-                    </td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
-        </div>
+              )}
+          </tbody>
+          </table>
+      </div>
 
-        {showModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-            <div className="bg-white rounded-lg p-8 w-full max-w-lg">
-                {showSuccess ? (
-                    <div className="text-center">
-                        <svg className="w-16 h-16 text-brand-moz mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 className="text-2xl font-bold text-brand-up">Módulo Salvo com Sucesso!</h2>
-                    </div>
-                ) : (
-                    <>
-                    <h2 className="text-2xl font-bold mb-6">{editingModule?.id ? 'Editar' : 'Adicionar'} Módulo</h2>
-                    <form onSubmit={handleSaveModule} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Título do Módulo</label>
-                        <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Ordem</label>
-                        <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Arquivo de Vídeo (MP4)</label>
-                        <p className="text-xs text-gray-500 mb-2">
-                            {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
-                        </p>
-                        <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-up hover:file:bg-brand-light/75 disabled:opacity-50" disabled={uploading} />
-                    </div>
+      {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+          <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-xl">
+              {showSuccess ? (
+                  <div className="text-center py-8">
+                      <svg className="w-16 h-16 text-brand-moz mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <h2 className="text-2xl font-bold text-brand-up">Módulo Salvo com Sucesso!</h2>
+                  </div>
+              ) : (
+                  <>
+                  <h2 className="text-2xl font-bold mb-6">{editingModule?.id ? 'Editar' : 'Adicionar'} Módulo</h2>
+                  <form onSubmit={handleSaveModule} className="space-y-4">
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700">Título do Módulo</label>
+                      <input type="text" value={editingModule?.title || ''} onChange={e => setEditingModule({...editingModule, title: e.target.value})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700">Ordem</label>
+                      <input type="number" value={editingModule?.order || ''} onChange={e => setEditingModule({...editingModule, order: parseInt(e.target.value, 10)})} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={uploading} />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700">Arquivo de Vídeo (MP4)</label>
+                      <p className="text-xs text-gray-500 mb-2">
+                          {editingModule?.id ? 'Envie um novo vídeo apenas se quiser substituir o atual.' : 'Selecione o vídeo para este módulo.'}
+                      </p>
+                      <input type="file" accept="video/mp4" onChange={e => setVideoFile(e.target.files ? e.target.files[0] : null)} className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-up hover:file:bg-brand-light/75 disabled:opacity-50" disabled={uploading} />
+                  </div>
 
-                    {uploading && (
-                        <div className="flex flex-col items-center justify-center space-y-2 text-center py-4">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-moz"></div>
-                            <p className="text-sm text-gray-600">Enviando vídeo... Por favor, aguarde.<br/>Isso pode levar alguns minutos.</p>
-                        </div>
-                    )}
+                  {uploading && (
+                      <div className="flex flex-col items-center justify-center space-y-2 text-center py-4">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-moz"></div>
+                          <p className="text-sm text-gray-600">Enviando vídeo... Por favor, aguarde.<br/>Isso pode levar alguns minutos.</p>
+                      </div>
+                  )}
 
-                    <div className="flex justify-end space-x-4 pt-4">
-                        <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" disabled={uploading}>Cancelar</button>
-                        <button type="submit" disabled={uploading} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
-                            {uploading ? 'Enviando...' : 'Salvar Módulo'}
-                        </button>
-                    </div>
-                    </form>
-                    </>
-                )}
-            </div>
-            </div>
-        )}
-        </div>
-    </div>
+                  <div className="flex justify-end space-x-4 pt-4">
+                      <button type="button" onClick={handleCloseModal} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" disabled={uploading}>Cancelar</button>
+                      <button type="submit" disabled={uploading} className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50">
+                          {uploading ? 'Enviando...' : 'Salvar Módulo'}
+                      </button>
+                  </div>
+                  </form>
+                  </>
+              )}
+          </div>
+          </div>
+      )}
+      </div>
   );
 };
 

@@ -7,6 +7,8 @@ export interface UserProfile {
   company_name: string | null;
   phone_number: string | null;
   is_admin: boolean;
+  // User email is not in this table, it's in auth.users.
+  // We'll have to fetch it separately if needed.
 }
 
 export interface Course {
@@ -61,7 +63,11 @@ export interface CertificateRequest {
     course_id: string;
     status: 'pending' | 'issued';
     requested_at: string;
-    user_profiles: { full_name: string | null } | null;
+    enrolled_at?: string; // Optional field for joined data
+    user_profiles: { 
+        full_name: string | null;
+        company_name: string | null;
+    } | null;
     courses: { title: string } | null;
 }
 

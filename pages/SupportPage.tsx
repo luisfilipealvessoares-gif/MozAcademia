@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -13,22 +12,23 @@ const SupportPage: React.FC = () => {
     const [subject, setSubject] = useState('');
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const userId = user?.id;
 
     useEffect(() => {
         const fetchTickets = async () => {
-            if (!user) return;
+            if (!userId) return;
             setLoading(true);
             const { data, error } = await supabase
                 .from('support_tickets')
                 .select('*')
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             if (data) setTickets(data);
             setLoading(false);
         };
         fetchTickets();
-    }, [user]);
+    }, [userId]);
 
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();

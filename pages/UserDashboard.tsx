@@ -15,18 +15,19 @@ const UserDashboard: React.FC = () => {
     const { user, profile, loading: authLoading } = useAuth();
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
+    const userId = user?.id;
 
     const isProfileComplete = !!(profile && profile.company_name && profile.phone_number);
 
     useEffect(() => {
         const fetchEnrolledCourses = async () => {
-            if (!user) return;
+            if (!userId) return;
             setLoadingCourses(true);
             
             const { data: enrollments, error: enrollmentsError } = await supabase
                 .from('enrollments')
                 .select('course_id')
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
 
             if (enrollmentsError) {
                 console.error("Error fetching enrollments:", enrollmentsError);
@@ -62,7 +63,7 @@ const UserDashboard: React.FC = () => {
                 const { data: progressData } = await supabase
                     .from('user_progress')
                     .select('module_id')
-                    .eq('user_id', user.id)
+                    .eq('user_id', userId)
                     .in('module_id', (await supabase.from('modules').select('id').eq('course_id', course.id)).data?.map(m => m.id) || []);
                 
                 return {
@@ -82,7 +83,7 @@ const UserDashboard: React.FC = () => {
         } else if (!isProfileComplete) {
             setLoadingCourses(false);
         }
-    }, [user, isProfileComplete, authLoading]);
+    }, [userId, isProfileComplete, authLoading]);
 
     if (authLoading) {
         return (
@@ -153,6 +154,13 @@ const UserDashboard: React.FC = () => {
                         </div>
                     </div>
                 )}
+            </div>
+
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
+                <h3 className="font-bold text-lg mb-2">Precisa de Ajuda?</h3>
+                <p className="text-gray-700">Entre em contato conosco diretamente:</p>
+                <p className="mt-2">Email: <a href="mailto:mozuppemba@gmail.com" className="text-brand-up font-semibold hover:underline">mozuppemba@gmail.com</a></p>
+                <p>Telefone: <a href="tel:858593163" className="text-brand-up font-semibold hover:underline">858593163</a></p>
             </div>
         </div>
     );

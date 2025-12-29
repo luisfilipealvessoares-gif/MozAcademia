@@ -3,48 +3,33 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
-import Logo from './Logo';
 
 const AdminHeader: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    // The redirect is now handled reactively by the AdminRoute component
-    // when the user state becomes null. This prevents race conditions.
   };
 
   return (
-    <header className="bg-gray-800 text-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-8">
-            <Link to="/admin">
-              <Logo className="h-14 w-auto" variant="dark" />
-            </Link>
-             <nav className="hidden md:flex items-center space-x-6">
-                <Link to="/admin" className="text-gray-300 hover:text-white font-medium">
-                  Painel Principal
-                </Link>
-                 <Link to="/admin/support" className="text-gray-300 hover:text-white font-medium">
-                  Gestão de Suporte
-                </Link>
-            </nav>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <Link to="/" className="text-gray-300 hover:text-white font-medium">
+    <header className="bg-white shadow-sm z-10 border-b">
+      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div>
+          {/* This space can be used for breadcrumbs or page titles in the future */}
+        </div>
+        <div className="flex items-center space-x-6">
+            <span className="text-gray-600 font-medium">
+                Olá, {profile?.full_name || 'Admin'}
+            </span>
+            <Link to="/" className="text-sm text-gray-500 hover:text-brand-moz font-medium transition-colors">
               Ver Site Público
             </Link>
-            {user && (
-                 <button
-                 onClick={handleSignOut}
-                 className="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition"
-               >
-                 Sair
-               </button>
-            )}
-          </div>
+            <button
+                onClick={handleSignOut}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition"
+            >
+                Sair
+            </button>
         </div>
       </div>
     </header>
