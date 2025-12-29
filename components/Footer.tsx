@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Logo from './Logo';
 import { Link } from 'react-router-dom';
@@ -21,7 +22,7 @@ const Footer: React.FC = () => {
             <h3 className="font-semibold text-white mb-4">Navegação</h3>
             <ul className="space-y-2 text-sm">
               <li><Link to="/#cursos" className="text-gray-300 hover:text-brand-moz">Cursos</Link></li>
-              <li><Link to="/how-it-works" className="text-gray-300 hover:text-brand-moz">Como Funciona</Link></li>
+              <li><Link to="/about" className="text-gray-300 hover:text-brand-moz">Sobre Nós</Link></li>
                <li><Link to="/support" className="text-gray-300 hover:text-brand-moz">Suporte</Link></li>
                <li><a href="https://www.mozup.org" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-brand-moz">Website Mozup</a></li>
             </ul>

@@ -46,8 +46,8 @@ const Header: React.FC = () => {
               <Link to="/#cursos" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
                 Cursos
               </Link>
-              <Link to="/how-it-works" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
-                Como Funciona
+              <Link to="/about" className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300">
+                Sobre Nós
               </Link>
             </nav>
           </div>
@@ -107,8 +107,8 @@ const Header: React.FC = () => {
             <Link to="/#cursos" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
               Cursos
             </Link>
-            <Link to="/how-it-works" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-              Como Funciona
+            <Link to="/about" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
+              Sobre Nós
             </Link>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
