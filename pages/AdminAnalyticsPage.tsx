@@ -102,8 +102,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
                     const partsB = b.date.split('/');
                     const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                    // FIX: Subtracting Date objects directly is not supported. Use .getTime() to 
-                    // convert dates to numbers for a valid arithmetic comparison.
+                    // FIX: Date objects cannot be directly subtracted in TypeScript for sorting. Using the .getTime() method returns a numeric timestamp, which allows for a correct arithmetic comparison.
                     return dateA.getTime() - dateB.getTime();
                  }));
             }

@@ -24,27 +24,15 @@ import UserLayout from './components/UserLayout';
 import SupportPage from './pages/SupportPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AboutPage from './pages/AboutPage';
-import UpdatePasswordPage from './pages/UpdatePasswordPage';
 
 
-// Este componente contém a lógica de roteamento e o guarda para a recuperação de senha.
+// Este componente contém a lógica de roteamento.
 const AppRoutes: React.FC = () => {
-    const { user, isPasswordRecovery, loading } = useAuth();
-    const location = useLocation();
+    const { loading } = useAuth();
 
     // Aguarda o estado de autenticação ser carregado para evitar redirecionamentos indevidos.
     if (loading) {
         return null; // O AuthProvider já mostra um spinner global.
-    }
-
-    // Enquanto o usuário está no fluxo de recuperação de senha, ele fica bloqueado
-    // na página de atualização de senha. Todas as outras rotas o redirecionarão de volta.
-    if (user && isPasswordRecovery && location.pathname !== '/update-password') {
-        return (
-            <Routes>
-                <Route path="*" element={<Navigate to="/update-password" replace />} />
-            </Routes>
-        );
     }
 
     // Roteamento normal da aplicação
@@ -70,7 +58,6 @@ const AppRoutes: React.FC = () => {
                             <Route path="/login" element={<AuthPage />} />
                             <Route path="/welcome" element={<WelcomePage />} />
                             <Route path="/about" element={<AboutPage />} />
-                            <Route path="/update-password" element={<UpdatePasswordPage />} />
 
                             {/* Rotas Protegidas de Usuário */}
                             <Route path="/course/:courseId" element={<ProtectedRoute><CoursePlayerPage /></ProtectedRoute>} />

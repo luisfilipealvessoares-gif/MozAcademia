@@ -10,7 +10,6 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
-  isPasswordRecovery: boolean; // Novo estado para controlar o fluxo de recuperação
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -25,7 +24,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const inactivityTimer = useRef<number>();
 
   const fetchProfile = useCallback(async (user: User) => {
@@ -50,7 +48,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
-    setIsPasswordRecovery(false); // Garante que o estado de recuperação seja limpo ao sair
   }, []);
 
   useEffect(() => {
@@ -77,13 +74,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
         
-        if (_event === 'PASSWORD_RECOVERY') {
-          setIsPasswordRecovery(true);
-        } else if (_event === 'USER_UPDATED') {
-          // Quando a senha é atualizada, o modo de recuperação termina.
-          setIsPasswordRecovery(false);
-        }
-
         if (newSession?.user) {
           const userProfile = await fetchProfile(newSession.user);
           if (userProfile) {
@@ -100,7 +90,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setSession(null);
           setProfile(null);
           setIsAdmin(false);
-          setIsPasswordRecovery(false); // Limpa o estado ao deslogar
         }
       });
       
@@ -120,10 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [signOut]);
 
   useEffect(() => {
-    // O temporizador de inatividade não deve ser executado se não houver usuário ou
-    // se o usuário estiver no meio de um fluxo de recuperação de senha.
-    // A sessão de recuperação é temporária e não deve expirar por inatividade.
-    if (!user || isPasswordRecovery) {
+    if (!user) {
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
       }
@@ -141,7 +127,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       activityEvents.forEach(event => window.removeEventListener(event, resetTimer));
     };
-  }, [user, isPasswordRecovery, resetTimer]);
+  }, [user, resetTimer]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -153,8 +139,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [user, fetchProfile]);
 
-  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut, isPasswordRecovery }), 
-    [user, session, profile, loading, isAdmin, refreshProfile, signOut, isPasswordRecovery]
+  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut }), 
+    [user, session, profile, loading, isAdmin, refreshProfile, signOut]
   );
 
   if (loading) {
