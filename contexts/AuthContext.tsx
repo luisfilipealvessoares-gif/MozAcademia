@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  isPasswordRecovery: boolean; // Novo estado para controlar o fluxo de recuperação
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const inactivityTimer = useRef<number>();
 
   const fetchProfile = useCallback(async (user: User) => {
@@ -48,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setIsPasswordRecovery(false); // Garante que o estado de recuperação seja limpo ao sair
   }, []);
 
   useEffect(() => {
@@ -73,6 +76,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+        
+        if (_event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+        } else if (_event === 'USER_UPDATED') {
+          // Quando a senha é atualizada, o modo de recuperação termina.
+          setIsPasswordRecovery(false);
+        }
+
         if (newSession?.user) {
           const userProfile = await fetchProfile(newSession.user);
           if (userProfile) {
@@ -89,6 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setSession(null);
           setProfile(null);
           setIsAdmin(false);
+          setIsPasswordRecovery(false); // Limpa o estado ao deslogar
         }
       });
       
@@ -128,8 +140,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [user, fetchProfile]);
 
-  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut }), 
-    [user, session, profile, loading, isAdmin, refreshProfile, signOut]
+  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut, isPasswordRecovery }), 
+    [user, session, profile, loading, isAdmin, refreshProfile, signOut, isPasswordRecovery]
   );
 
   if (loading) {

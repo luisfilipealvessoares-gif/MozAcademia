@@ -84,6 +84,7 @@ export interface ActivityLog {
     modules: { title: string } | null;
 }
 
+// FIX: Add missing SupportTicket and TicketReply types.
 export interface SupportTicket {
     id: string;
     created_at: string;
@@ -91,7 +92,10 @@ export interface SupportTicket {
     subject: string;
     description: string;
     status: 'open' | 'in_progress' | 'closed';
-    user_profiles?: { full_name: string | null; email: string | null };
+    user_profiles: {
+        full_name: string | null;
+        id?: string;
+    } | null;
 }
 
 export interface TicketReply {
@@ -100,9 +104,11 @@ export interface TicketReply {
     ticket_id: string;
     user_id: string;
     message: string;
-    user_profiles?: { full_name: string | null; is_admin: boolean };
+    user_profiles: {
+        full_name: string | null;
+        is_admin: boolean;
+    } | null;
 }
-
 
 // Supabase generated types
 export type Json =
@@ -442,73 +448,6 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      support_tickets: {
-        Row: {
-          id: string
-          created_at: string
-          user_id: string
-          subject: string
-          description: string
-          status: 'open' | 'in_progress' | 'closed'
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          user_id: string
-          subject: string
-          description: string
-          status?: 'open' | 'in_progress' | 'closed'
-        }
-        Update: {
-          id?: string
-          status?: 'open' | 'in_progress' | 'closed'
-        }
-        Relationships: [
-          {
-            foreignKeyName: "support_tickets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      ticket_replies: {
-        Row: {
-          id: string
-          created_at: string
-          ticket_id: string
-          user_id: string
-          message: string
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          ticket_id: string
-          user_id: string
-          message: string
-        }
-        Update: {
-          id?: string
-          message?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ticket_replies_ticket_id_fkey"
-            columns: ["ticket_id"]
-            isOneToOne: false
-            referencedRelation: "support_tickets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ticket_replies_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
         ]
       }
     }

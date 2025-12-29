@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
 
 // Simple Check icon component for visual feedback
 const CheckIcon: React.FC = () => (
@@ -11,6 +12,15 @@ const CheckIcon: React.FC = () => (
 );
 
 const WelcomePage: React.FC = () => {
+  const { signOut } = useAuth();
+
+  useEffect(() => {
+    // Desconecta o usuário para forçá-lo a fazer login com suas novas credenciais.
+    // Isso evita o "auto-login" após a confirmação do e-mail,
+    // tornando o fluxo de acesso mais claro para o usuário.
+    signOut();
+  }, [signOut]);
+
   return (
     <div className="flex items-center justify-center py-12 bg-brand-light -mx-8 -my-8 rounded-xl min-h-[60vh]">
       <div className="w-full max-w-lg p-8 text-center bg-white rounded-xl shadow-lg">
@@ -19,14 +29,14 @@ const WelcomePage: React.FC = () => {
         </div>
         <h1 className="text-3xl font-bold text-gray-900">Conta ativada com sucesso!</h1>
         <p className="mt-4 text-gray-600">
-          Seu cadastro foi confirmado. Você já pode acessar a plataforma e começar seus estudos.
+          Seu cadastro foi confirmado. Por favor, retorne à página de login para acessar sua conta.
         </p>
         <div className="mt-8">
           <Link
-            to="/dashboard"
+            to="/login"
             className="inline-block w-full max-w-xs px-6 py-3 text-lg font-semibold text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up"
           >
-            Acessar meus cursos
+            Fazer Login Agora
           </Link>
         </div>
         <div className="mt-6">
