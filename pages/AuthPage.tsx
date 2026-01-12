@@ -16,6 +16,11 @@ const AuthPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   
+  // States for resend functionality
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
+
   const { user, isAdmin, loading: authLoading } = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -23,6 +28,7 @@ const AuthPage: React.FC = () => {
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
+    setResendMessage('');
 
     try {
       if (view === 'login') {
@@ -65,7 +71,8 @@ const AuthPage: React.FC = () => {
 
             // If the user is new or unconfirmed, show the success message.
             localStorage.setItem('awaiting_confirmation', 'true');
-            setSuccessMessage('Registro bem-sucedido! Verifique sua caixa de entrada (e a pasta de spam) para confirmar seu e-mail. Você já pode fechar esta aba.');
+            setRegisteredEmail(email);
+            setSuccessMessage(`Um e-mail de confirmação foi enviado para ${email}. Por favor, verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.`);
             setEmail('');
             setPassword('');
             setFullName('');
@@ -77,6 +84,25 @@ const AuthPage: React.FC = () => {
       setLoading(false);
     }
   };
+  
+  const handleResendEmail = async () => {
+    if (!registeredEmail) return;
+    setResendLoading(true);
+    setResendMessage('');
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: registeredEmail,
+    });
+
+    if (error) {
+      setResendMessage(`Erro ao reenviar: ${error.message}`);
+    } else {
+      setResendMessage('Email de confirmação reenviado com sucesso!');
+    }
+    setResendLoading(false);
+  };
+
 
   if (authLoading) {
     return (
@@ -101,15 +127,26 @@ const AuthPage: React.FC = () => {
              </div>
              <h2 className="text-2xl font-bold text-brand-up">Verifique seu E-mail</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
-             <button
-               onClick={() => {
-                 setSuccessMessage(null);
-                 setView('login');
-               }}
-               className="mt-6 w-full px-4 py-3 text-white bg-brand-moz rounded-lg font-semibold hover:bg-brand-up shadow-sm hover:shadow-lg transition-all"
-             >
-               Voltar para Login
-             </button>
+             <div className="mt-6 space-y-4">
+                <button
+                    onClick={handleResendEmail}
+                    disabled={resendLoading}
+                    className="w-full px-4 py-3 text-brand-moz border border-brand-moz rounded-lg font-semibold hover:bg-brand-light disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                >
+                    {resendLoading ? 'Reenviando...' : 'Reenviar email de confirmação'}
+                </button>
+                {resendMessage && <p className={`text-sm ${resendMessage.includes('Erro') ? 'text-red-500' : 'text-green-600'}`}>{resendMessage}</p>}
+                <button
+                    onClick={() => {
+                        setSuccessMessage(null);
+                        setRegisteredEmail('');
+                        setView('login');
+                    }}
+                    className="w-full px-4 py-3 text-white bg-brand-moz rounded-lg font-semibold hover:bg-brand-up shadow-sm hover:shadow-lg transition-all"
+                >
+                    Voltar para Login
+                </button>
+             </div>
            </div>
         ) : (
         <>
