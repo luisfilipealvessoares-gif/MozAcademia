@@ -95,11 +95,12 @@ const AdminStudentProgress: React.FC = () => {
         const tableData = studentProgress.map(item => [
             item.user.full_name || 'N/A',
             item.user.company_name || 'N/A',
+            item.user.sexo || 'N/A',
             item.course.title || 'N/A',
             `${item.progress}%`,
         ]);
         autoTable(doc, {
-            head: [['Aluno', 'Empresa', 'Curso', 'Progresso']],
+            head: [['Aluno', 'Empresa', 'Sexo', 'Curso', 'Progresso']],
             body: tableData,
         });
         doc.save('progresso_alunos.pdf');
@@ -109,6 +110,7 @@ const AdminStudentProgress: React.FC = () => {
         const dataToExport = studentProgress.map(item => ({
             'Aluno': item.user.full_name || 'N/A',
             'Empresa': item.user.company_name || 'N/A',
+            'Sexo': item.user.sexo || 'N/A',
             'Curso': item.course.title || 'N/A',
             'Progresso (%)': item.progress,
         }));
@@ -136,15 +138,16 @@ const AdminStudentProgress: React.FC = () => {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sexo</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progresso</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
-                            <tr><td colSpan={4} className="text-center p-6 text-gray-500">Carregando...</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-gray-500">Carregando...</td></tr>
                         ) : error ? (
-                            <tr><td colSpan={4} className="text-center p-6 text-red-500">{error}</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-red-500">{error}</td></tr>
                         ) : studentProgress.length > 0 ? (
                             studentProgress.map(item => (
                                 <tr key={item.enrollmentId} className="hover:bg-gray-50 transition-colors duration-200">
@@ -154,6 +157,7 @@ const AdminStudentProgress: React.FC = () => {
                                         </button>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">{item.user.company_name || 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap capitalize">{item.user.sexo || 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">{item.course.title}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
@@ -166,7 +170,7 @@ const AdminStudentProgress: React.FC = () => {
                                 </tr>
                             ))
                         ) : (
-                             <tr><td colSpan={4} className="text-center p-10 text-gray-500">Nenhum aluno inscrito ainda.</td></tr>
+                             <tr><td colSpan={5} className="text-center p-10 text-gray-500">Nenhum aluno inscrito ainda.</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -180,6 +184,7 @@ const AdminStudentProgress: React.FC = () => {
                            <p><strong>Nome:</strong> {selectedStudent.full_name || 'N/A'}</p>
                            <p><strong>Empresa:</strong> {selectedStudent.company_name || 'N/A'}</p>
                            <p><strong>Telefone:</strong> {selectedStudent.phone_number || 'N/A'}</p>
+                           <p><strong>Sexo:</strong> <span className="capitalize">{selectedStudent.sexo || 'N/A'}</span></p>
                         </div>
                         <div className="text-right mt-8">
                             <button onClick={() => setShowStudentDetailModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">Fechar</button>

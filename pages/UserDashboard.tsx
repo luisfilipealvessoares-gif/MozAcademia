@@ -17,7 +17,7 @@ const UserDashboard: React.FC = () => {
     const [loadingCourses, setLoadingCourses] = useState(true);
     const userId = user?.id;
 
-    const isProfileComplete = !!(profile && profile.company_name && profile.phone_number);
+    const isProfileComplete = !!(profile && profile.company_name && profile.phone_number && profile.sexo);
 
     useEffect(() => {
         const fetchEnrolledCourses = async () => {

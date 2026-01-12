@@ -6,6 +6,7 @@ export interface UserProfile {
   full_name: string | null;
   company_name: string | null;
   phone_number: string | null;
+  sexo: 'masculino' | 'feminino' | null;
   is_admin: boolean;
   // User email is not in this table, it's in auth.users.
   // We'll have to fetch it separately if needed.
@@ -389,6 +390,7 @@ export type Database = {
           id: string
           is_admin: boolean
           phone_number: string | null
+          sexo: string | null
         }
         Insert: {
           company_name?: string | null
@@ -396,6 +398,7 @@ export type Database = {
           id: string
           is_admin?: boolean
           phone_number?: string | null
+          sexo?: string | null
         }
         Update: {
           company_name?: string | null
@@ -403,6 +406,7 @@ export type Database = {
           id?: string
           is_admin?: boolean
           phone_number?: string | null
+          sexo?: string | null
         }
         Relationships: [
           {

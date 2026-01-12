@@ -19,6 +19,11 @@ interface EnrollmentsOverTime {
     count: number;
 }
 
+interface GenderDistribution {
+    masculino: number;
+    feminino: number;
+}
+
 const StatCard: React.FC<{ title: string; value: string | number; description: string }> = ({ title, value, description }) => (
     <div className="bg-white p-6 rounded-lg shadow-md border hover:-translate-y-1 transition-transform duration-300">
         <h3 className="text-gray-500 text-sm font-semibold uppercase">{title}</h3>
@@ -59,13 +64,14 @@ const AdminAnalyticsPage: React.FC = () => {
     const [stats, setStats] = useState<AnalyticsStats>({ totalUsers: 0, totalEnrollments: 0, completedCoursesUsers: 0 });
     const [coursePopularity, setCoursePopularity] = useState<CoursePopularity[]>([]);
     const [enrollmentsOverTime, setEnrollmentsOverTime] = useState<EnrollmentsOverTime[]>([]);
+    const [genderDistribution, setGenderDistribution] = useState<GenderDistribution>({ masculino: 0, feminino: 0 });
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
 
             // Fetch stats
-            const { count: totalUsers } = await supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false);
+            const { data: usersData, count: totalUsers } = await supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false);
             const { count: totalEnrollments } = await supabase.from('enrollments').select('id', { count: 'exact', head: true });
             const { data: passedAttempts } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true);
             const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
@@ -75,6 +81,16 @@ const AdminAnalyticsPage: React.FC = () => {
                 totalEnrollments: totalEnrollments ?? 0,
                 completedCoursesUsers: completedCoursesUsers
             });
+            
+            // Calculate gender distribution
+            if(usersData) {
+                const genderCounts = usersData.reduce((acc, user) => {
+                    if (user.sexo === 'masculino') acc.masculino++;
+                    else if (user.sexo === 'feminino') acc.feminino++;
+                    return acc;
+                }, { masculino: 0, feminino: 0 });
+                setGenderDistribution(genderCounts);
+            }
 
             // Fetch course popularity
             const { data: enrollmentsWithCourses, error: enrollError } = await supabase.from('enrollments').select('courses(id, title)');
@@ -102,7 +118,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
                     const partsB = b.date.split('/');
                     const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                    // FIX: Date objects cannot be directly subtracted in TypeScript for sorting. Using the .getTime() method returns a numeric timestamp, which allows for a correct arithmetic comparison.
+                    // FIX: Date objects cannot be directly subtracted in TypeScript. Using .getTime() converts each date to a numeric timestamp, allowing for a correct arithmetic comparison for sorting.
                     return dateA.getTime() - dateB.getTime();
                  }));
             }
@@ -127,7 +143,9 @@ const AdminAnalyticsPage: React.FC = () => {
             body: [
                 ['Total de Alunos Ativos', stats.totalUsers],
                 ['Total de Inscrições em Cursos', stats.totalEnrollments],
-                ['Alunos com Pelo Menos 1 Curso Concluído', stats.completedCoursesUsers]
+                ['Alunos com Pelo Menos 1 Curso Concluído', stats.completedCoursesUsers],
+                ['Total de Alunos (Homens)', genderDistribution.masculino],
+                ['Total de Alunos (Mulheres)', genderDistribution.feminino],
             ],
             theme: 'grid'
         });
@@ -171,10 +189,11 @@ const AdminAnalyticsPage: React.FC = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total de Alunos" value={stats.totalUsers} description="Número de usuários não-administradores." />
                 <StatCard title="Total de Inscrições" value={stats.totalEnrollments} description="Inscrições totais em todos os cursos." />
                 <StatCard title="Conclusões" value={stats.completedCoursesUsers} description="Alunos que concluíram pelo menos um curso." />
+                <StatCard title="Homens / Mulheres" value={`${genderDistribution.masculino} / ${genderDistribution.feminino}`} description="Distribuição de alunos por sexo." />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

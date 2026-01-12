@@ -10,6 +10,7 @@ const CompleteProfileModal: React.FC = () => {
   const { user, profile, refreshProfile } = useAuth();
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [sexo, setSexo] = useState<'masculino' | 'feminino' | ''>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,12 +18,13 @@ const CompleteProfileModal: React.FC = () => {
     if (profile) {
       setCompanyName(profile.company_name || '');
       setPhoneNumber(profile.phone_number || '');
+      setSexo(profile.sexo || '');
     }
   }, [profile]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !companyName || !phoneNumber) {
+    if (!user || !companyName || !phoneNumber || !sexo) {
         setError("Por favor, preencha todos os campos obrigatórios.");
         return;
     };
@@ -35,6 +37,7 @@ const CompleteProfileModal: React.FC = () => {
       .update({
         company_name: companyName,
         phone_number: phoneNumber,
+        sexo: sexo,
       })
       .eq('id', user.id);
 
@@ -79,6 +82,20 @@ const CompleteProfileModal: React.FC = () => {
               required
               className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
             />
+          </div>
+          <div>
+            <label htmlFor="sexoModal" className="block text-sm font-medium text-gray-700">Sexo <span className="text-red-500">*</span></label>
+            <select
+              id="sexoModal"
+              value={sexo}
+              onChange={(e) => setSexo(e.target.value as 'masculino' | 'feminino' | '')}
+              required
+              className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+            >
+              <option value="" disabled>Selecione...</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+            </select>
           </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <div className="pt-2">
