@@ -54,7 +54,16 @@ const AuthPage: React.FC = () => {
           }
         });
         if (error) throw error;
+        
         if(data.user){
+            // FIX: Check if the user is already confirmed.
+            // If so, it means the email is already registered.
+            if (data.user.email_confirmed_at) {
+                setError('Este e-mail já está registrado. Por favor, faça login.');
+                return;
+            }
+
+            // If the user is new or unconfirmed, show the success message.
             localStorage.setItem('awaiting_confirmation', 'true');
             setSuccessMessage('Registro bem-sucedido! Verifique sua caixa de entrada (e a pasta de spam) para confirmar seu e-mail. Você já pode fechar esta aba.');
             setEmail('');
