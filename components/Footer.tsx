@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Logo from './Logo';
 import { Link } from 'react-router-dom';
 
 const MapPinIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
@@ -9,61 +8,57 @@ const PhoneIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmln
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-800 text-gray-300 border-t border-gray-700 mt-16">
+    <footer className="bg-brand-up text-white mt-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          <div className="md:col-span-2 space-y-4">
-            <Logo className="h-12 w-auto" variant="dark" />
-            <p className="text-gray-400 text-sm">Capacitação profissional para o futuro, hoje.</p>
-          </div>
-
-          <div className="md:col-span-1">
+          <div>
             <h3 className="font-semibold text-white mb-4">Navegação</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/#cursos" className="text-gray-300 hover:text-brand-moz">Cursos</Link></li>
-              <li><Link to="/about" className="text-gray-300 hover:text-brand-moz">Sobre Nós</Link></li>
-               <li><Link to="/support" className="text-gray-300 hover:text-brand-moz">Suporte</Link></li>
-               <li><a href="https://www.mozup.org" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-brand-moz">Website Mozup</a></li>
+              <li><Link to="/#cursos" className="text-gray-200 hover:text-white hover:underline">Cursos</Link></li>
+              <li><Link to="/about" className="text-gray-200 hover:text-white hover:underline">Sobre Nós</Link></li>
+               <li><Link to="/support" className="text-gray-200 hover:text-white hover:underline">Suporte</Link></li>
+               <li><a href="https://www.mozup.org" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-white hover:underline">Website Mozup</a></li>
             </ul>
              <h3 className="font-semibold text-white mb-4 mt-6">Conta</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/login" className="text-gray-300 hover:text-brand-moz">Login Aluno</Link></li>
-              <li><Link to="/admin/login" className="text-gray-300 hover:text-brand-moz">Acesso Admin</Link></li>
+              <li><Link to="/login" className="text-gray-200 hover:text-white hover:underline">Login Aluno</Link></li>
+              <li><Link to="/admin/login" className="text-gray-200 hover:text-white hover:underline">Acesso Admin</Link></li>
             </ul>
           </div>
 
-           <div className="md:col-span-2">
-             <h3 className="font-semibold text-white mb-4">Vamos trabalhar juntos</h3>
-            <div className="space-y-4 text-sm">
-              <div>
-                <h4 className="font-semibold text-gray-100 mb-2">Maputo</h4>
-                <div className="flex items-start space-x-3 text-gray-400">
+           <div>
+             <h3 className="font-semibold text-white mb-4">Maputo</h3>
+            <div className="space-y-3 text-sm">
+                <div className="flex items-start space-x-3 text-gray-200">
                   <MapPinIcon className="w-4 h-4 mt-1 flex-shrink-0" />
                   <span>Rua dos Desportistas nº 691, Prédio JAT VI – 1, Piso 1, Maputo – Moçambique</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-400 mt-2">
+                <div className="flex items-center space-x-3 text-gray-200">
                   <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                   <span>+258 84 777 3751 / +258 84 500 4700</span>
                 </div>
-              </div>
-               <div>
-                <h4 className="font-semibold text-gray-100 mb-2">Pemba</h4>
-                 <div className="flex items-start space-x-3 text-gray-400">
+            </div>
+          </div>
+
+           <div>
+             <h3 className="font-semibold text-white mb-4">Pemba</h3>
+            <div className="space-y-3 text-sm">
+                 <div className="flex items-start space-x-3 text-gray-200">
                   <MapPinIcon className="w-4 h-4 mt-1 flex-shrink-0" />
                   <span>Av. Alberto Chipande, Business Park, Porta 01, Pemba – Moçambique</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-400 mt-2">
+                <div className="flex items-center space-x-3 text-gray-200">
                   <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                   <span>+258 85 859 3163</span>
                 </div>
-              </div>
             </div>
           </div>
 
         </div>
-        <div className="mt-12 border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
-          &copy; {new Date().getFullYear()} MozupAcademy. Todos os direitos reservados.
+        <div className="mt-12 border-t border-white/20 pt-8 text-center text-sm text-gray-200 space-y-2">
+          <p className="font-semibold">Capacitação profissional para o futuro, hoje.</p>
+          <p>&copy; {new Date().getFullYear()} MozupAcademy. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable';
 interface AnalyticsStats {
     totalUsers: number;
     totalEnrollments: number;
+
     completedCoursesUsers: number;
 }
 

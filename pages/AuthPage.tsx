@@ -61,22 +61,38 @@ const AuthPage: React.FC = () => {
         });
         if (error) throw error;
         
-        if(data.user){
-            // FIX: Check if the user is already confirmed.
-            // If so, it means the email is already registered.
+        if (data.user) {
+            // Definitive check: If email_confirmed_at exists, the user is already registered and confirmed.
             if (data.user.email_confirmed_at) {
                 setError('Este e-mail já está registrado. Por favor, faça login.');
                 setLoading(false);
                 return;
             }
 
-            // If the user is new or unconfirmed, show the success message.
+            // Differentiate between a brand new user and an existing, unconfirmed user.
+            // A user created more than 60 seconds ago is considered existing.
+            const createdAt = new Date(data.user.created_at).getTime();
+            const now = Date.now();
+            const isExistingUser = (now - createdAt) > 60000; // 60 seconds threshold
+
             localStorage.setItem('awaiting_confirmation', 'true');
             setRegisteredEmail(email);
-            setSuccessMessage(`Um e-mail de confirmação foi enviado para ${email}. Por favor, verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.`);
+            
+            if (isExistingUser) {
+                // For an existing but unconfirmed user, Supabase resends the confirmation email.
+                // We provide a more specific message.
+                setSuccessMessage(`Este e-mail já foi registrado, mas não confirmado. Enviamos um novo e-mail de confirmação para ${email}. Por favor, verifique sua caixa de entrada.`);
+            } else {
+                // For a brand new user.
+                setSuccessMessage(`Um e-mail de confirmação foi enviado para ${email}. Por favor, verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.`);
+            }
+
             setEmail('');
             setPassword('');
             setFullName('');
+        } else if (!error) {
+            // Fallback case if data.user is null but no error was thrown.
+            setError("Ocorreu um erro inesperado durante o registro. Por favor, tente novamente.");
         }
       }
     } catch (error: any) {
