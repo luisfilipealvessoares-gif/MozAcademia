@@ -66,6 +66,7 @@ const AuthPage: React.FC = () => {
             // If so, it means the email is already registered.
             if (data.user.email_confirmed_at) {
                 setError('Este e-mail já está registrado. Por favor, faça login.');
+                setLoading(false);
                 return;
             }
 
