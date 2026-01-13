@@ -130,34 +130,46 @@ const HomePage: React.FC = () => {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Nossos Cursos</h2>
             {courses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {courses.map((course) => {
-                    const isEnrolled = enrolledCourses.includes(course.id);
-                    return (
-                        <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                            <div className="p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                  <h3 className="text-xl font-bold text-gray-800 ">{course.title}</h3>
-                                  <div className="bg-brand-light text-brand-up text-xs font-semibold px-2.5 py-1 rounded-full">NOVO</div>
+                    {courses.map((course) => {
+                        const isEnrolled = enrolledCourses.includes(course.id);
+                        return (
+                            <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 group">
+                                {/* Image Container with Branding Tag */}
+                                <div className="relative">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=870&q=80" 
+                                        alt={course.title} 
+                                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    <div className="absolute top-3 right-3 bg-brand-moz text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                                        NOVO
+                                    </div>
                                 </div>
-                                <p className="text-gray-600 mb-4 h-24 overflow-hidden text-ellipsis">{course.description}</p>
+                                
+                                {/* Content Container that grows to fill space */}
+                                <div className="p-6 flex flex-col flex-grow">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{course.title}</h3>
+                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{course.description}</p>
+                                    
+                                    {/* Button container, pushed to the bottom */}
+                                    <div className="mt-auto pt-4">
+                                        {isEnrolled ? (
+                                            <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
+                                                Continuar Curso
+                                            </Link>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleEnroll(course.id)}
+                                                className="w-full bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg"
+                                            >
+                                                Inscrever-se
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="p-6 bg-gray-50 mt-auto">
-                                {isEnrolled ? (
-                                    <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
-                                        Continuar Curso
-                                    </Link>
-                                ) : (
-                                    <button
-                                        onClick={() => handleEnroll(course.id)}
-                                        className="w-full bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg"
-                                    >
-                                        Inscrever-se
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
                 </div>
             ) : (
                 <p className="text-gray-500 text-center">Nenhum curso disponível no momento.</p>

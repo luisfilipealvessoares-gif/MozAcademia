@@ -70,12 +70,20 @@ const Header: React.FC = () => {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-              >
-                Entrar / Registrar
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-700 bg-gray-100 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all duration-300"
+                >
+                  Entrar
+                </Link>
+                 <Link
+                  to="/login"
+                  className="bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                >
+                  Registrar
+                </Link>
+              </>
             )}
           </div>
 
@@ -129,9 +137,14 @@ const Header: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-                  Entrar / Registrar
-                </Link>
+                <>
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
+                    Entrar
+                  </Link>
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
+                    Registrar
+                  </Link>
+                </>
               )}
             </div>
           </div>

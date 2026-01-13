@@ -9,8 +9,11 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: Replaced the constructor with a public state property initializer for conciseness and to resolve prop-related errors.
-  public state: State = { hasError: false };
+  // FIX: Resolved 'Property 'props' does not exist' error. This can occur in some build environments with class field syntax. Switching to a standard constructor to initialize state and call super(props) ensures that `this.props` is correctly established.
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
