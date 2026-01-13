@@ -97,6 +97,14 @@ const HomePage: React.FC = () => {
       setEnrolledCourses([...enrolledCourses, courseId]);
     }
   };
+  
+  const getCourseImage = (courseTitle: string) => {
+    if (courseTitle === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito') {
+        return 'https://i.postimg.cc/dQrTLGxs/retrato-de-engenheiros-durante-as-horas-de-trabalho-no-local-de-trabalho-(1).jpg';
+    }
+    // Default image for other courses
+    return 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=870&q=80';
+  };
 
   if (loading && courses.length === 0) {
     return (
@@ -137,7 +145,7 @@ const HomePage: React.FC = () => {
                                 {/* Image Container with Branding Tag */}
                                 <div className="relative">
                                     <img 
-                                        src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=870&q=80" 
+                                        src={getCourseImage(course.title)} 
                                         alt={course.title} 
                                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                                     />

@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
 import { EyeIcon, EyeSlashIcon } from '../components/Icons';
 
 const AuthPage: React.FC = () => {
-  const [view, setView] = useState<'login' | 'register'>('login');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view') === 'register' ? 'register' : 'login';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -157,7 +158,7 @@ const AuthPage: React.FC = () => {
                     onClick={() => {
                         setSuccessMessage(null);
                         setRegisteredEmail('');
-                        setView('login');
+                        setSearchParams({});
                     }}
                     className="w-full px-4 py-3 text-white bg-brand-moz rounded-lg font-semibold hover:bg-brand-up shadow-sm hover:shadow-lg transition-all"
                 >
@@ -208,8 +209,10 @@ const AuthPage: React.FC = () => {
 
             <div className="text-sm text-center">
                 <button
+                    type="button"
                     onClick={() => {
-                        setView(view === 'login' ? 'register' : 'login');
+                        const nextView = view === 'login' ? 'register' : 'login';
+                        setSearchParams({ view: nextView });
                         setError(null);
                         setSuccessMessage(null);
                     }}
