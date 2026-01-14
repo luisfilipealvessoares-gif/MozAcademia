@@ -12,10 +12,12 @@ const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   
   // States for resend functionality
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -23,9 +25,46 @@ const AuthPage: React.FC = () => {
   const [resendMessage, setResendMessage] = useState('');
 
   const { user, isAdmin, loading: authLoading } = useAuth();
+  
+  // useEffect for immediate password validation feedback
+  useEffect(() => {
+    // Only run validation for the register view
+    if (view === 'register') {
+      if (password && password.length < 8) {
+        setError('A senha deve ter no mínimo 8 caracteres.');
+      } else if (confirmPassword && password !== confirmPassword) {
+        setError('As senhas não coincidem.');
+      } else {
+        // This clears the error state ONLY if it's one of our validation messages.
+        // This prevents clearing an unrelated API error message when the user types.
+        if (error === 'A senha deve ter no mínimo 8 caracteres.' || error === 'As senhas não coincidem.') {
+          setError(null);
+        }
+      }
+    } else {
+      // If we switch to login view, clear any lingering validation errors
+      if (error === 'A senha deve ter no mínimo 8 caracteres.' || error === 'As senhas não coincidem.') {
+        setError(null);
+      }
+    }
+  }, [password, confirmPassword, view, error]);
+
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Final validation before submitting
+    if (view === 'register') {
+        if (password.length < 8) {
+            setError("A senha deve ter no mínimo 8 caracteres.");
+            return;
+        }
+        if (password !== confirmPassword) {
+            setError("As senhas não coincidem.");
+            return;
+        }
+    }
+
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
@@ -91,6 +130,7 @@ const AuthPage: React.FC = () => {
             setEmail('');
             setPassword('');
             setFullName('');
+            setConfirmPassword('');
         } else if (!error) {
             // Fallback case if data.user is null but no error was thrown.
             setError("Ocorreu um erro inesperado durante o registro. Por favor, tente novamente.");
@@ -184,7 +224,7 @@ const AuthPage: React.FC = () => {
                     </div>
                     )}
                     <div>
-                    <label htmlFor="email-address" className="sr-only">Email</label>
+                    <label htmlFor="email-address" className="sr-only">Endereço de e-mail</label>
                     <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder="Endereço de e-mail" />
                     </div>
                     <div>
@@ -196,6 +236,27 @@ const AuthPage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                    {view === 'register' && (
+                        <div>
+                            <label htmlFor="confirm-password" className="sr-only">Confirmar senha</label>
+                            <div className="relative">
+                                <input
+                                    id="confirm-password"
+                                    name="confirm-password"
+                                    type={isConfirmPasswordVisible ? "text" : "password"}
+                                    autoComplete="new-password"
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
+                                    placeholder="Confirmar senha"
+                                />
+                                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} aria-label={isConfirmPasswordVisible ? "Ocultar senha" : "Mostrar senha"}>
+                                    {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {error && <p className="text-red-500 text-sm text-center pt-2">{error}</p>}
