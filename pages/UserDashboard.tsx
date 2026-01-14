@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
 import CompleteProfileModal from '../components/CompleteProfileModal';
+import { useI18n } from '../contexts/I18nContext';
 
 interface EnrolledCourse extends Course {
     module_count: number;
@@ -13,6 +14,7 @@ interface EnrolledCourse extends Course {
 
 const UserDashboard: React.FC = () => {
     const { user, profile, loading: authLoading } = useAuth();
+    const { t } = useI18n();
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const userId = user?.id;
@@ -109,12 +111,12 @@ const UserDashboard: React.FC = () => {
     return (
         <div className="space-y-10">
             <div>
-                <h1 className="text-4xl font-extrabold text-gray-900">Meu Painel</h1>
-                <p className="text-xl text-gray-600 mt-2">Bem-vindo(a) de volta, <span className="font-semibold text-brand-moz">{profile?.full_name || user?.email}</span>!</p>
+                <h1 className="text-4xl font-extrabold text-gray-900">{t('user.dashboard.title')}</h1>
+                <p className="text-xl text-gray-600 mt-2">{t('user.dashboard.welcome', { name: profile?.full_name || user?.email })}</p>
             </div>
 
             <div className="bg-brand-light p-8 rounded-xl shadow-lg border border-brand-moz/20">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Meus Cursos</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('user.dashboard.myCourses')}</h2>
                 {enrolledCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {enrolledCourses.map(course => {
@@ -128,14 +130,14 @@ const UserDashboard: React.FC = () => {
                                         <div className="w-full bg-gray-200 rounded-full h-2">
                                             <div className="bg-brand-moz h-2 rounded-full" style={{width: `${progress}%`}}></div>
                                         </div>
-                                        <p className="text-xs text-gray-500 font-medium">{course.completed_modules_count} de {course.module_count} módulos completos</p>
+                                        <p className="text-xs text-gray-500 font-medium">{t('user.dashboard.course.modulesCompleted', { completed: course.completed_modules_count, total: course.module_count })}</p>
                                     </div>
                                 </div>
                                 <Link
                                     to={`/course/${course.id}`}
                                     className="mt-6 block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all shadow-md hover:shadow-lg"
                                 >
-                                    {progress > 0 ? 'Continuar Curso' : 'Iniciar Curso'}
+                                    {progress > 0 ? t('user.dashboard.course.continue') : t('user.dashboard.course.start')}
                                 </Link>
                             </div>
                         )})}
@@ -145,11 +147,11 @@ const UserDashboard: React.FC = () => {
                          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                         </svg>
-                        <h3 className="mt-2 text-sm font-semibold text-gray-900">Nenhum curso inscrito</h3>
-                        <p className="mt-1 text-sm text-gray-500">Você ainda não se inscreveu em nenhum curso.</p>
+                        <h3 className="mt-2 text-sm font-semibold text-gray-900">{t('user.dashboard.noCourses.title')}</h3>
+                        <p className="mt-1 text-sm text-gray-500">{t('user.dashboard.noCourses.subtitle')}</p>
                         <div className="mt-6">
                             <Link to="/#cursos" className="inline-flex items-center rounded-md bg-brand-moz px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-up focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-up">
-                                Explorar Cursos
+                                {t('user.dashboard.noCourses.button')}
                             </Link>
                         </div>
                     </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
@@ -96,11 +97,12 @@ const AdminAnalyticsPage: React.FC = () => {
             // Fetch course popularity
             const { data: enrollmentsWithCourses, error: enrollError } = await supabase.from('enrollments').select('courses(id, title)');
             if (enrollmentsWithCourses) {
-                const popularity = enrollmentsWithCourses.reduce((acc, curr) => {
-                    if (!curr.courses) return acc;
+                // FIX: Add generic type to reduce to ensure correct type inference for `popularity`.
+                const popularity = enrollmentsWithCourses.reduce<Record<string, number>>((acc, curr) => {
+                    if (!curr.courses?.title) return acc;
                     acc[curr.courses.title] = (acc[curr.courses.title] || 0) + 1;
                     return acc;
-                }, {} as Record<string, number>);
+                }, {});
                 setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments })).sort((a, b) => b.enrollments - a.enrollments));
             }
 
@@ -109,17 +111,18 @@ const AdminAnalyticsPage: React.FC = () => {
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString());
             if (recentEnrollments) {
-                const countsByDate = recentEnrollments.reduce((acc, curr) => {
+                // FIX: Add generic type to reduce to ensure correct type inference for `countsByDate`.
+                const countsByDate = recentEnrollments.reduce<Record<string, number>>((acc, curr) => {
                     const date = new Date(curr.enrolled_at).toLocaleDateString('pt-BR');
                     acc[date] = (acc[date] || 0) + 1;
                     return acc;
-                }, {} as Record<string, number>);
+                }, {});
                  setEnrollmentsOverTime(Object.entries(countsByDate).map(([date, count]) => ({ date, count })).sort((a,b) => {
                     const partsA = a.date.split('/');
                     const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
                     const partsB = b.date.split('/');
                     const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                    // FIX: Date objects cannot be directly subtracted in TypeScript. Using .getTime() converts each date to a numeric timestamp, allowing for a correct arithmetic comparison for sorting.
+                    // FIX: Date objects cannot be directly subtracted in TypeScript. Using .getTime() converts each date to a numeric timestamp for correct comparison.
                     return dateA.getTime() - dateB.getTime();
                  }));
             }

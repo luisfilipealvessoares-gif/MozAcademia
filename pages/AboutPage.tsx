@@ -1,8 +1,10 @@
 
 import React from 'react';
 import Logo from '../components/Logo';
+import { useI18n } from '../contexts/I18nContext';
 
 const AboutPage: React.FC = () => {
+    const { t } = useI18n();
     return (
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
             <div className="relative">
@@ -13,20 +15,20 @@ const AboutPage: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 p-8">
-                     <h1 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg">Sobre a <span className="text-brand-moz">MozupAcademy</span></h1>
+                     <h1 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg">{t('about.title')}</h1>
                 </div>
             </div>
 
             <div className="p-8 md:p-12 space-y-16">
                 <section>
-                    <p className="text-sm text-brand-moz font-semibold mb-2 uppercase tracking-wider">A Nossa Missão</p>
-                    <h2 className="text-3xl font-bold text-brand-up mb-4 tracking-tight">Capacitação Digital para o Crescimento Empresarial</h2>
+                    <p className="text-sm text-brand-moz font-semibold mb-2 uppercase tracking-wider">{t('about.mission')}</p>
+                    <h2 className="text-3xl font-bold text-brand-up mb-4 tracking-tight">{t('about.subtitle')}</h2>
                     <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                         <p>
-                            A <span className="font-semibold text-gray-800">MozupAcademy</span> é a plataforma de e-learning do MozUp, o centro de excelência dedicado a tornar as empresas moçambicanas mais competitivas. A nossa academia é uma extensão digital da missão do MozUp: transferir competências e conhecimentos essenciais para apoiar o desenvolvimento económico local.
+                            <span className="font-semibold text-gray-800">MozupAcademy</span> {t('about.p1').replace('A MozupAcademy', '')}
                         </p>
                         <p>
-                            Através de cursos online desenvolvidos por especialistas, focados em setores estratégicos como o de GNL, capacitamos profissionais e PMEs para que possam competir em oportunidades de negócios locais e internacionais. A MozupAcademy oferece a flexibilidade necessária para que você aprenda no seu ritmo, preparando-o para os desafios do mercado atual.
+                            {t('about.p2')}
                         </p>
                     </div>
                 </section>

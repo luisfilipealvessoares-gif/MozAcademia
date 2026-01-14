@@ -1,6 +1,8 @@
 import React from 'react';
+import { useI18n } from '../contexts/I18nContext';
 
 const Logo: React.FC<{ className?: string, variant?: 'light' | 'dark' }> = ({ className = "h-12 w-auto", variant = 'light' }) => {
+  const { t } = useI18n();
   const academyColor = variant === 'dark' ? '#FFFFFF' : '#1F2937';
 
   // Common styles for the text block to ensure consistency.
@@ -21,7 +23,7 @@ const Logo: React.FC<{ className?: string, variant?: 'light' | 'dark' }> = ({ cl
             <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" style={textStyle}>
                 <tspan style={{ fontWeight: 800, fill: '#f7941d' }}>MOZ</tspan>
                 <tspan style={{ fontWeight: 800, fill: '#d95829' }}>UP</tspan>
-                <tspan style={{ fontWeight: 500, fill: academyColor }}> Academy</tspan>
+                <tspan style={{ fontWeight: 500, fill: academyColor }}> {t('logo.academy')}</tspan>
             </text>
         </svg>
     </div>

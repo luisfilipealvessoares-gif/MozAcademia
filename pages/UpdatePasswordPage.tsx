@@ -19,8 +19,8 @@ const UpdatePasswordPage: React.FC = () => {
         e.preventDefault();
         setError('');
 
-        if (password.length < 6) {
-            setError('A nova senha deve ter no mínimo 6 caracteres.');
+        if (password.length < 8) {
+            setError('A nova senha deve ter no mínimo 8 caracteres.');
             return;
         }
         if (password !== confirmPassword) {

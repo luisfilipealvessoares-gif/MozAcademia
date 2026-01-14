@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../contexts/I18nContext';
 import Logo from './Logo';
+import LanguageSwitcher from './LanguageSwitcher';
 
 // --- Icons ---
 const MenuIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -34,6 +36,7 @@ const NavLink: React.FC<{ to: string, children: React.ReactNode, onClick?: () =>
 
 const Header: React.FC = () => {
   const { user, profile, isAdmin, signOut } = useAuth();
+  const { t } = useI18n();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,7 +61,7 @@ const Header: React.FC = () => {
   };
   
   const dashboardLink = isAdmin ? '/admin' : '/dashboard';
-  const dashboardText = isAdmin ? 'Painel Admin' : 'Meu Painel';
+  const dashboardText = isAdmin ? t('header.adminDashboard') : t('header.myDashboard');
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || '?';
 
   return (
@@ -71,12 +74,13 @@ const Header: React.FC = () => {
               <Logo className="h-14 w-auto" />
             </Link>
             <nav className="hidden md:flex items-center space-x-10 ml-10">
-              <NavLink to="/#cursos">Cursos</NavLink>
-              <NavLink to="/about">Sobre Nós</NavLink>
+              <NavLink to="/#cursos">{t('header.courses')}</NavLink>
+              <NavLink to="/about">{t('header.about')}</NavLink>
             </nav>
           </div>
           
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-4">
+            <LanguageSwitcher />
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
@@ -102,31 +106,31 @@ const Header: React.FC = () => {
                           <DashboardIcon className="w-5 h-5 mr-3" /> {dashboardText}
                         </Link>
                         <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
-                          <ProfileIcon className="w-5 h-5 mr-3" /> Meu Perfil
+                          <ProfileIcon className="w-5 h-5 mr-3" /> {t('header.myProfile')}
                         </Link>
                     </div>
                     <div className="border-t"></div>
                     <button onClick={handleSignOut} className="w-full text-left flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50">
-                      <LogoutIcon className="w-5 h-5 mr-3" /> Sair
+                      <LogoutIcon className="w-5 h-5 mr-3" /> {t('header.logout')}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <>
+              <div className="flex items-center space-x-2">
                 <Link to="/login" className="text-brand-up font-semibold px-5 py-2.5 rounded-lg hover:bg-brand-light transition-all duration-300">
-                  Entrar
+                  {t('header.login')}
                 </Link>
                 <Link to="/login?view=register" className="bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                  Registrar
+                  {t('header.register')}
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
           <div className="flex items-center md:hidden">
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} type="button" className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-brand-moz hover:bg-gray-100" aria-controls="mobile-menu" aria-expanded={isMenuOpen}>
-              <span className="sr-only">Abrir menu</span>
+              <span className="sr-only">{t('header.openMenu')}</span>
               {isMenuOpen ? <CloseIcon className="block h-6 w-6" /> : <MenuIcon className="block h-6 w-6" />}
             </button>
           </div>
@@ -137,8 +141,11 @@ const Header: React.FC = () => {
       {isMenuOpen && (
         <div className="md:hidden" id="mobile-menu">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <NavLink to="/#cursos" onClick={() => setIsMenuOpen(false)}>Cursos</NavLink>
-            <NavLink to="/about" onClick={() => setIsMenuOpen(false)}>Sobre Nós</NavLink>
+            <NavLink to="/#cursos" onClick={() => setIsMenuOpen(false)}>{t('header.courses')}</NavLink>
+            <NavLink to="/about" onClick={() => setIsMenuOpen(false)}>{t('header.about')}</NavLink>
+            <div className="pl-3 pt-2">
+                <LanguageSwitcher />
+            </div>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="px-2 space-y-1">
@@ -148,19 +155,19 @@ const Header: React.FC = () => {
                     {dashboardText}
                   </Link>
                   <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-                    Meu Perfil
+                    {t('header.myProfile')}
                   </Link>
                   <button onClick={handleSignOut} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-                    Sair
+                    {t('header.logout')}
                   </button>
                 </>
               ) : (
                 <>
                   <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-                    Entrar
+                    {t('header.login')}
                   </Link>
                   <Link to="/login?view=register" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-moz hover:bg-gray-100">
-                    Registrar
+                    {t('header.register')}
                   </Link>
                 </>
               )}

@@ -2,9 +2,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../contexts/I18nContext';
 
 const AdminHeader: React.FC = () => {
   const { profile, signOut } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -22,16 +24,16 @@ const AdminHeader: React.FC = () => {
         </div>
         <div className="flex items-center space-x-6">
             <span className="text-gray-600 font-medium">
-                Olá, {profile?.full_name || 'Admin'}
+                {t('admin.header.hello', { name: profile?.full_name || 'Admin' })}
             </span>
             <Link to="/" className="text-sm text-gray-500 hover:text-brand-moz font-medium transition-colors">
-              Ver Site Público
+              {t('admin.header.viewSite')}
             </Link>
             <button
                 onClick={handleSignOut}
                 className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition"
             >
-                Sair
+                {t('admin.header.logout')}
             </button>
         </div>
       </div>

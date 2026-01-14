@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import Logo from './Logo';
+import { useI18n } from '../contexts/I18nContext';
 
 // This component no longer needs an `onSuccess` prop, as it now directly
 // triggers a state update in the parent context, causing it to be unmounted.
 const CompleteProfileModal: React.FC = () => {
   const { user, profile, refreshProfile } = useAuth();
+  const { t } = useI18n();
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [sexo, setSexo] = useState<'masculino' | 'feminino' | ''>('');
@@ -25,7 +27,7 @@ const CompleteProfileModal: React.FC = () => {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !companyName || !phoneNumber || !sexo) {
-        setError("Por favor, preencha todos os campos obrigatórios.");
+        setError(t('profile.modal.error.allFields'));
         return;
     };
 
@@ -42,7 +44,7 @@ const CompleteProfileModal: React.FC = () => {
       .eq('id', user.id);
 
     if (error) {
-      setError('Erro ao atualizar o perfil: ' + error.message);
+      setError(t('profile.modal.error.update', { message: error.message }));
       setLoading(false);
     } else {
       // Re-fetch the profile in the AuthContext. This will cause the UserDashboard
@@ -58,11 +60,11 @@ const CompleteProfileModal: React.FC = () => {
         <div className="flex justify-center mb-4">
             <Logo className="h-12 w-auto" />
         </div>
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Complete seu Perfil</h2>
-        <p className="text-center text-gray-600 mb-6">Para continuar, precisamos que você preencha as informações abaixo.</p>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">{t('profile.modal.title')}</h2>
+        <p className="text-center text-gray-600 mb-6">{t('profile.modal.subtitle')}</p>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label htmlFor="companyNameModal" className="block text-sm font-medium text-gray-700">Nome da Empresa <span className="text-red-500">*</span></label>
+            <label htmlFor="companyNameModal" className="block text-sm font-medium text-gray-700">{t('profile.modal.companyName')} <span className="text-red-500">*</span></label>
             <input
               id="companyNameModal"
               type="text"
@@ -73,7 +75,7 @@ const CompleteProfileModal: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="phoneNumberModal" className="block text-sm font-medium text-gray-700">Telefone <span className="text-red-500">*</span></label>
+            <label htmlFor="phoneNumberModal" className="block text-sm font-medium text-gray-700">{t('profile.modal.phone')} <span className="text-red-500">*</span></label>
             <input
               id="phoneNumberModal"
               type="tel"
@@ -84,7 +86,7 @@ const CompleteProfileModal: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="sexoModal" className="block text-sm font-medium text-gray-700">Sexo <span className="text-red-500">*</span></label>
+            <label htmlFor="sexoModal" className="block text-sm font-medium text-gray-700">{t('profile.modal.gender')} <span className="text-red-500">*</span></label>
             <select
               id="sexoModal"
               value={sexo}
@@ -92,9 +94,9 @@ const CompleteProfileModal: React.FC = () => {
               required
               className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
             >
-              <option value="" disabled>Selecione...</option>
-              <option value="masculino">Masculino</option>
-              <option value="feminino">Feminino</option>
+              <option value="" disabled>{t('profile.modal.gender.select')}</option>
+              <option value="masculino">{t('profile.modal.gender.male')}</option>
+              <option value="feminino">{t('profile.modal.gender.female')}</option>
             </select>
           </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -104,7 +106,7 @@ const CompleteProfileModal: React.FC = () => {
               disabled={loading}
               className="w-full px-4 py-3 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz/50 font-semibold"
             >
-              {loading ? 'Salvando...' : 'Salvar e Continuar'}
+              {loading ? t('profile.modal.saving') : t('profile.modal.button')}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../contexts/I18nContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -23,6 +24,7 @@ const ChartBarIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -122,20 +124,20 @@ const HomePage: React.FC = () => {
             <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" alt="Profissionais em reunião" className="absolute inset-0 w-full h-full object-cover"/>
             <div className="relative z-20">
                 <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-4 drop-shadow-lg">
-                    Capacitação Profissional para <span className="text-brand-moz">o Futuro</span>
+                    {t('home.hero.title')} <span className="text-brand-moz">{t('home.hero.title.highlight')}</span>
                 </h1>
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-200 mb-8 drop-shadow-md">
-                    Nossa missão é fornecer conhecimento acessível e de alta qualidade sobre setores vitais da economia, impulsionando sua carreira para o próximo nível.
+                    {t('home.hero.subtitle')}
                 </p>
                 <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-transform transform hover:scale-105 shadow-xl">
-                    Explorar Cursos
+                    {t('home.hero.button')}
                 </Link>
             </div>
         </section>
         
         {/* Courses Section */}
         <section id="cursos">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Nossos Cursos</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">{t('home.courses.title')}</h2>
             {courses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses.map((course) => {
@@ -149,9 +151,11 @@ const HomePage: React.FC = () => {
                                         alt={course.title} 
                                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
-                                    <div className="absolute top-3 right-3 bg-brand-moz text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                                        NOVO
-                                    </div>
+                                    {course.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito' && (
+                                        <div className="absolute top-0 left-0 bg-brand-up text-white text-xs font-bold uppercase tracking-wider py-1.5 px-4 rounded-br-lg shadow-md">
+                                            {t('home.courses.new')}
+                                        </div>
+                                    )}
                                 </div>
                                 
                                 {/* Content Container that grows to fill space */}
@@ -163,14 +167,14 @@ const HomePage: React.FC = () => {
                                     <div className="mt-auto pt-4">
                                         {isEnrolled ? (
                                             <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
-                                                Continuar Curso
+                                                {t('home.courses.continue')}
                                             </Link>
                                         ) : (
                                             <button
                                                 onClick={() => handleEnroll(course.id)}
                                                 className="w-full bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg"
                                             >
-                                                Inscrever-se
+                                                {t('home.courses.enroll')}
                                             </button>
                                         )}
                                     </div>
@@ -180,34 +184,34 @@ const HomePage: React.FC = () => {
                     })}
                 </div>
             ) : (
-                <p className="text-gray-500 text-center">Nenhum curso disponível no momento.</p>
+                <p className="text-gray-500 text-center">{t('home.courses.noCourses')}</p>
             )}
         </section>
 
         {/* Why Us Section */}
         <section id="porque-nos" className="bg-brand-light py-20 px-8 rounded-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">Por que escolher a MozupAcademy?</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">{t('home.whyUs.title')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <BookOpenIcon className="h-8 w-8"/>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Conteúdo Especializado</h3>
-                    <p className="text-gray-600">Cursos desenvolvidos por especialistas da indústria para garantir conhecimento prático e atualizado.</p>
+                    <h3 className="text-xl font-semibold mb-2">{t('home.whyUs.card1.title')}</h3>
+                    <p className="text-gray-600">{t('home.whyUs.card1.text')}</p>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <LightBulbIcon className="h-8 w-8"/>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Aprendizagem Flexível</h3>
-                    <p className="text-gray-600">Aprenda no seu próprio ritmo, de qualquer lugar, com acesso vitalício aos materiais do curso.</p>
+                    <h3 className="text-xl font-semibold mb-2">{t('home.whyUs.card2.title')}</h3>
+                    <p className="text-gray-600">{t('home.whyUs.card2.text')}</p>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <ChartBarIcon className="h-8 w-8"/>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Crescimento de Carreira</h3>
-                    <p className="text-gray-600">Adquira as habilidades necessárias para se destacar e avançar no seu campo profissional.</p>
+                    <h3 className="text-xl font-semibold mb-2">{t('home.whyUs.card3.title')}</h3>
+                    <p className="text-gray-600">{t('home.whyUs.card3.text')}</p>
                 </div>
             </div>
         </section>

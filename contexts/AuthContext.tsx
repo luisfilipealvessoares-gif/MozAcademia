@@ -26,6 +26,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState(false);
   const inactivityTimer = useRef<number>();
 
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    // Manually clear state for immediate UI update, ensuring responsiveness.
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+  }, []);
+
   const fetchProfile = useCallback(async (user: User) => {
     const { data, error } = await supabase
       .from('user_profiles')
@@ -35,20 +44,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (error) {
       console.error("Critical Error: User profile not found or RLS blocks access. Forcing sign out.", error);
-      await supabase.auth.signOut();
+      // FIX: Call the local signOut function to ensure state is cleared properly.
+      await signOut();
       return null;
     }
     return data;
-  }, []);
-
-  const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    // Manually clear state for immediate UI update, ensuring responsiveness.
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
-  }, []);
+  }, [signOut]);
 
   useEffect(() => {
     const setupAuth = async () => {

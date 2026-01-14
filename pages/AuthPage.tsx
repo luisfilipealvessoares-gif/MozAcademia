@@ -4,7 +4,9 @@ import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../contexts/I18nContext';
 import { EyeIcon, EyeSlashIcon } from '../components/Icons';
+import TermsModal from '../components/TermsModal';
 
 const AuthPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,6 +15,8 @@ const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -25,29 +29,30 @@ const AuthPage: React.FC = () => {
   const [resendMessage, setResendMessage] = useState('');
 
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const { t } = useI18n();
   
   // useEffect for immediate password validation feedback
   useEffect(() => {
     // Only run validation for the register view
     if (view === 'register') {
       if (password && password.length < 8) {
-        setError('A senha deve ter no mínimo 8 caracteres.');
+        setError(t('auth.passwordMinLengthError'));
       } else if (confirmPassword && password !== confirmPassword) {
-        setError('As senhas não coincidem.');
+        setError(t('auth.passwordsMismatchError'));
       } else {
         // This clears the error state ONLY if it's one of our validation messages.
         // This prevents clearing an unrelated API error message when the user types.
-        if (error === 'A senha deve ter no mínimo 8 caracteres.' || error === 'As senhas não coincidem.') {
+        if (error === t('auth.passwordMinLengthError') || error === t('auth.passwordsMismatchError')) {
           setError(null);
         }
       }
     } else {
       // If we switch to login view, clear any lingering validation errors
-      if (error === 'A senha deve ter no mínimo 8 caracteres.' || error === 'As senhas não coincidem.') {
+      if (error === t('auth.passwordMinLengthError') || error === t('auth.passwordsMismatchError')) {
         setError(null);
       }
     }
-  }, [password, confirmPassword, view, error]);
+  }, [password, confirmPassword, view, error, t]);
 
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -56,11 +61,15 @@ const AuthPage: React.FC = () => {
     // Final validation before submitting
     if (view === 'register') {
         if (password.length < 8) {
-            setError("A senha deve ter no mínimo 8 caracteres.");
+            setError(t('auth.passwordMinLengthError'));
             return;
         }
         if (password !== confirmPassword) {
-            setError("As senhas não coincidem.");
+            setError(t('auth.passwordsMismatchError'));
+            return;
+        }
+        if (!termsAccepted) {
+            setError(t('auth.acceptTermsError'));
             return;
         }
     }
@@ -85,7 +94,7 @@ const AuthPage: React.FC = () => {
             
             if (profile?.is_admin) {
                 await supabase.auth.signOut();
-                throw new Error("Credenciais de administrador. Por favor, use o portal de Acesso Admin.");
+                throw new Error(t('auth.adminCredentialsError'));
             }
         }
       } else if (view === 'register') {
@@ -104,7 +113,7 @@ const AuthPage: React.FC = () => {
         if (data.user) {
             // Definitive check: If email_confirmed_at exists, the user is already registered and confirmed.
             if (data.user.email_confirmed_at) {
-                setError('Este e-mail já está registrado. Por favor, faça login.');
+                setError(t('auth.emailExistsError'));
                 setLoading(false);
                 return;
             }
@@ -119,21 +128,18 @@ const AuthPage: React.FC = () => {
             setRegisteredEmail(email);
             
             if (isExistingUser) {
-                // For an existing but unconfirmed user, Supabase resends the confirmation email.
-                // We provide a more specific message.
-                setSuccessMessage(`Este e-mail já foi registrado, mas não confirmado. Enviamos um novo e-mail de confirmação para ${email}. Por favor, verifique sua caixa de entrada.`);
+                setSuccessMessage(t('auth.emailConfirmation.messageExisting', { email }));
             } else {
-                // For a brand new user.
-                setSuccessMessage(`Um e-mail de confirmação foi enviado para ${email}. Por favor, verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.`);
+                setSuccessMessage(t('auth.emailConfirmation.messageNew', { email }));
             }
 
             setEmail('');
             setPassword('');
             setFullName('');
             setConfirmPassword('');
+            setTermsAccepted(false);
         } else if (!error) {
-            // Fallback case if data.user is null but no error was thrown.
-            setError("Ocorreu um erro inesperado durante o registro. Por favor, tente novamente.");
+            setError(t('auth.unexpectedError'));
         }
       }
     } catch (error: any) {
@@ -154,9 +160,9 @@ const AuthPage: React.FC = () => {
     });
 
     if (error) {
-      setResendMessage(`Erro ao reenviar: ${error.message}`);
+      setResendMessage(t('auth.emailConfirmation.resendError', { message: error.message }));
     } else {
-      setResendMessage('Email de confirmação reenviado com sucesso!');
+      setResendMessage(t('auth.emailConfirmation.resendSuccess'));
     }
     setResendLoading(false);
   };
@@ -176,6 +182,15 @@ const AuthPage: React.FC = () => {
 
 
   return (
+    <>
+    <TermsModal 
+      isOpen={isTermsModalOpen} 
+      onClose={() => setIsTermsModalOpen(false)}
+      onAccept={() => {
+          setTermsAccepted(true);
+          setIsTermsModalOpen(false);
+      }}
+    />
     <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-brand-light to-gray-50">
       <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
         {successMessage ? (
@@ -183,7 +198,7 @@ const AuthPage: React.FC = () => {
              <div className="flex justify-center mb-4">
                 <svg className="w-16 h-16 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
              </div>
-             <h2 className="text-2xl font-bold text-brand-up">Verifique seu E-mail</h2>
+             <h2 className="text-2xl font-bold text-brand-up">{t('auth.emailConfirmation.title')}</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
              <div className="mt-6 space-y-4">
                 <button
@@ -191,9 +206,9 @@ const AuthPage: React.FC = () => {
                     disabled={resendLoading}
                     className="w-full px-4 py-3 text-brand-moz border border-brand-moz rounded-lg font-semibold hover:bg-brand-light disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                 >
-                    {resendLoading ? 'Reenviando...' : 'Reenviar email de confirmação'}
+                    {resendLoading ? t('auth.emailConfirmation.resending') : t('auth.emailConfirmation.resendButton')}
                 </button>
-                {resendMessage && <p className={`text-sm ${resendMessage.includes('Erro') ? 'text-red-500' : 'text-green-600'}`}>{resendMessage}</p>}
+                {resendMessage && <p className={`text-sm ${resendMessage.includes('Erro') || resendMessage.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>{resendMessage}</p>}
                 <button
                     onClick={() => {
                         setSuccessMessage(null);
@@ -202,7 +217,7 @@ const AuthPage: React.FC = () => {
                     }}
                     className="w-full px-4 py-3 text-white bg-brand-moz rounded-lg font-semibold hover:bg-brand-up shadow-sm hover:shadow-lg transition-all"
                 >
-                    Voltar para Login
+                    {t('auth.emailConfirmation.backToLoginButton')}
                 </button>
              </div>
            </div>
@@ -211,7 +226,7 @@ const AuthPage: React.FC = () => {
             <div className="flex flex-col items-center">
                 <Logo className="h-16 w-auto" />
                 <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
-                  {view === 'login' ? 'Acesse sua conta' : 'Crie uma nova conta'}
+                  {view === 'login' ? t('auth.loginTitle') : t('auth.registerTitle')}
                 </h2>
             </div>
             
@@ -219,26 +234,26 @@ const AuthPage: React.FC = () => {
                 <div className="space-y-4">
                     {view === 'register' && (
                     <div>
-                        <label htmlFor="full-name" className="sr-only">Nome Completo</label>
-                        <input id="full-name" name="full-name" type="text" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder="Nome Completo" />
+                        <label htmlFor="full-name" className="sr-only">{t('auth.fullNamePlaceholder')}</label>
+                        <input id="full-name" name="full-name" type="text" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.fullNamePlaceholder')} />
                     </div>
                     )}
                     <div>
-                    <label htmlFor="email-address" className="sr-only">Endereço de e-mail</label>
-                    <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder="Endereço de e-mail" />
+                    <label htmlFor="email-address" className="sr-only">{t('auth.emailPlaceholder')}</label>
+                    <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.emailPlaceholder')} />
                     </div>
                     <div>
-                        <label htmlFor="password" className="sr-only">Senha</label>
+                        <label htmlFor="password" className="sr-only">{t('auth.passwordPlaceholder')}</label>
                         <div className="relative">
-                            <input id="password" name="password" type={isPasswordVisible ? "text" : "password"} autoComplete={view === 'login' ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder="Senha" />
-                            <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsPasswordVisible(!isPasswordVisible)} aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}>
+                            <input id="password" name="password" type={isPasswordVisible ? "text" : "password"} autoComplete={view === 'login' ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.passwordPlaceholder')} />
+                            <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsPasswordVisible(!isPasswordVisible)} aria-label={isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}>
                                 {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                             </button>
                         </div>
                     </div>
                     {view === 'register' && (
                         <div>
-                            <label htmlFor="confirm-password" className="sr-only">Confirmar senha</label>
+                            <label htmlFor="confirm-password" className="sr-only">{t('auth.confirmPasswordPlaceholder')}</label>
                             <div className="relative">
                                 <input
                                     id="confirm-password"
@@ -249,9 +264,9 @@ const AuthPage: React.FC = () => {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
-                                    placeholder="Confirmar senha"
+                                    placeholder={t('auth.confirmPasswordPlaceholder')}
                                 />
-                                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} aria-label={isConfirmPasswordVisible ? "Ocultar senha" : "Mostrar senha"}>
+                                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} aria-label={isConfirmPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}>
                                     {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                                 </button>
                             </div>
@@ -259,11 +274,34 @@ const AuthPage: React.FC = () => {
                     )}
                 </div>
 
+                {view === 'register' && (
+                    <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                            <input
+                                id="terms"
+                                name="terms"
+                                type="checkbox"
+                                checked={termsAccepted}
+                                onChange={(e) => setTermsAccepted(e.target.checked)}
+                                className="focus:ring-brand-up h-4 w-4 text-brand-moz border-gray-300 rounded"
+                            />
+                        </div>
+                        <div className="ml-3 text-sm">
+                            <label htmlFor="terms" className="font-medium text-gray-700">
+                                {t('auth.terms.agree')}{' '}
+                                <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-brand-up hover:underline font-semibold">
+                                    {t('auth.terms.link')}
+                                </button>
+                            </label>
+                        </div>
+                    </div>
+                )}
+
                 {error && <p className="text-red-500 text-sm text-center pt-2">{error}</p>}
 
                 <div>
-                    <button type="submit" disabled={loading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
-                    {loading ? 'Carregando...' : (view === 'login' ? 'Entrar' : 'Registrar')}
+                    <button type="submit" disabled={loading || (view === 'register' && !termsAccepted)} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
+                    {loading ? t('loading') : (view === 'login' ? t('auth.loginButton') : t('auth.registerButton'))}
                     </button>
                 </div>
             </form>
@@ -276,16 +314,18 @@ const AuthPage: React.FC = () => {
                         setSearchParams({ view: nextView });
                         setError(null);
                         setSuccessMessage(null);
+                        setTermsAccepted(false);
                     }}
                     className="font-medium text-brand-up hover:text-brand-moz"
                 >
-                    {view === 'login' ? 'Não tem uma conta? Registre-se' : 'Já tem uma conta? Faça login'}
+                    {view === 'login' ? t('auth.toggleToRegister') : t('auth.toggleToLogin')}
                 </button>
             </div>
         </>
         )}
       </div>
     </div>
+    </>
   );
 };
 

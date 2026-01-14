@@ -12,7 +12,8 @@ const AcademicCapIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5-5 5M6 12h12"></path></svg>;
 
 // --- Helper Components ---
-const ActionStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; to: string; }> = ({ title, value, icon, to }) => (
+// FIX: Changed icon prop from React.ReactNode to React.ReactElement for better type safety with React.cloneElement.
+const ActionStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactElement; to: string; }> = ({ title, value, icon, to }) => (
     <Link to={to} className="bg-white p-4 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-lg transition-all duration-300 flex flex-col justify-between hover:-translate-y-1">
         <div className="flex items-start justify-between">
             <div className="bg-brand-light p-2.5 rounded-full group-hover:bg-brand-moz transition-colors duration-300">
