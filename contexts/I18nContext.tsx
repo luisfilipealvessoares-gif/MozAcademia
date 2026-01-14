@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -174,6 +175,35 @@ const translations = {
     'error.boundary.title': 'Ocorreu um erro inesperado.',
     'error.boundary.subtitle': 'Nossa equipe foi notificada. Por favor, tente recarregar a página.',
     'error.boundary.button': 'Recarregar Página',
+
+    // Terms Modal
+    'terms.title': 'Termo de Compromisso e Uso',
+    'terms.p1': 'A MozupAcademy é a plataforma oficial de e-learning do MozUp, centro de excelência dedicado a fortalecer a competitividade das empresas moçambicanas por meio da capacitação profissional e transferência de conhecimentos.',
+    'terms.p2': 'Ao aceder, registar-se ou utilizar a plataforma, a EMPRESA ou PROFISSIONAL USUÁRIO declara que leu, compreendeu e aceita integralmente os termos abaixo.',
+    'terms.h1': '1. Objeto',
+    'terms.p1_1': 'Este Termo regula o acesso e uso da plataforma MozupAcademy, que disponibiliza cursos digitais pré-gravados e conteúdos educacionais destinados exclusivamente à formação e capacitação profissional.',
+    'terms.h2': '2. Perfil de Utilização',
+    'terms.p2_1': 'A plataforma é destinada a empresas, organizações e profissionais; O acesso pode ser individual ou corporativo, conforme o plano contratado; O uso é exclusivamente educacional e interno.',
+    'terms.h3': '3. Direitos da Plataforma',
+    'terms.p3_1': 'A MozupAcademy reserva-se o direito de: Atualizar, modificar ou remover conteúdos a qualquer momento; Suspender ou cancelar contas que violem este Termo; Monitorar o uso da plataforma para fins de segurança, qualidade e conformidade legal.',
+    'terms.h4': '4. Propriedade Intelectual',
+    'terms.p4_1': 'Todos os cursos, vídeos, textos, materiais, metodologias, marcas e sistemas são propriedade exclusiva do MozUp / MozupAcademy. É expressamente proibido: Copiar, gravar, descarregar, partilhar ou redistribuir conteúdos; Revender ou utilizar os cursos para formação externa; Disponibilizar acessos a terceiros não autorizados. Qualquer violação constitui infração legal e poderá resultar em sanções civis e criminais.',
+    'terms.h5': '5. Responsabilidades do Usuário',
+    'terms.p5_1': 'O usuário compromete-se a: Utilizar a plataforma de forma ética e legal; Não tentar violar sistemas de segurança, pagamento ou acesso; Não utilizar os conteúdos para fins comerciais não autorizados; Garantir que apenas pessoas autorizadas da empresa utilizem o acesso.',
+    'terms.h6': '6. Uso Indevido e Penalidades',
+    'terms.p6_1': 'Em caso de uso indevido, a MozupAcademy poderá: Bloquear imediatamente o acesso; Cancelar planos ativos sem reembolso; Tomar medidas legais cabíveis para reparação de danos.',
+    'terms.h7': '7. Pagamentos e Planos',
+    'terms.p7_1': 'O acesso à plataforma pode estar sujeito a pagamento; Valores, prazos e benefícios variam conforme o plano contratado; A falta de pagamento pode resultar na suspensão automática do acesso.',
+    'terms.h8': '8. Limitação de Responsabilidade',
+    'terms.p8_1': 'A MozupAcademy: Não garante resultados profissionais, financeiros ou comerciais; Não se responsabiliza por decisões tomadas com base nos conteúdos; Oferece os cursos como ferramenta de capacitação, não como consultoria personalizada.',
+    'terms.h9': '9. Proteção de Dados',
+    'terms.p9_1': 'Os dados fornecidos serão utilizados apenas para: Gestão de contas; Comunicação institucional; Melhoria da experiência da plataforma. Nunca serão vendidos ou partilhados sem consentimento legal.',
+    'terms.h10': '10. Rescisão',
+    'terms.p10_1': 'O usuário pode encerrar o uso da plataforma a qualquer momento. A MozupAcademy pode rescindir o acesso em caso de violação deste Termo.',
+    'terms.h11': '11. Legislação Aplicável',
+    'terms.p11_1': 'Este Termo rege-se pelas leis da República de Moçambique, sendo competente o foro local para resolução de quaisquer litígios.',
+    'terms.final': 'Ao utilizar a MozupAcademy, o usuário declara concordar integralmente com este Termo.',
+    'terms.acceptButton': 'Aceito',
   },
   en: {
     // General
@@ -347,6 +377,35 @@ const translations = {
     'error.boundary.title': 'An unexpected error occurred.',
     'error.boundary.subtitle': 'Our team has been notified. Please try reloading the page.',
     'error.boundary.button': 'Reload Page',
+
+    // Terms Modal
+    'terms.title': 'Commitment and Use Agreement',
+    'terms.p1': 'MozupAcademy is the official e-learning platform of MozUp, a center of excellence dedicated to strengthening the competitiveness of Mozambican companies through professional training and knowledge transfer.',
+    'terms.p2': 'By accessing, registering, or using the platform, the COMPANY or PROFESSIONAL USER declares that they have read, understood, and fully accept the terms below.',
+    'terms.h1': '1. Object',
+    'terms.p1_1': 'This Agreement regulates the access and use of the MozupAcademy platform, which provides pre-recorded digital courses and educational content intended exclusively for professional training and capacitation.',
+    'terms.h2': '2. User Profile',
+    'terms.p2_1': 'The platform is intended for companies, organizations, and professionals; Access can be individual or corporate, depending on the contracted plan; Use is exclusively educational and internal.',
+    'terms.h3': '3. Platform Rights',
+    'terms.p3_1': 'MozupAcademy reserves the right to: Update, modify, or remove content at any time; Suspend or cancel accounts that violate this Agreement; Monitor platform usage for security, quality, and legal compliance purposes.',
+    'terms.h4': '4. Intellectual Property',
+    'terms.p4_1': 'All courses, videos, texts, materials, methodologies, brands, and systems are the exclusive property of MozUp / MozupAcademy. It is expressly forbidden to: Copy, record, download, share, or redistribute content; Resell or use the courses for external training; Provide access to unauthorized third parties. Any violation constitutes a legal infraction and may result in civil and criminal penalties.',
+    'terms.h5': '5. User Responsibilities',
+    'terms.p5_1': 'The user agrees to: Use the platform ethically and legally; Not attempt to violate security, payment, or access systems; Not use the content for unauthorized commercial purposes; Ensure that only authorized company personnel use the access.',
+    'terms.h6': '6. Misuse and Penalties',
+    'terms.p6_1': 'In case of misuse, MozupAcademy may: Immediately block access; Cancel active plans without a refund; Take appropriate legal action to seek compensation for damages.',
+    'terms.h7': '7. Payments and Plans',
+    'terms.p7_1': 'Access to the platform may be subject to payment; Prices, terms, and benefits vary according to the contracted plan; Non-payment may result in the automatic suspension of access.',
+    'terms.h8': '8. Limitation of Liability',
+    'terms.p8_1': 'MozupAcademy: Does not guarantee professional, financial, or commercial results; Is not responsible for decisions made based on the content; Offers the courses as a training tool, not as personalized consulting.',
+    'terms.h9': '9. Data Protection',
+    'terms.p9_1': 'The data provided will only be used for: Account management; Institutional communication; Improving the platform experience. It will never be sold or shared without legal consent.',
+    'terms.h10': '10. Termination',
+    'terms.p10_1': 'The user may terminate their use of the platform at any time. MozupAcademy may terminate access in case of violation of this Agreement.',
+    'terms.h11': '11. Applicable Law',
+    'terms.p11_1': 'This Agreement is governed by the laws of the Republic of Mozambique, with the local jurisdiction being competent to resolve any disputes.',
+    'terms.final': 'By using MozupAcademy, the user declares to fully agree with this Agreement.',
+    'terms.acceptButton': 'I Accept',
   }
 };
 
