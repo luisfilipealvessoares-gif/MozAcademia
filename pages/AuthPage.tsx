@@ -13,6 +13,7 @@ const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
@@ -91,6 +92,14 @@ const AuthPage: React.FC = () => {
     try {
       if (view === 'login') {
         localStorage.removeItem('awaiting_confirmation');
+        
+        // Define a preferência de "Lembrar-me" antes de fazer o login.
+        if (rememberMe) {
+            localStorage.setItem('rememberMe', 'true');
+        } else {
+            localStorage.removeItem('rememberMe');
+        }
+
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
 
@@ -205,7 +214,7 @@ const AuthPage: React.FC = () => {
         {successMessage ? (
            <div className="text-center">
              <div className="flex justify-center mb-4">
-                <svg className="w-16 h-16 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg className="w-16 h-16 text-brand-moz" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
              </div>
              <h2 className="text-2xl font-bold text-brand-up">{t('auth.emailConfirmation.title')}</h2>
              <p className="mt-4 text-gray-700">{successMessage}</p>
@@ -289,6 +298,17 @@ const AuthPage: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {view === 'login' && (
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <input id="remember-me" name="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 text-brand-moz focus:ring-brand-up border-gray-300 rounded" />
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                                {t('auth.rememberMe')}
+                            </label>
+                        </div>
+                    </div>
+                )}
 
                 {view === 'register' && (
                     <div className="flex items-start">

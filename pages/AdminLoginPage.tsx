@@ -1,23 +1,34 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
 import { EyeIcon, EyeSlashIcon } from '../components/Icons';
+import { useI18n } from '../contexts/I18nContext';
 
 const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const { t } = useI18n();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Define a preferência de "Lembrar-me" antes de fazer o login.
+    if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+    } else {
+        localStorage.removeItem('rememberMe');
+    }
 
     try {
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -102,6 +113,14 @@ const AdminLoginPage: React.FC = () => {
                 <EyeIcon className="h-5 w-5 text-gray-500" />
               )}
             </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+                <input id="remember-me-admin" name="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 text-brand-moz focus:ring-brand-up border-gray-300 rounded" />
+                <label htmlFor="remember-me-admin" className="ml-2 block text-sm text-gray-900">
+                    {t('auth.rememberMe')}
+                </label>
+            </div>
           </div>
           <button
             type="submit"

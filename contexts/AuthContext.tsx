@@ -33,6 +33,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (isSigningOut.current) return;
     isSigningOut.current = true;
     
+    // Limpa a flag de "Lembrar-me" ao fazer logout manual.
+    localStorage.removeItem('rememberMe');
+
     try {
       await supabase.auth.signOut();
       // Manually clear state for immediate UI update
@@ -156,13 +159,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [signOut]);
 
   useEffect(() => {
-    if (!user) {
+    // Se "Lembrar-me" NÃO estiver ativo, configuramos um temporizador de inatividade.
+    const shouldHaveInactivityTimer = localStorage.getItem('rememberMe') !== 'true';
+
+    if (!user || !shouldHaveInactivityTimer) {
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
       }
+      const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
+      activityEvents.forEach(event => window.removeEventListener(event, resetTimer));
       return;
     }
 
+    // Este bloco só é executado se o usuário estiver logado e NÃO tiver optado por "Lembrar-me".
     const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
     activityEvents.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();

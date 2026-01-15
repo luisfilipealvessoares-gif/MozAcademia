@@ -1,5 +1,6 @@
 
-import React from 'react';
+
+import React, { useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
@@ -77,6 +78,28 @@ const AppRoutes: React.FC = () => {
 
 
 const App: React.FC = () => {
+  const hasBeenHidden = useRef(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        hasBeenHidden.current = true;
+      }
+      // Quando o separador volta a estar visível E já esteve oculto antes, recarrega.
+      if (document.visibilityState === 'visible' && hasBeenHidden.current) {
+        // Isto fornece uma forma simples de resetar o estado da aplicação se ficar inconsistente
+        // depois do separador do navegador ter estado em segundo plano.
+        window.location.reload();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+  
   return (
     <AuthProvider>
       <AuthRedirectHandler />
