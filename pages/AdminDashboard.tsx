@@ -163,11 +163,11 @@ const VerticalBarChart: React.FC<{ data: TimeProgressDataPoint[] }> = ({ data })
             <div className="flex-grow flex items-end justify-around gap-1 border-l border-b border-gray-200 pl-2">
                 {data.map(item => (
                     <div key={item.date} className="flex-1 flex flex-col items-center text-center group relative pt-4">
-                        <div className="w-full flex-grow flex items-end gap-1">
-                            <div className="w-1/2 relative">
+                        <div className="w-full flex-grow flex gap-1">
+                            <div className="w-1/2 flex items-end">
                                 <Bar value={item.enrollments} color="bg-brand-moz" />
                             </div>
-                            <div className="w-1/2 relative">
+                            <div className="w-1/2 flex items-end">
                                 <Bar value={item.completions} color="bg-brand-up" />
                             </div>
                         </div>

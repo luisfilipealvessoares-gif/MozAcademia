@@ -328,7 +328,7 @@ const AdminStudentProgress: React.FC = () => {
                            <p><strong>Nome:</strong> {selectedStudent.full_name || 'N/A'}</p>
                            <p><strong>Email:</strong> {selectedStudent.email || 'N/A'}</p>
                            <p><strong>Empresa:</strong> {selectedStudent.company_name || 'N/A'}</p>
-                           <p><strong>Telefone:</strong> {selectedStudent.phone_number || 'N/A'}}</p>
+                           <p><strong>Telefone:</strong> {selectedStudent.phone_number || 'N/A'}</p>
                            <p><strong>Sexo:</strong> <span className="capitalize">{selectedStudent.sexo || 'N/A'}</span></p>
                         </div>
                         <div className="text-right mt-8">
