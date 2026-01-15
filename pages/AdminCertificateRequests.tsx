@@ -1,5 +1,6 @@
 
 
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { CertificateRequest } from '../types';
@@ -112,8 +113,8 @@ const AdminCertificateRequests: React.FC = () => {
                     <p className="text-gray-600 mt-1">Aprove os pedidos de alunos que concluíram os cursos.</p>
                 </div>
                 <div className="space-x-2">
-                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-transform duration-200 hover:scale-105">Exportar PDF</button>
-                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-transform duration-200 hover:scale-105">Exportar Excel</button>
+                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar PDF</button>
+                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar Excel</button>
                 </div>
             </div>
             <div className="bg-white shadow-md rounded-lg overflow-x-auto border">
@@ -140,7 +141,7 @@ const AdminCertificateRequests: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '[Curso Removido]'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up transition-transform duration-200 hover:scale-105">Aprovar</button>
+                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up transition-all duration-200">Aprovar</button>
                                     </td>
                                 </tr>
                             ))

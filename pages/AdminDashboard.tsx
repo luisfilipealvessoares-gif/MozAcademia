@@ -4,7 +4,6 @@ import { supabase } from '../services/supabase';
 // --- Data Interfaces ---
 interface ChartDataPoint { label: string; value: number; }
 interface StudentStatusData { inProgress: number; completed: number; requestedCertificate: number; }
-interface TimeProgressDataPoint { date: string; enrollments: number; completions: number; }
 interface KpiStatsData { totalUsers: number; totalEnrollments: number; totalCompletions: number; pendingCertificates: number; }
 
 // --- Icons ---
@@ -34,7 +33,7 @@ const CountUp: React.FC<{ end: number; duration?: number }> = ({ end, duration =
 // FIX: Update the `icon` prop type to be more specific. This allows TypeScript to
 // correctly infer that props like `className` are valid for the cloned element.
 const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1">
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300">
         <div className="flex items-start justify-between">
             <div>
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
@@ -49,7 +48,7 @@ const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElemen
 
 
 const ChartCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => (
-    <div className={`bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 h-full flex flex-col transition-all duration-300 transform hover:-translate-y-1 ${className}`}>
+    <div className={`bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl h-full flex flex-col transition-all duration-300 ${className}`}>
         <h3 className="font-bold text-lg mb-4 text-gray-800 flex-shrink-0">{title}</h3>
         <div className="flex-grow flex flex-col justify-center">
             {children}
@@ -66,7 +65,7 @@ const BarChart: React.FC<{ data: ChartDataPoint[] }> = ({ data }) => {
             return () => clearTimeout(timer);
         }, [item.value]);
         return (
-            <div className="flex items-center text-sm group transition-transform duration-200 hover:scale-[1.02]">
+            <div className="flex items-center text-sm group transition-colors duration-200 hover:bg-brand-light/50 p-1 -m-1 rounded-lg">
                 <div className="w-1/3 truncate pr-2 text-gray-600 font-medium">{item.label}</div>
                 <div className="w-2/3 flex items-center">
                     <div className="w-full bg-gray-200 rounded-full h-6">
@@ -133,66 +132,11 @@ const PieChart: React.FC<PieChartProps> = ({ data, highlightedStatus, onHighligh
     );
 };
 
-const VerticalBarChart: React.FC<{ data: TimeProgressDataPoint[] }> = ({ data }) => {
-    // Ensure y-axis has a sensible max value, minimum of 5 for visual spacing
-    const maxValue = Math.max(...data.flatMap(d => [d.enrollments, d.completions]), 5); 
-
-    const Bar = ({ value, color }: { value: number; color: string }) => {
-        const [height, setHeight] = useState('0%');
-        useEffect(() => {
-            // Animate the bar height on load
-            const timer = setTimeout(() => setHeight(`${(value / maxValue) * 100}%`), 100);
-            return () => clearTimeout(timer);
-        }, [value]);
-        return (
-            <div
-                className={`w-full ${color} rounded-t-sm transition-all duration-1000 ease-out`}
-                style={{ height }}
-            ></div>
-        );
-    };
-
-    if (data.length === 0) return <p className="text-gray-500 text-center py-8">Não há dados para exibir.</p>;
-
-    return (
-        <div className="h-72 flex flex-col">
-            <div className="flex justify-end space-x-4 text-xs mb-4 text-gray-600">
-                <div className="flex items-center"><div className="w-3 h-3 rounded-sm bg-brand-moz mr-2"></div><span>Inscrições</span></div>
-                <div className="flex items-center"><div className="w-3 h-3 rounded-sm bg-brand-up mr-2"></div><span>Conclusões</span></div>
-            </div>
-            <div className="flex-grow flex items-end justify-around gap-1 border-l border-b border-gray-200 pl-2">
-                {data.map(item => (
-                    <div key={item.date} className="flex-1 flex flex-col items-center text-center group relative pt-4">
-                        <div className="w-full flex-grow flex gap-1">
-                            <div className="w-1/2 flex items-end">
-                                <Bar value={item.enrollments} color="bg-brand-moz" />
-                            </div>
-                            <div className="w-1/2 flex items-end">
-                                <Bar value={item.completions} color="bg-brand-up" />
-                            </div>
-                        </div>
-                        {/* Tooltip on hover */}
-                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-32 bg-gray-800 text-white text-xs rounded-lg py-2 px-3 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                            <p className="font-bold capitalize">{item.date}</p>
-                            <p className="text-left"><span className="text-brand-moz font-bold">●</span> Inscrições: {item.enrollments}</p>
-                            <p className="text-left"><span className="text-brand-up font-bold">●</span> Conclusões: {item.completions}</p>
-                            <div className="absolute left-1/2 -bottom-1 w-2 h-2 bg-gray-800 transform -translate-x-1/2 rotate-45"></div>
-                        </div>
-                        <span className="text-[10px] text-gray-500 mt-2 capitalize">{item.date}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-
 const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [kpiStats, setKpiStats] = useState<KpiStatsData>({ totalUsers: 0, totalEnrollments: 0, totalCompletions: 0, pendingCertificates: 0 });
     const [coursePopularity, setCoursePopularity] = useState<ChartDataPoint[]>([]);
     const [studentStatus, setStudentStatus] = useState<StudentStatusData>({ inProgress: 0, completed: 0, requestedCertificate: 0 });
-    const [timeProgress, setTimeProgress] = useState<TimeProgressDataPoint[]>([]);
     const [highlightedStatus, setHighlightedStatus] = useState<string | null>(null);
 
     useEffect(() => {
@@ -237,29 +181,6 @@ const AdminDashboard: React.FC = () => {
                 });
                 setStudentStatus({ inProgress, completed, requestedCertificate: requestedUsers.size });
 
-                // Time Progress Chart
-                const fifteenDaysAgo = new Date(); fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
-                const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', fifteenDaysAgo.toISOString());
-                const { data: recentCompletions } = await supabase.from('quiz_attempts').select('completed_at').eq('passed', true).gte('completed_at', fifteenDaysAgo.toISOString());
-                const timeMap: Record<string, { enrollments: number; completions: number }> = {};
-                for (let i = 0; i < 15; i++) {
-                    const d = new Date(); d.setDate(d.getDate() - i);
-                    timeMap[d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })] = { enrollments: 0, completions: 0 };
-                }
-                recentEnrollments?.forEach(e => {
-                    const key = new Date(e.enrolled_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
-                    if (timeMap[key]) timeMap[key].enrollments++;
-                });
-                recentCompletions?.forEach(c => {
-                    const key = new Date(c.completed_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
-                    if (timeMap[key]) timeMap[key].completions++;
-                });
-                 setTimeProgress(Object.entries(timeMap).map(([date, data]) => ({ date, ...data })).sort((a, b) => {
-                    const dateA = new Date(a.date.replace(/ de /g, ' ') + ' ' + new Date().getFullYear());
-                    const dateB = new Date(b.date.replace(/ de /g, ' ') + ' ' + new Date().getFullYear());
-                    return dateA.getTime() - dateB.getTime();
-                }));
-
             } catch (error) { console.error("Error fetching dashboard data:", error);
             } finally { setLoading(false); }
         };
@@ -287,12 +208,6 @@ const AdminDashboard: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <div className="lg:col-span-3"><ChartCard title="Total de Inscrições por Curso"><BarChart data={coursePopularity} /></ChartCard></div>
                 <div className="lg:col-span-2"><ChartCard title="Estado dos Alunos"><PieChart data={studentStatus} highlightedStatus={highlightedStatus} onHighlight={setHighlightedStatus} /></ChartCard></div>
-            </div>
-
-            <div>
-                <ChartCard title="Progresso nos Últimos 15 Dias">
-                    <VerticalBarChart data={timeProgress} />
-                </ChartCard>
             </div>
         </div>
     );

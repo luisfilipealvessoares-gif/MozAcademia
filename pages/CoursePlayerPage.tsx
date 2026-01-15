@@ -437,7 +437,7 @@ const CoursePlayerPage: React.FC = () => {
                             {certificateRequested ? (
                                 <p className="text-blue-600 font-semibold text-lg">{t('course.player.certificateRequested')}</p>
                             ) : (
-                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg">
                                     {t('course.player.requestCertificate')}
                                 </button>
                             )}

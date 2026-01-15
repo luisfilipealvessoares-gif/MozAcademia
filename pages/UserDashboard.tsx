@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -132,7 +133,7 @@ const UserDashboard: React.FC = () => {
                             }
                             
                             return (
-                            <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
                                 <div>
                                     <h3 className="font-bold text-xl text-gray-800 mb-2">{courseTitle}</h3>
                                     <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{courseDescription}</p>

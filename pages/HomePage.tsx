@@ -132,7 +132,7 @@ const HomePage: React.FC = () => {
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-200 mb-8 drop-shadow-md">
                     {t('home.hero.subtitle')}
                 </p>
-                <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-transform transform hover:scale-105 shadow-xl">
+                <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-brand-up transition-all duration-300 shadow-xl hover:shadow-2xl">
                     {t('home.hero.button')}
                 </Link>
             </div>
@@ -154,7 +154,7 @@ const HomePage: React.FC = () => {
                         }
 
                         return (
-                            <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 group">
+                            <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl group">
                                 {/* Image Container with Branding Tag */}
                                 <div className="relative">
                                     <img 
@@ -207,21 +207,21 @@ const HomePage: React.FC = () => {
         <section id="porque-nos" className="bg-brand-light py-20 px-8 rounded-2xl">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-12 text-center">{t('home.whyUs.title')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <BookOpenIcon className="h-8 w-8"/>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">{t('home.whyUs.card1.title')}</h3>
                     <p className="text-gray-600">{t('home.whyUs.card1.text')}</p>
                 </div>
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <LightBulbIcon className="h-8 w-8"/>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">{t('home.whyUs.card2.title')}</h3>
                     <p className="text-gray-600">{t('home.whyUs.card2.text')}</p>
                 </div>
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition-transform duration-300">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
                     <div className="inline-block bg-brand-moz/10 text-brand-moz p-4 rounded-full mb-4">
                         <ChartBarIcon className="h-8 w-8"/>
                     </div>
