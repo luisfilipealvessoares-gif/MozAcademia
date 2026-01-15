@@ -78,18 +78,28 @@ const AppRoutes: React.FC = () => {
 
 
 const App: React.FC = () => {
-  const hasBeenHidden = useRef(false);
+  // Guarda o timestamp de quando o separador ficou oculto.
+  const hiddenAt = useRef<number | null>(null);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      const oneMinuteInMs = 60 * 1000;
+
       if (document.visibilityState === 'hidden') {
-        hasBeenHidden.current = true;
-      }
-      // Quando o separador volta a estar visível E já esteve oculto antes, recarrega.
-      if (document.visibilityState === 'visible' && hasBeenHidden.current) {
-        // Isto fornece uma forma simples de resetar o estado da aplicação se ficar inconsistente
-        // depois do separador do navegador ter estado em segundo plano.
-        window.location.reload();
+        // Armazena a hora exacta em que o utilizador deixa o separador.
+        hiddenAt.current = Date.now();
+      } else if (document.visibilityState === 'visible' && hiddenAt.current) {
+        const timeAway = Date.now() - hiddenAt.current;
+        
+        // Se o utilizador esteve ausente por mais de um minuto, a página é recarregada.
+        // Isto garante que todos os dados e o estado da sessão estão actualizados,
+        // evitando inconsistências ("bugs") após um longo período de inactividade.
+        if (timeAway > oneMinuteInMs) {
+          window.location.reload();
+        }
+
+        // Limpa o timestamp após a verificação, para a próxima vez que o separador ficar oculto.
+        hiddenAt.current = null;
       }
     };
 
