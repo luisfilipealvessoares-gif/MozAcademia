@@ -27,11 +27,14 @@ const ErrorFallback: React.FC<FallbackProps> = ({ t }) => (
     </div>
 );
 
-// FIX: Changed the class to extend `React.Component` directly.
-// This resolves an issue where TypeScript was not correctly identifying this as a component class,
-// leading to `this.props` being considered undefined.
+// FIX: Refactored the class component to use a constructor for state initialization.
+// This resolves an issue where TypeScript was not correctly identifying `this.props`,
+// likely due to build environment configurations that don't fully support class field syntax for state.
 class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) => string }, State> {
-  state: State = { hasError: false };
+  constructor(props: Props & { t: (key: string) => string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
