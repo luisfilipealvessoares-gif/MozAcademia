@@ -153,57 +153,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [fetchProfile, signOut]);
   
-    // Adiciona um mecanismo robusto de ressincronização da sessão no foco do separador.
+    // Adiciona um refresh automático e visível sempre que o utilizador volta ao separador.
+    // Isto garante que o estado da aplicação está sempre sincronizado, evitando bugs.
     useEffect(() => {
-        const handleVisibilityChange = async () => {
+        const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                const { data, error } = await supabase.auth.getSession();
-
-                // `getSession` pode retornar um erro 'Auth session missing!' se o token de acesso
-                // expirou e não há token de atualização. Isso é tratado como um estado de logout.
-                if (error) {
-                    if (error.message === 'Auth session missing!') {
-                        // Se o estado local ainda acha que há uma sessão, limpa-o.
-                        if (session) {
-                             setUser(null);
-                             setSession(null);
-                             setProfile(null);
-                             setIsAdmin(false);
-                        }
-                        return; // Sessão não encontrada, o que é um estado válido.
-                    } else {
-                        // Um erro inesperado (ex: rede) ocorreu.
-                        console.error("Erro ao revalidar a sessão no foco, a terminar sessão:", error);
-                        await signOut();
-                        return;
-                    }
-                }
-                
-                const newSession = data.session;
-                
-                // Compara o ID do utilizador da nova sessão com o da sessão atual no estado do React.
-                // Se forem diferentes (ex: login/logout noutro separador), sincroniza o estado.
-                if (newSession?.user?.id !== session?.user?.id) {
-                    if (newSession?.user) {
-                        // Um utilizador foi encontrado, mas não corresponde ao estado atual. Atualizar.
-                        const userProfile = await fetchProfile(newSession.user);
-                        if (userProfile) {
-                            setSession(newSession);
-                            setUser(newSession.user);
-                            setProfile(userProfile as UserProfile);
-                            setIsAdmin(userProfile.is_admin);
-                        } else {
-                            // Sessão válida mas sem perfil, estado inconsistente. Fazer logout.
-                            await signOut();
-                        }
-                    } else {
-                        // Nenhuma sessão foi encontrada, mas o estado React ainda tem um utilizador. Limpar o estado.
-                        setUser(null);
-                        setSession(null);
-                        setProfile(null);
-                        setIsAdmin(false);
-                    }
-                }
+                window.location.reload();
             }
         };
         
@@ -212,7 +167,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [session, fetchProfile, signOut]); // As dependências garantem que temos o estado mais recente para comparação.
+    }, []); // O array de dependências vazio garante que o listener é adicionado apenas uma vez.
 
   const resetTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
