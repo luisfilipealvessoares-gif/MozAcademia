@@ -1,5 +1,5 @@
-// FIX: Changed import to use a named `Component` import which is standard for class components.
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+import React, { ErrorInfo, ReactNode } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 
 interface Props {
@@ -27,10 +27,10 @@ const ErrorFallback: React.FC<FallbackProps> = ({ t }) => (
     </div>
 );
 
-// FIX: Use the named `Component` import for the class extension. This resolves
-// an issue where TypeScript was not correctly identifying this as a component class,
+// FIX: Changed the class to extend `React.Component` directly.
+// This resolves an issue where TypeScript was not correctly identifying this as a component class,
 // leading to `this.props` being considered undefined.
-class ErrorBoundaryInternal extends Component<Props & { t: (key: string) => string }, State> {
+class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) => string }, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {
