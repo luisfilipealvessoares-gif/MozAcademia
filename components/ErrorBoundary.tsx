@@ -1,3 +1,4 @@
+// FIX: Changed import to use a named `Component` import which is standard for class components.
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 
@@ -26,8 +27,9 @@ const ErrorFallback: React.FC<FallbackProps> = ({ t }) => (
     </div>
 );
 
-
-class ErrorBoundaryInternal extends Component<Props & { t: (key: string) => string }, State> {
+// Extending from `React.Component` directly to fix an issue where the named `Component` import
+// was not correctly identifying this as a component class, leading to `this.props` being undefined.
+class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) => string }, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {
@@ -40,11 +42,9 @@ class ErrorBoundaryInternal extends Component<Props & { t: (key: string) => stri
 
   render() {
     if (this.state.hasError) {
-      // FIX: In a class component, props must be accessed via `this.props`.
       return <ErrorFallback t={this.props.t} />;
     }
 
-    // FIX: In a class component, children must be accessed via `this.props.children`.
     return this.props.children;
   }
 }

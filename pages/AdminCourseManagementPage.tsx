@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -15,22 +16,35 @@ const AdminCourseManagementPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const fetchModules = useCallback(async () => {
+  const fetchModules = useCallback(async (signal: AbortSignal) => {
     if (!courseId) return;
-    const { data } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order');
-    if (data) setModules(data);
+    const { data } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order').abortSignal(signal);
+    if (data && !signal.aborted) setModules(data);
   }, [courseId]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchCourse = async () => {
       if (!courseId) return;
       setLoading(true);
-      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single();
+      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single().abortSignal(signal);
+      if (signal.aborted) return;
+      
       setCourse(courseData);
-      await fetchModules();
-      setLoading(false);
+      await fetchModules(signal);
+
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     };
+    
     fetchCourse();
+    
+    return () => {
+      controller.abort();
+    };
   }, [courseId, fetchModules]);
 
   const handleOpenModal = (module: Partial<Module> | null = null) => {
@@ -93,7 +107,8 @@ const AdminCourseManagementPage: React.FC = () => {
         alert('Erro ao salvar o módulo: ' + error.message);
     } else {
         setShowSuccess(true);
-        await fetchModules();
+        // Use a dummy controller as we don't need to cancel this specific refetch
+        await fetchModules(new AbortController().signal);
         setTimeout(() => {
             handleCloseModal();
         }, 2000);
@@ -126,7 +141,7 @@ const AdminCourseManagementPage: React.FC = () => {
         }
       }
       
-      fetchModules();
+      await fetchModules(new AbortController().signal);
     }
   }
 

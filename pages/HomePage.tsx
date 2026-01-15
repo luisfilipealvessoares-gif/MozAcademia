@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
@@ -34,6 +35,50 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchPageData = async () => {
+        setLoading(true);
+        try {
+            const coursesPromise = supabase.from('courses').select('*').abortSignal(signal);
+            
+            const { data: coursesData, error: coursesError } = await coursesPromise;
+            if (coursesError) throw coursesError;
+            setCourses(coursesData || []);
+
+            if (user) {
+                const enrollmentsPromise = supabase
+                    .from('enrollments')
+                    .select('course_id')
+                    .eq('user_id', user.id)
+                    .abortSignal(signal);
+                const { data: enrollmentsData, error: enrollmentsError } = await enrollmentsPromise;
+                if (enrollmentsError) throw enrollmentsError;
+                setEnrolledCourses(enrollmentsData ? enrollmentsData.map(e => e.course_id) : []);
+            } else {
+                setEnrolledCourses([]);
+            }
+
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error('Error fetching home page data:', error.message);
+            }
+        } finally {
+            if (!signal.aborted) {
+                setLoading(false);
+            }
+        }
+    };
+    
+    fetchPageData();
+
+    return () => {
+        controller.abort();
+    };
+  }, [user]);
+  
+  useEffect(() => {
     // Handle scrolling to anchor links
     if (!loading && location.hash === '#cursos') {
       const id = location.hash.replace('#', '');
@@ -43,45 +88,6 @@ const HomePage: React.FC = () => {
       }
     }
   }, [location, loading]);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      const { data: coursesData, error: coursesError } = await supabase
-        .from('courses')
-        .select('*');
-      
-      if (coursesError) {
-        console.error('Error fetching courses:', coursesError.message);
-      } else if (coursesData) {
-        setCourses(coursesData);
-      }
-      setLoading(false);
-    };
-
-    fetchCourses();
-  }, []);
-
-  useEffect(() => {
-    const fetchEnrollments = async () => {
-      if (!user) {
-        setEnrolledCourses([]);
-        return;
-      }
-      const { data: enrollmentsData, error: enrollmentsError } = await supabase
-        .from('enrollments')
-        .select('course_id')
-        .eq('user_id', user.id);
-      
-      if (enrollmentsError) {
-        console.error('Error fetching enrollments:', enrollmentsError.message);
-      } else if (enrollmentsData) {
-        setEnrolledCourses(enrollmentsData.map(e => e.course_id));
-      }
-    };
-    
-    fetchEnrollments();
-  }, [user]);
 
   const handleEnroll = async (courseId: string) => {
     if (!user) {

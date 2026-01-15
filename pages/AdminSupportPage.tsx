@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 import { SupportTicket } from '../types';
 import { Link } from 'react-router-dom';
@@ -8,20 +9,52 @@ const AdminSupportPage: React.FC = () => {
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress' | 'closed'>('all');
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    useEffect(() => {
-        const fetchTickets = async () => {
-            setLoading(true);
+    const fetchTickets = useCallback(async () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
+        try {
             const { data, error } = await supabase
                 .from('support_tickets')
                 .select('*, user_profiles(full_name)')
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .abortSignal(signal);
 
-            if (data) setTickets(data as any);
-            setLoading(false);
-        };
-        fetchTickets();
+            if (error) throw error;
+
+            if (data && !signal.aborted) setTickets(data as any);
+
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Error fetching support tickets:", error);
+            }
+        } finally {
+            if (!signal.aborted) {
+                setLoading(false);
+            }
+        }
     }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchTickets();
+        
+        const channel = supabase.channel('admin-support-tickets')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
+            .subscribe();
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            supabase.removeChannel(channel);
+        };
+    }, [fetchTickets]);
 
     const filteredTickets = useMemo(() => {
         if (statusFilter === 'all') return tickets;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 
 // --- Data Interfaces ---
@@ -138,19 +138,26 @@ const AdminDashboard: React.FC = () => {
     const [coursePopularity, setCoursePopularity] = useState<ChartDataPoint[]>([]);
     const [studentStatus, setStudentStatus] = useState<StudentStatusData>({ inProgress: 0, completed: 0, requestedCertificate: 0 });
     const [highlightedStatus, setHighlightedStatus] = useState<string | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchAllData = useCallback(async () => {
-        // Não mostrar o spinner para atualizações em tempo real, apenas para o carregamento inicial.
-        // setLoading(true) foi removido daqui para uma melhor experiência do utilizador.
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
         try {
             const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes, totalUsersRes ] = await Promise.all([
-                supabase.from('enrollments').select('courses(title)'),
-                supabase.from('enrollments').select('user_id', { count: 'exact' }),
-                supabase.from('quiz_attempts').select('user_id').eq('passed', true),
-                supabase.from('certificate_requests').select('user_id'),
-                supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-                supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false),
+                supabase.from('enrollments').select('courses(title)').abortSignal(signal),
+                supabase.from('enrollments').select('user_id', { count: 'exact' }).abortSignal(signal),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true).abortSignal(signal),
+                supabase.from('certificate_requests').select('user_id').abortSignal(signal),
+                supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending').abortSignal(signal),
+                supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false).abortSignal(signal),
             ]);
+            
+            if (signal.aborted) return;
 
             // KPI Stats
             const completedUsers = new Set(completionsRes.data?.map(c => c.user_id));
@@ -164,15 +171,12 @@ const AdminDashboard: React.FC = () => {
             // Course Popularity Chart
             if (popularityRes.data) {
                 const popularity = popularityRes.data.reduce<Record<string, number>>((acc, curr) => {
-                    // FIX: Address potential type ambiguity from Supabase joins where a to-one
-                    // relationship can be returned as an object or an array.
                     const course = Array.isArray(curr.courses) ? curr.courses[0] : curr.courses;
                     if (course?.title) {
                         acc[course.title] = (acc[course.title] || 0) + 1;
                     }
                     return acc;
                 }, {});
-                // FIX: The `value` from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
                 setCoursePopularity(Object.entries(popularity).map(([label, value]) => ({ label, value: value as number })).sort((a, b) => b.value - a.value));
             }
 
@@ -187,14 +191,21 @@ const AdminDashboard: React.FC = () => {
             });
             setStudentStatus({ inProgress, completed, requestedCertificate: requestedUsers.size });
 
-        } catch (error) { console.error("Error fetching dashboard data:", error);
-        } finally { setLoading(false); }
+        } catch (error: any) { 
+            if (error.name !== 'AbortError') {
+                console.error("Error fetching dashboard data:", error);
+            }
+        } finally { 
+            if (!signal.aborted) {
+                setLoading(false); 
+            }
+        }
     }, []);
 
     useEffect(() => {
-        fetchAllData(); // Carregamento inicial
+        setLoading(true);
+        fetchAllData();
 
-        // Subscrição em tempo real para atualizações automáticas
         const channel = supabase.channel('admin-dashboard-changes')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, fetchAllData)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_attempts' }, fetchAllData)
@@ -203,6 +214,9 @@ const AdminDashboard: React.FC = () => {
           .subscribe();
     
         return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
             supabase.removeChannel(channel);
         };
     }, [fetchAllData]);

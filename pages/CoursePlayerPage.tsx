@@ -37,11 +37,23 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     const { t } = useI18n();
   
     useEffect(() => {
+      const controller = new AbortController();
+      const { signal } = controller;
+
       const fetchQuestions = async () => {
         const { data, error } = await supabase
           .from('quiz_questions')
           .select('*')
-          .eq('course_id', courseId);
+          .eq('course_id', courseId)
+          .abortSignal(signal);
+        
+        if (error) {
+            if (error.name !== 'AbortError') {
+                console.error("Error fetching quiz questions:", error);
+            }
+            return;
+        }
+
         if (data) {
           // FIX: Cast data to 'any' to resolve the type mismatch between Supabase's 'Json'
           // type for the 'options' field and the application's expected 'string[]' type.
@@ -49,7 +61,12 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
           setAnswers(new Array(data.length).fill(null));
         }
       };
+      
       fetchQuestions();
+
+      return () => {
+          controller.abort();
+      };
     }, [courseId]);
   
     const handleAnswer = (optionIndex: number) => {

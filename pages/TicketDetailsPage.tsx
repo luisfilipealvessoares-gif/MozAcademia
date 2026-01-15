@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -14,61 +15,96 @@ const TicketDetailsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const userId = user?.id;
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchTicketAndReplies = useCallback(async () => {
         if (!userId || !ticketId) return;
-        setLoading(true);
-
-        const ticketQuery = supabase
-            .from('support_tickets')
-            .select('*, user_profiles(full_name, id)')
-            .eq('id', ticketId);
-            
-        if (!isAdmin) {
-            ticketQuery.eq('user_id', userId);
-        }
-        const { data: ticketData, error: ticketError } = await ticketQuery.single();
-
-        if (ticketError || !ticketData) {
-            console.error("Error fetching ticket or access denied:", ticketError);
-            setLoading(false);
-            return;
-        }
-        setTicket(ticketData as any);
-
-        const { data: repliesData, error: repliesError } = await supabase
-            .from('ticket_replies')
-            .select('*, user_profiles(full_name, is_admin)')
-            .eq('ticket_id', ticketId)
-            .order('created_at', { ascending: true });
-
-        if (repliesData) {
-            setReplies(repliesData as any);
-        } else if (repliesError) {
-            console.error("Error fetching replies:", repliesError);
-        }
         
-        setLoading(false);
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
+        try {
+            const ticketQuery = supabase
+                .from('support_tickets')
+                .select('*, user_profiles(full_name, id)')
+                .eq('id', ticketId)
+                .abortSignal(signal);
+                
+            if (!isAdmin) {
+                ticketQuery.eq('user_id', userId);
+            }
+            const { data: ticketData, error: ticketError } = await ticketQuery.single();
+
+            if (signal.aborted) return;
+            if (ticketError || !ticketData) {
+                console.error("Error fetching ticket or access denied:", ticketError);
+                setTicket(null);
+                return;
+            }
+            setTicket(ticketData as any);
+
+            const { data: repliesData, error: repliesError } = await supabase
+                .from('ticket_replies')
+                .select('*, user_profiles(full_name, is_admin)')
+                .eq('ticket_id', ticketId)
+                .order('created_at', { ascending: true })
+                .abortSignal(signal);
+
+            if (signal.aborted) return;
+            if (repliesData) {
+                setReplies(repliesData as any);
+            } else if (repliesError) {
+                console.error("Error fetching replies:", repliesError);
+            }
+        } catch(error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Failed to fetch ticket details:", error);
+            }
+        } finally {
+            if (!signal.aborted) {
+                setLoading(false);
+            }
+        }
     }, [ticketId, userId, isAdmin]);
 
     useEffect(() => {
+        setLoading(true);
         fetchTicketAndReplies();
-    }, [fetchTicketAndReplies]);
+
+        const channel = supabase.channel(`ticket-details-${ticketId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'ticket_replies',
+                filter: `ticket_id=eq.${ticketId}`
+            }, () => {
+                fetchTicketAndReplies();
+            })
+            .subscribe();
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            supabase.removeChannel(channel);
+        };
+    }, [fetchTicketAndReplies, ticketId]);
 
     const handlePostReply = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !ticketId || !newMessage.trim()) return;
 
         setSubmitting(true);
-        const { data: newReplyData, error } = await supabase
+        const { error } = await supabase
             .from('ticket_replies')
-            .insert({ ticket_id: ticketId, user_id: user.id, message: newMessage })
-            .select('*, user_profiles(full_name, is_admin)')
-            .single();
-
-        if (newReplyData) {
-            setReplies([...replies, newReplyData as any]);
+            .insert({ ticket_id: ticketId, user_id: user.id, message: newMessage });
+        
+        if (!error) {
             setNewMessage('');
+            // UI will update via the realtime subscription
         }
         setSubmitting(false);
     };

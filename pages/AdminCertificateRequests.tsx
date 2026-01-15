@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { CertificateRequest } from '../types';
 import jsPDF from 'jspdf';
@@ -9,40 +9,47 @@ const AdminCertificateRequests: React.FC = () => {
     const [requests, setRequests] = useState<CertificateRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchRequests = useCallback(async () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
         setError(null);
         try {
-            // Step 1: Fetch base certificate requests
             const { data: certRequestsData, error: certError } = await supabase
                 .from('certificate_requests')
                 .select('*')
                 .eq('status', 'pending')
-                .order('requested_at', { ascending: false });
+                .order('requested_at', { ascending: false })
+                .abortSignal(signal);
 
             if (certError) throw certError;
+            if (signal.aborted) return;
             
             if (certRequestsData && certRequestsData.length > 0) {
                 const userIds = [...new Set(certRequestsData.map(req => req.user_id))];
                 const courseIds = [...new Set(certRequestsData.map(req => req.course_id))];
 
-                // Step 2: Fetch related data in batches
                 const [usersRes, coursesRes, enrollmentsRes] = await Promise.all([
-                    supabase.from('user_profiles').select('id, full_name, company_name').in('id', userIds),
-                    supabase.from('courses').select('id, title').in('id', courseIds),
-                    supabase.from('enrollments').select('user_id, course_id, enrolled_at').in('user_id', userIds)
+                    supabase.from('user_profiles').select('id, full_name, company_name').in('id', userIds).abortSignal(signal),
+                    supabase.from('courses').select('id, title').in('id', courseIds).abortSignal(signal),
+                    supabase.from('enrollments').select('user_id, course_id, enrolled_at').in('user_id', userIds).abortSignal(signal)
                 ]);
+
+                if (signal.aborted) return;
 
                 if (usersRes.error) throw usersRes.error;
                 if (coursesRes.error) throw coursesRes.error;
                 if (enrollmentsRes.error) throw enrollmentsRes.error;
                 
-                // Step 3: Create maps for efficient lookup
                 const usersMap = new Map(usersRes.data.map(u => [u.id, u]));
                 const coursesMap = new Map(coursesRes.data.map(c => [c.id, c]));
                 const enrollmentsMap = new Map(enrollmentsRes.data.map(e => [`${e.user_id}-${e.course_id}`, e.enrolled_at]));
                 
-                // Step 4: Join the data in JavaScript
                 const joinedRequests = certRequestsData.map(req => ({
                     ...req,
                     user_profiles: usersMap.get(req.user_id) || null,
@@ -50,27 +57,36 @@ const AdminCertificateRequests: React.FC = () => {
                     enrolled_at: enrollmentsMap.get(`${req.user_id}-${req.course_id}`)
                 }));
 
-                setRequests(joinedRequests as CertificateRequest[]);
+                if (!signal.aborted) {
+                    setRequests(joinedRequests as CertificateRequest[]);
+                }
             } else {
-                setRequests([]);
+                if (!signal.aborted) setRequests([]);
             }
         } catch (err: any) {
-            console.error("Erro ao buscar pedidos:", err.message);
-            setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
+            if (err.name !== 'AbortError') {
+                console.error("Erro ao buscar pedidos:", err.message);
+                setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
+            }
         } finally {
-            setLoading(false);
+            if (!signal.aborted) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
-        fetchRequests(); // Carregamento inicial
+        setLoading(true);
+        fetchRequests();
 
-        // Subscrição em tempo real para atualizações automáticas
         const channel = supabase.channel('certificate-requests-changes')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'certificate_requests' }, fetchRequests)
           .subscribe();
 
         return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
             supabase.removeChannel(channel);
         };
     }, [fetchRequests]);
@@ -78,7 +94,6 @@ const AdminCertificateRequests: React.FC = () => {
     const handleApprove = async (requestId: string) => {
         if (window.confirm('Tem certeza que deseja aprovar este pedido de certificado?')) {
             await supabase.from('certificate_requests').update({ status: 'issued' }).eq('id', requestId);
-            // A UI será atualizada automaticamente pela subscrição em tempo real.
         }
     };
 

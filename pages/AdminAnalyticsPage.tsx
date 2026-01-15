@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -6,7 +6,6 @@ import autoTable from 'jspdf-autotable';
 interface AnalyticsStats {
     totalUsers: number;
     totalEnrollments: number;
-
     completedCoursesUsers: number;
 }
 
@@ -88,6 +87,7 @@ const AdminAnalyticsPage: React.FC = () => {
     const [coursePopularity, setCoursePopularity] = useState<CoursePopularity[]>([]);
     const [enrollmentsOverTime, setEnrollmentsOverTime] = useState<EnrollmentsOverTime[]>([]);
     const [genderDistribution, setGenderDistribution] = useState<GenderDistribution>({ masculino: 0, feminino: 0 });
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const [modalData, setModalData] = useState<{
         title: string;
@@ -97,61 +97,90 @@ const AdminAnalyticsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchData = useCallback(async () => {
-        const { data: usersData, count: totalUsers } = await supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false);
-        const { count: totalEnrollments } = await supabase.from('enrollments').select('id', { count: 'exact', head: true });
-        const { data: passedAttempts } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true);
-        const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
-
-        setStats({
-            totalUsers: totalUsers ?? 0,
-            totalEnrollments: totalEnrollments ?? 0,
-            completedCoursesUsers: completedCoursesUsers
-        });
-        
-        if(usersData) {
-            const genderCounts = usersData.reduce((acc, user) => {
-                if (user.sexo === 'masculino') acc.masculino++;
-                else if (user.sexo === 'feminino') acc.feminino++;
-                return acc;
-            }, { masculino: 0, feminino: 0 });
-            setGenderDistribution(genderCounts);
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
         }
+        abortControllerRef.current = new AbortController();
+        const { signal } = abortControllerRef.current;
 
-        const { data: enrollmentsWithCourses } = await supabase.from('enrollments').select('courses(id, title)');
-        if (enrollmentsWithCourses) {
-            const popularity = enrollmentsWithCourses.reduce<Record<string, number>>((acc, curr) => {
-                // FIX: Address potential type ambiguity from Supabase joins where a to-one
-                // relationship can be returned as an object or an array.
-                const course = Array.isArray(curr.courses) ? curr.courses[0] : curr.courses;
-                if (course?.title) {
-                    acc[course.title] = (acc[course.title] || 0) + 1;
-                }
-                return acc;
-            }, {});
-            // FIX: The `enrollments` value from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
-            setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments: enrollments as number })).sort((a, b) => b.enrollments - a.enrollments));
-        }
+        try {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const [usersRes, enrollmentsRes, passedAttemptsRes, enrollmentsWithCoursesRes, recentEnrollmentsRes] = await Promise.all([
+                supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false).abortSignal(signal),
+                supabase.from('enrollments').select('id', { count: 'exact', head: true }).abortSignal(signal),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true).abortSignal(signal),
+                supabase.from('enrollments').select('courses(id, title)').abortSignal(signal),
+                supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString()).abortSignal(signal)
+            ]);
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString());
-        if (recentEnrollments) {
-            const countsByDate = recentEnrollments.reduce<Record<string, number>>((acc, curr) => {
-                const date = new Date(curr.enrolled_at).toLocaleDateString('pt-BR');
-                acc[date] = (acc[date] || 0) + 1;
-                return acc;
-            }, {});
-                // FIX: The `count` value from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
+            if (signal.aborted) return;
+            
+            // Handle users and gender
+            const { data: usersData, count: totalUsers, error: usersError } = usersRes;
+            if (usersError) throw usersError;
+            setStats(prev => ({...prev, totalUsers: totalUsers ?? 0}));
+            if (usersData) {
+                const genderCounts = usersData.reduce((acc, user) => {
+                    if (user.sexo === 'masculino') acc.masculino++;
+                    else if (user.sexo === 'feminino') acc.feminino++;
+                    return acc;
+                }, { masculino: 0, feminino: 0 });
+                setGenderDistribution(genderCounts);
+            }
+
+            // Handle enrollments count
+            const { count: totalEnrollments, error: enrollmentsError } = enrollmentsRes;
+            if (enrollmentsError) throw enrollmentsError;
+            setStats(prev => ({ ...prev, totalEnrollments: totalEnrollments ?? 0 }));
+            
+            // Handle completions
+            const { data: passedAttempts, error: passedAttemptsError } = passedAttemptsRes;
+            if (passedAttemptsError) throw passedAttemptsError;
+            const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
+            setStats(prev => ({...prev, completedCoursesUsers}));
+
+            // Handle course popularity
+            const { data: enrollmentsWithCourses, error: enrollmentsCoursesError } = enrollmentsWithCoursesRes;
+            if(enrollmentsCoursesError) throw enrollmentsCoursesError;
+            if (enrollmentsWithCourses) {
+                const popularity = enrollmentsWithCourses.reduce<Record<string, number>>((acc, curr) => {
+                    const course = Array.isArray(curr.courses) ? curr.courses[0] : curr.courses;
+                    if (course?.title) {
+                        acc[course.title] = (acc[course.title] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+                setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments: enrollments as number })).sort((a, b) => b.enrollments - a.enrollments));
+            }
+            
+            // Handle recent enrollments
+            const { data: recentEnrollments, error: recentEnrollmentsError } = recentEnrollmentsRes;
+            if(recentEnrollmentsError) throw recentEnrollmentsError;
+            if (recentEnrollments) {
+                const countsByDate = recentEnrollments.reduce<Record<string, number>>((acc, curr) => {
+                    const date = new Date(curr.enrolled_at).toLocaleDateString('pt-BR');
+                    acc[date] = (acc[date] || 0) + 1;
+                    return acc;
+                }, {});
                 setEnrollmentsOverTime(Object.entries(countsByDate).map(([date, count]) => ({ date, count: count as number })).sort((a,b) => {
-                const partsA = a.date.split('/');
-                const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
-                const partsB = b.date.split('/');
-                const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                return dateA.getTime() - dateB.getTime();
+                    const partsA = a.date.split('/');
+                    const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
+                    const partsB = b.date.split('/');
+                    const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
+                    return dateA.getTime() - dateB.getTime();
                 }));
+            }
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Error fetching analytics data:", error);
+            }
+        } finally {
+            if (!signal.aborted) {
+                setLoading(false);
+            }
         }
-
-        setLoading(false);
     }, []);
 
     useEffect(() => {
@@ -165,6 +194,9 @@ const AdminAnalyticsPage: React.FC = () => {
           .subscribe();
 
         return () => {
+          if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+          }
           supabase.removeChannel(channel);
         };
     }, [fetchData]);
