@@ -2,7 +2,7 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -21,55 +21,62 @@ const UserDashboard: React.FC = () => {
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const userId = user?.id;
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const isProfileComplete = !!(profile && profile.company_name && profile.phone_number && profile.sexo);
+    
+    const fetchEnrolledCourses = useCallback(async () => {
+        if (!userId) return;
 
-    useEffect(() => {
-        const fetchEnrolledCourses = async () => {
-            if (!userId) return;
-            setLoadingCourses(true);
-            
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
+        setLoadingCourses(true);
+        try {
             const { data: enrollments, error: enrollmentsError } = await supabase
                 .from('enrollments')
                 .select('course_id')
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .abortSignal(signal);
 
-            if (enrollmentsError) {
-                console.error("Error fetching enrollments:", enrollmentsError.message);
-                setLoadingCourses(false);
-                return;
-            }
+            if (enrollmentsError) throw enrollmentsError;
+            if (signal.aborted) return;
 
             if (!enrollments || enrollments.length === 0) {
                 setEnrolledCourses([]);
-                setLoadingCourses(false);
                 return;
             }
             
             const courseIds = enrollments.map(e => e.course_id);
-
             const { data: coursesData, error: coursesError } = await supabase
                 .from('courses')
                 .select('*')
-                .in('id', courseIds);
+                .in('id', courseIds)
+                .abortSignal(signal);
 
-            if (coursesError) {
-                console.error("Error fetching courses:", coursesError.message);
-                setLoadingCourses(false);
-                return;
-            }
+            if (coursesError) throw coursesError;
+            if (signal.aborted || !coursesData) return;
 
             const coursePromises = coursesData.map(async (course) => {
                 const { count: module_count } = await supabase
                     .from('modules')
                     .select('*', { count: 'exact', head: true })
-                    .eq('course_id', course.id);
+                    .eq('course_id', course.id)
+                    .abortSignal(signal);
 
+                const { data: moduleIdsForCourse, error: miError } = await supabase.from('modules').select('id').eq('course_id', course.id).abortSignal(signal);
+                if (miError) throw miError;
+                const moduleIds = moduleIdsForCourse?.map(m => m.id) || [];
+                
                 const { data: progressData } = await supabase
                     .from('user_progress')
-                    .select('module_id')
+                    .select('module_id', { count: 'exact' })
                     .eq('user_id', userId)
-                    .in('module_id', (await supabase.from('modules').select('id').eq('course_id', course.id)).data?.map(m => m.id) || []);
+                    .in('module_id', moduleIds)
+                    .abortSignal(signal);
                 
                 return {
                     ...course,
@@ -79,16 +86,33 @@ const UserDashboard: React.FC = () => {
             });
             
             const finalCourses = await Promise.all(coursePromises);
-            setEnrolledCourses(finalCourses as EnrolledCourse[]);
-            setLoadingCourses(false);
-        };
+            if (!signal.aborted) {
+                setEnrolledCourses(finalCourses as EnrolledCourse[]);
+            }
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Error fetching enrolled courses:", error.message);
+            }
+        } finally {
+            if (!signal.aborted) {
+                setLoadingCourses(false);
+            }
+        }
+    }, [userId]);
 
+    useEffect(() => {
         if (!authLoading && isProfileComplete) {
             fetchEnrolledCourses();
         } else if (!isProfileComplete) {
             setLoadingCourses(false);
         }
-    }, [userId, isProfileComplete, authLoading]);
+        
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, [isProfileComplete, authLoading, fetchEnrolledCourses]);
 
     if (authLoading) {
         return (

@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
@@ -26,6 +26,7 @@ import SupportPage from './pages/SupportPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AboutPage from './pages/AboutPage';
 import ScrollToTop from './components/ScrollToTop';
+import { supabase } from './services/supabase';
 
 
 // Este componente contém a lógica de roteamento.
@@ -78,38 +79,6 @@ const AppRoutes: React.FC = () => {
 
 
 const App: React.FC = () => {
-  // Guarda o timestamp de quando o separador ficou oculto.
-  const hiddenAt = useRef<number | null>(null);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      const oneMinuteInMs = 60 * 1000;
-
-      if (document.visibilityState === 'hidden') {
-        // Armazena a hora exacta em que o utilizador deixa o separador.
-        hiddenAt.current = Date.now();
-      } else if (document.visibilityState === 'visible' && hiddenAt.current) {
-        const timeAway = Date.now() - hiddenAt.current;
-        
-        // Se o utilizador esteve ausente por mais de um minuto, a página é recarregada.
-        // Isto garante que todos os dados e o estado da sessão estão actualizados,
-        // evitando inconsistências ("bugs") após um longo período de inactividade.
-        if (timeAway > oneMinuteInMs) {
-          window.location.reload();
-        }
-
-        // Limpa o timestamp após a verificação, para a próxima vez que o separador ficar oculto.
-        hiddenAt.current = null;
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-  
   return (
     <AuthProvider>
       <AuthRedirectHandler />

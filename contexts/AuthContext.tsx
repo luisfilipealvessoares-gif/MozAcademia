@@ -153,6 +153,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [fetchProfile, signOut]);
   
+    // Adiciona um mecanismo robusto de ressincronização da sessão no foco do separador.
+    useEffect(() => {
+        const handleVisibilityChange = async () => {
+        if (document.visibilityState === 'visible') {
+            // getSession() irá atualizar automaticamente o token se estiver expirado.
+            const { data, error } = await supabase.auth.getSession();
+
+            if (error) {
+                console.error("Erro ao revalidar a sessão no foco:", error);
+                await signOut(); // Se a sessão for inválida, garante que o utilizador é desconectado.
+                return;
+            }
+
+            // Ressincroniza manualmente o estado se o utilizador mudou (ex: logout noutro separador)
+            // ou se a sessão foi restaurada do localStorage mas ainda não está no estado do React.
+            if (data.session?.user?.id !== session?.user?.id) {
+                const newSession = data.session;
+                if (newSession?.user) {
+                    const userProfile = await fetchProfile(newSession.user);
+                    if (userProfile) {
+                        setSession(newSession);
+                        setUser(newSession.user);
+                        setProfile(userProfile as UserProfile);
+                        setIsAdmin(userProfile.is_admin);
+                    } else {
+                        // Perfil não encontrado para um utilizador válido, algo está errado. Desconectar.
+                        await signOut();
+                    }
+                } else if (session) { // Se havia uma sessão no estado mas agora não há
+                    // Nenhuma sessão do Supabase, garante que estamos desconectados no estado do React.
+                    setUser(null);
+                    setSession(null);
+                    setProfile(null);
+                    setIsAdmin(false);
+                }
+            }
+        }
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [session, fetchProfile, signOut]); // As dependências garantem que temos o estado mais recente para comparação.
+
   const resetTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     inactivityTimer.current = window.setTimeout(signOut, INACTIVITY_TIMEOUT);

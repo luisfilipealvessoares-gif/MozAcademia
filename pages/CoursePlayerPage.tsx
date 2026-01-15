@@ -213,21 +213,24 @@ const CoursePlayerPage: React.FC = () => {
     }, [activeModule, t]);
 
     useEffect(() => {
-        let isActive = true;
+        const controller = new AbortController();
+        const { signal } = controller;
+
         const initializeCourseState = async () => {
             if (!userId || !courseId) return;
             setLoading(true);
             setFetchError(null);
 
             try {
-                const [courseRes, modulesRes, progressRes, attemptRes] = await Promise.all([
-                    supabase.from('courses').select('*').eq('id', courseId).single(),
-                    supabase.from('modules').select('*').eq('course_id', courseId).order('order'),
-                    supabase.from('user_progress').select('module_id').eq('user_id', userId),
-                    supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single()
+                const [courseRes, modulesRes, progressRes, attemptRes, certReqRes] = await Promise.all([
+                    supabase.from('courses').select('*').eq('id', courseId).single().abortSignal(signal),
+                    supabase.from('modules').select('*').eq('course_id', courseId).order('order').abortSignal(signal),
+                    supabase.from('user_progress').select('module_id').eq('user_id', userId).abortSignal(signal),
+                    supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single().abortSignal(signal),
+                    supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single().abortSignal(signal)
                 ]);
-                
-                if (!isActive) return;
+
+                if (signal.aborted) return;
 
                 const { data: courseData, error: courseError } = courseRes;
                 if (courseError) throw courseError;
@@ -246,13 +249,15 @@ const CoursePlayerPage: React.FC = () => {
                 const { data: attemptData, error: attemptError } = attemptRes;
                 if (attemptError && attemptError.code !== 'PGRST116') throw attemptError;
 
+                const { data: certReqData, error: certReqError } = certReqRes;
+                if (certReqError && certReqError.code !== 'PGRST116') throw certReqError;
+                if (certReqData) setCertificateRequested(true);
+
                 const allModulesCompleted = modulesList.length > 0 && completedIds.length === modulesList.length;
 
                 if (attemptData?.passed) {
                     setQuizPassed(true);
                     setView('certificate');
-                    const { data: certReq } = await supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single();
-                    if (certReq) setCertificateRequested(true);
                 } else if (allModulesCompleted) {
                     setView('quiz');
                 } else {
@@ -265,19 +270,21 @@ const CoursePlayerPage: React.FC = () => {
                     }
                 }
             } catch (error: any) {
-                console.error("Failed to load course data:", error.message);
-                if (isActive) {
+                if (error.name !== 'AbortError') {
+                    console.error("Failed to load course data:", error.message);
                     setFetchError(t('course.player.dataLoadError'));
                 }
             } finally {
-                if (isActive) setLoading(false);
+                if (!signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         initializeCourseState();
         
         return () => {
-            isActive = false;
+            controller.abort();
         };
     }, [userId, courseId, navigate, logActivity, t]);
 

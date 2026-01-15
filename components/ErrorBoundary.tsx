@@ -44,7 +44,7 @@ class ErrorBoundaryInternal extends Component<Props & { t: (key: string) => stri
       return <ErrorFallback t={this.props.t} />;
     }
 
-    // FIX: In a class component, props must be accessed via `this.props`.
+    // FIX: In a class component, children must be accessed via `this.props.children`.
     return this.props.children;
   }
 }

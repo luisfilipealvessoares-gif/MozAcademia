@@ -1,6 +1,4 @@
-
-
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { UserProfile, Course } from '../types';
 import jsPDF from 'jspdf';
@@ -21,6 +19,7 @@ const AdminStudentProgress: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedStudent, setSelectedStudent] = useState<(Partial<UserProfile> & { email?: string | null }) | null>(null);
     const [showStudentDetailModal, setShowStudentDetailModal] = useState(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     // --- Filter State ---
     const [nameFilter, setNameFilter] = useState('');
@@ -35,110 +34,127 @@ const AdminStudentProgress: React.FC = () => {
     const [uniqueCompanies, setUniqueCompanies] = useState<string[]>([]);
 
 
-    useEffect(() => {
-        const fetchProgress = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // 1. Fetch all enrollments
-                const { data: enrollments, error: enrollError } = await supabase
-                    .from('enrollments')
-                    .select('id, course_id, user_id, enrolled_at')
-                    .order('enrolled_at', { ascending: false });
+    const fetchProgress = useCallback(async () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+        
+        setError(null);
+        try {
+            const { data: enrollments, error: enrollError } = await supabase
+                .from('enrollments')
+                .select('id, course_id, user_id, enrolled_at')
+                .order('enrolled_at', { ascending: false })
+                .abortSignal(signal);
 
-                if (enrollError) throw enrollError;
-                if (!enrollments || enrollments.length === 0) {
-                    setStudentProgress([]);
-                    setLoading(false);
-                    return;
-                }
+            if (enrollError) throw enrollError;
+            if (signal.aborted || !enrollments || enrollments.length === 0) {
+                if (!signal.aborted) setStudentProgress([]);
+                return;
+            }
+            
+            const userIds = [...new Set(enrollments.map(e => e.user_id))];
+            const courseIds = [...new Set(enrollments.map(e => e.course_id))];
+            
+            const [usersRes, coursesRes, modulesRes, progressRes] = await Promise.all([
+                supabase.from('user_profiles').select('*').in('id', userIds).abortSignal(signal),
+                supabase.from('courses').select('*').in('id', courseIds).abortSignal(signal),
+                supabase.from('modules').select('id, course_id').in('course_id', courseIds).abortSignal(signal),
+                supabase.from('user_progress').select('user_id, module_id').in('user_id', userIds).abortSignal(signal)
+            ]);
+
+            if (signal.aborted) return;
+
+            if (usersRes.error) throw usersRes.error;
+            if (coursesRes.error) throw coursesRes.error;
+            if (modulesRes.error) throw modulesRes.error;
+            if (progressRes.error) throw progressRes.error;
+            
+            const usersMap = new Map(usersRes.data.map(u => [u.id, u]));
+            const coursesMap = new Map(coursesRes.data.map(c => [c.id, c]));
+            
+            const modulesByCourse = modulesRes.data.reduce<Record<string, string[]>>((acc, module) => {
+                if (!acc[module.course_id]) acc[module.course_id] = [];
+                acc[module.course_id].push(module.id);
+                return acc;
+            }, {});
+
+            const completedModulesByUser = progressRes.data.reduce<Record<string, Set<string>>>((acc, progress) => {
+                if (!acc[progress.user_id]) acc[progress.user_id] = new Set();
+                acc[progress.user_id].add(progress.module_id);
+                return acc;
+            }, {});
+
+            const results = enrollments.map(enr => {
+                const user = usersMap.get(enr.user_id) || { 
+                    id: enr.user_id, 
+                    full_name: '[Usuário Removido]',
+                    company_name: null,
+                    email: null,
+                    phone_number: null,
+                    sexo: null,
+                    is_admin: false,
+                };
+                const course = coursesMap.get(enr.course_id) || { id: enr.course_id, title: '[Curso Removido]' };
+                const courseModuleIds = modulesByCourse[enr.course_id] || [];
+                const totalModules = courseModuleIds.length;
                 
-                const userIds = [...new Set(enrollments.map(e => e.user_id))];
-                const courseIds = [...new Set(enrollments.map(e => e.course_id))];
-                
-                // 2. Batch fetch all related data in parallel to be efficient
-                const [usersRes, coursesRes, modulesRes, progressRes] = await Promise.all([
-                    supabase.from('user_profiles').select('*').in('id', userIds),
-                    supabase.from('courses').select('*').in('id', courseIds),
-                    supabase.from('modules').select('id, course_id').in('course_id', courseIds),
-                    supabase.from('user_progress').select('user_id, module_id').in('user_id', userIds)
-                ]);
-
-                if (usersRes.error) throw usersRes.error;
-                if (coursesRes.error) throw coursesRes.error;
-                if (modulesRes.error) throw modulesRes.error;
-                if (progressRes.error) throw progressRes.error;
-                
-                // 3. Process data into maps for fast, efficient lookups in memory
-                const usersMap = new Map(usersRes.data.map(u => [u.id, u]));
-                const coursesMap = new Map(coursesRes.data.map(c => [c.id, c]));
-                
-                const modulesByCourse = modulesRes.data.reduce<Record<string, string[]>>((acc, module) => {
-                    if (!acc[module.course_id]) acc[module.course_id] = [];
-                    acc[module.course_id].push(module.id);
-                    return acc;
-                }, {});
-
-                const completedModulesByUser = progressRes.data.reduce<Record<string, Set<string>>>((acc, progress) => {
-                    if (!acc[progress.user_id]) acc[progress.user_id] = new Set();
-                    acc[progress.user_id].add(progress.module_id);
-                    return acc;
-                }, {});
-
-                // 4. Calculate progress for each enrollment using the prepared maps
-                const results = enrollments.map(enr => {
-                    // FIX: Expanded the fallback user object to include all properties accessed later.
-                    // This ensures that even if a user profile is missing (e.g., deleted), the app
-                    // doesn't crash and has default values to display.
-                    const user = usersMap.get(enr.user_id) || { 
-                        id: enr.user_id, 
-                        full_name: '[Usuário Removido]',
-                        company_name: null,
-                        email: null,
-                        phone_number: null,
-                        sexo: null,
-                        is_admin: false,
-                    };
-                    const course = coursesMap.get(enr.course_id) || { id: enr.course_id, title: '[Curso Removido]' };
-
-                    const courseModuleIds = modulesByCourse[enr.course_id] || [];
-                    const totalModules = courseModuleIds.length;
-                    
-                    if (totalModules === 0) {
-                        return { enrollmentId: enr.id, user, course, progress: 0, enrolled_at: enr.enrolled_at };
-                    }
-
-                    const userCompletedModules = completedModulesByUser[enr.user_id] || new Set();
-                    const completedInThisCourse = courseModuleIds.filter(moduleId => userCompletedModules.has(moduleId)).length;
-                    
-                    const progress = (completedInThisCourse / totalModules) * 100;
-
-                    return { 
-                        enrollmentId: enr.id, 
-                        user, 
-                        course, 
-                        progress: Math.round(progress),
-                        enrolled_at: enr.enrolled_at
-                    };
-                });
-                
-                if (results) {
-                    setStudentProgress(results as StudentProgressInfo[]);
-                    const courses = [...new Set(results.map(p => p.course.title).filter(Boolean) as string[])];
-                    const companies = [...new Set(results.map(p => p.user.company_name).filter(Boolean) as string[])];
-                    setUniqueCourses(courses.sort());
-                    setUniqueCompanies(companies.sort());
+                if (totalModules === 0) {
+                    return { enrollmentId: enr.id, user, course, progress: 0, enrolled_at: enr.enrolled_at };
                 }
 
-            } catch (err: any) {
+                const userCompletedModules = completedModulesByUser[enr.user_id] || new Set();
+                const completedInThisCourse = courseModuleIds.filter(moduleId => userCompletedModules.has(moduleId)).length;
+                const progress = (completedInThisCourse / totalModules) * 100;
+
+                return { 
+                    enrollmentId: enr.id, 
+                    user, 
+                    course, 
+                    progress: Math.round(progress),
+                    enrolled_at: enr.enrolled_at
+                };
+            });
+            
+            if (results && !signal.aborted) {
+                setStudentProgress(results as StudentProgressInfo[]);
+                const courses = [...new Set(results.map(p => p.course.title).filter(Boolean) as string[])];
+                const companies = [...new Set(results.map(p => p.user.company_name).filter(Boolean) as string[])];
+                setUniqueCourses(courses.sort());
+                setUniqueCompanies(companies.sort());
+            }
+
+        } catch (err: any) {
+            if (err.name !== 'AbortError') {
                 console.error("Error fetching student progress:", err.message || err);
                 setError("Não foi possível carregar o progresso dos alunos.");
-            } finally {
+            }
+        } finally {
+            if (!signal.aborted) {
                 setLoading(false);
             }
-        };
-        fetchProgress();
+        }
     }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchProgress();
+
+        const channel = supabase.channel('student-progress-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'user_progress' }, fetchProgress)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, fetchProgress)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'user_profiles' }, fetchProgress)
+          .subscribe();
+    
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            supabase.removeChannel(channel);
+        };
+    }, [fetchProgress]);
     
     const filteredProgress = useMemo(() => {
         return studentProgress.filter(item => {

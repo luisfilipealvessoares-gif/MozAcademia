@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -96,63 +96,78 @@ const AdminAnalyticsPage: React.FC = () => {
     }>({ title: '', items: [], loading: false });
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+    const fetchData = useCallback(async () => {
+        const { data: usersData, count: totalUsers } = await supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false);
+        const { count: totalEnrollments } = await supabase.from('enrollments').select('id', { count: 'exact', head: true });
+        const { data: passedAttempts } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true);
+        const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
 
-            const { data: usersData, count: totalUsers } = await supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false);
-            const { count: totalEnrollments } = await supabase.from('enrollments').select('id', { count: 'exact', head: true });
-            const { data: passedAttempts } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true);
-            const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
+        setStats({
+            totalUsers: totalUsers ?? 0,
+            totalEnrollments: totalEnrollments ?? 0,
+            completedCoursesUsers: completedCoursesUsers
+        });
+        
+        if(usersData) {
+            const genderCounts = usersData.reduce((acc, user) => {
+                if (user.sexo === 'masculino') acc.masculino++;
+                else if (user.sexo === 'feminino') acc.feminino++;
+                return acc;
+            }, { masculino: 0, feminino: 0 });
+            setGenderDistribution(genderCounts);
+        }
 
-            setStats({
-                totalUsers: totalUsers ?? 0,
-                totalEnrollments: totalEnrollments ?? 0,
-                completedCoursesUsers: completedCoursesUsers
-            });
-            
-            if(usersData) {
-                const genderCounts = usersData.reduce((acc, user) => {
-                    if (user.sexo === 'masculino') acc.masculino++;
-                    else if (user.sexo === 'feminino') acc.feminino++;
-                    return acc;
-                }, { masculino: 0, feminino: 0 });
-                setGenderDistribution(genderCounts);
-            }
+        const { data: enrollmentsWithCourses } = await supabase.from('enrollments').select('courses(id, title)');
+        if (enrollmentsWithCourses) {
+            const popularity = enrollmentsWithCourses.reduce<Record<string, number>>((acc, curr) => {
+                // FIX: Address potential type ambiguity from Supabase joins where a to-one
+                // relationship can be returned as an object or an array.
+                const course = Array.isArray(curr.courses) ? curr.courses[0] : curr.courses;
+                if (course?.title) {
+                    acc[course.title] = (acc[course.title] || 0) + 1;
+                }
+                return acc;
+            }, {});
+            // FIX: The `enrollments` value from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
+            setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments: enrollments as number })).sort((a, b) => b.enrollments - a.enrollments));
+        }
 
-            const { data: enrollmentsWithCourses } = await supabase.from('enrollments').select('courses(id, title)');
-            if (enrollmentsWithCourses) {
-                const popularity = enrollmentsWithCourses.reduce<Record<string, number>>((acc, curr) => {
-                    if (!curr.courses?.title) return acc;
-                    acc[curr.courses.title] = (acc[curr.courses.title] || 0) + 1;
-                    return acc;
-                }, {});
-                setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments })).sort((a, b) => b.enrollments - a.enrollments));
-            }
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString());
+        if (recentEnrollments) {
+            const countsByDate = recentEnrollments.reduce<Record<string, number>>((acc, curr) => {
+                const date = new Date(curr.enrolled_at).toLocaleDateString('pt-BR');
+                acc[date] = (acc[date] || 0) + 1;
+                return acc;
+            }, {});
+                // FIX: The `count` value from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
+                setEnrollmentsOverTime(Object.entries(countsByDate).map(([date, count]) => ({ date, count: count as number })).sort((a,b) => {
+                const partsA = a.date.split('/');
+                const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
+                const partsB = b.date.split('/');
+                const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
+                return dateA.getTime() - dateB.getTime();
+                }));
+        }
 
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString());
-            if (recentEnrollments) {
-                const countsByDate = recentEnrollments.reduce<Record<string, number>>((acc, curr) => {
-                    const date = new Date(curr.enrolled_at).toLocaleDateString('pt-BR');
-                    acc[date] = (acc[date] || 0) + 1;
-                    return acc;
-                }, {});
-                 setEnrollmentsOverTime(Object.entries(countsByDate).map(([date, count]) => ({ date, count })).sort((a,b) => {
-                    const partsA = a.date.split('/');
-                    const dateA = new Date(Number(partsA[2]), Number(partsA[1]) - 1, Number(partsA[0]));
-                    const partsB = b.date.split('/');
-                    const dateB = new Date(Number(partsB[2]), Number(partsB[1]) - 1, Number(partsB[0]));
-                    // FIX: Date objects cannot be directly subtracted. Use .getTime() to get their numeric timestamp for comparison.
-                    return dateA.getTime() - dateB.getTime();
-                 }));
-            }
-
-            setLoading(false);
-        };
-        fetchData();
+        setLoading(false);
     }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchData();
+
+        const channel = supabase.channel('admin-analytics-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'user_profiles' }, fetchData)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, fetchData)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_attempts' }, fetchData)
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
+    }, [fetchData]);
     
     const handleCourseBarClick = async (courseTitle: string) => {
         setIsModalOpen(true);
@@ -169,8 +184,6 @@ const AdminAnalyticsPage: React.FC = () => {
             return;
         }
 
-        // FIX: The direct join 'user_profiles(full_name)' failed.
-        // Replaced with a two-step query: first get user_ids from enrollments, then get profiles.
         const { data: enrollments, error: enrollError } = await supabase
             .from('enrollments')
             .select('user_id')
@@ -209,8 +222,6 @@ const AdminAnalyticsPage: React.FC = () => {
         const endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 1);
 
-        // FIX: The direct join 'user_profiles(full_name)' failed.
-        // Replaced with a two-step query: first get user_ids from enrollments, then get profiles.
         const { data, error } = await supabase
             .from('enrollments')
             .select('user_id')

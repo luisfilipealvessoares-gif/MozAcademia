@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 
 // --- Data Interfaces ---
@@ -139,53 +139,73 @@ const AdminDashboard: React.FC = () => {
     const [studentStatus, setStudentStatus] = useState<StudentStatusData>({ inProgress: 0, completed: 0, requestedCertificate: 0 });
     const [highlightedStatus, setHighlightedStatus] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchAllData = async () => {
-            setLoading(true);
-            try {
-                const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes, totalUsersRes ] = await Promise.all([
-                    supabase.from('enrollments').select('courses(title)'),
-                    supabase.from('enrollments').select('user_id', { count: 'exact' }),
-                    supabase.from('quiz_attempts').select('user_id').eq('passed', true),
-                    supabase.from('certificate_requests').select('user_id'),
-                    supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-                    supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false),
-                ]);
+    const fetchAllData = useCallback(async () => {
+        // Não mostrar o spinner para atualizações em tempo real, apenas para o carregamento inicial.
+        // setLoading(true) foi removido daqui para uma melhor experiência do utilizador.
+        try {
+            const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes, totalUsersRes ] = await Promise.all([
+                supabase.from('enrollments').select('courses(title)'),
+                supabase.from('enrollments').select('user_id', { count: 'exact' }),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true),
+                supabase.from('certificate_requests').select('user_id'),
+                supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false),
+            ]);
 
-                // KPI Stats
-                const completedUsers = new Set(completionsRes.data?.map(c => c.user_id));
-                setKpiStats({
-                    totalUsers: totalUsersRes.count ?? 0,
-                    totalEnrollments: enrollmentsRes.count ?? 0,
-                    totalCompletions: completedUsers.size,
-                    pendingCertificates: pendingCertsRes.count ?? 0,
-                });
+            // KPI Stats
+            const completedUsers = new Set(completionsRes.data?.map(c => c.user_id));
+            setKpiStats({
+                totalUsers: totalUsersRes.count ?? 0,
+                totalEnrollments: enrollmentsRes.count ?? 0,
+                totalCompletions: completedUsers.size,
+                pendingCertificates: pendingCertsRes.count ?? 0,
+            });
 
-                // Course Popularity Chart
-                if (popularityRes.data) {
-                    const popularity = popularityRes.data.reduce<Record<string, number>>((acc, curr) => {
-                        if (curr.courses?.title) acc[curr.courses.title] = (acc[curr.courses.title] || 0) + 1;
-                        return acc;
-                    }, {});
-                    setCoursePopularity(Object.entries(popularity).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value));
-                }
+            // Course Popularity Chart
+            if (popularityRes.data) {
+                const popularity = popularityRes.data.reduce<Record<string, number>>((acc, curr) => {
+                    // FIX: Address potential type ambiguity from Supabase joins where a to-one
+                    // relationship can be returned as an object or an array.
+                    const course = Array.isArray(curr.courses) ? curr.courses[0] : curr.courses;
+                    if (course?.title) {
+                        acc[course.title] = (acc[course.title] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+                // FIX: The `value` from `Object.entries` can be inferred as `unknown`, so we explicitly cast it to `number`.
+                setCoursePopularity(Object.entries(popularity).map(([label, value]) => ({ label, value: value as number })).sort((a, b) => b.value - a.value));
+            }
 
-                // Student Status Pie Chart
-                const enrolledUsers = new Set(enrollmentsRes.data?.map(e => e.user_id));
-                const requestedUsers = new Set(requestsRes.data?.map(r => r.user_id));
-                let inProgress = 0, completed = 0;
-                enrolledUsers.forEach(userId => {
-                    if (completedUsers.has(userId)) {
-                        if (!requestedUsers.has(userId)) completed++;
-                    } else { inProgress++; }
-                });
-                setStudentStatus({ inProgress, completed, requestedCertificate: requestedUsers.size });
+            // Student Status Pie Chart
+            const enrolledUsers = new Set(enrollmentsRes.data?.map(e => e.user_id));
+            const requestedUsers = new Set(requestsRes.data?.map(r => r.user_id));
+            let inProgress = 0, completed = 0;
+            enrolledUsers.forEach(userId => {
+                if (completedUsers.has(userId)) {
+                    if (!requestedUsers.has(userId)) completed++;
+                } else { inProgress++; }
+            });
+            setStudentStatus({ inProgress, completed, requestedCertificate: requestedUsers.size });
 
-            } catch (error) { console.error("Error fetching dashboard data:", error);
-            } finally { setLoading(false); }
-        };
-        fetchAllData();
+        } catch (error) { console.error("Error fetching dashboard data:", error);
+        } finally { setLoading(false); }
     }, []);
+
+    useEffect(() => {
+        fetchAllData(); // Carregamento inicial
+
+        // Subscrição em tempo real para atualizações automáticas
+        const channel = supabase.channel('admin-dashboard-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, fetchAllData)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_attempts' }, fetchAllData)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'certificate_requests' }, fetchAllData)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'user_profiles' }, fetchAllData)
+          .subscribe();
+    
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchAllData]);
     
     if (loading) return (
         <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div></div>
