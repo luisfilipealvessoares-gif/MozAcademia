@@ -24,6 +24,7 @@ import UserLayout from './components/UserLayout';
 import SupportPage from './pages/SupportPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AboutPage from './pages/AboutPage';
+import ScrollToTop from './components/ScrollToTop';
 
 
 // Este componente contém a lógica de roteamento.
@@ -79,6 +80,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <AuthRedirectHandler />
+      <ScrollToTop />
       <div className="min-h-screen flex flex-col bg-gray-50">
         <AppRoutes />
       </div>

@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { CertificateRequest } from '../types';
@@ -58,7 +59,7 @@ const AdminCertificateRequests: React.FC = () => {
                     setRequests([]);
                 }
             } catch (err: any) {
-                console.error("Erro ao buscar pedidos:", err);
+                console.error("Erro ao buscar pedidos:", err.message);
                 setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
             } finally {
                 setLoading(false);

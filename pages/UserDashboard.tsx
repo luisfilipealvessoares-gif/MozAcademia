@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +16,7 @@ interface EnrolledCourse extends Course {
 
 const UserDashboard: React.FC = () => {
     const { user, profile, loading: authLoading } = useAuth();
-    const { t } = useI18n();
+    const { t, language } = useI18n();
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const userId = user?.id;
@@ -32,7 +34,7 @@ const UserDashboard: React.FC = () => {
                 .eq('user_id', userId);
 
             if (enrollmentsError) {
-                console.error("Error fetching enrollments:", enrollmentsError);
+                console.error("Error fetching enrollments:", enrollmentsError.message);
                 setLoadingCourses(false);
                 return;
             }
@@ -51,7 +53,7 @@ const UserDashboard: React.FC = () => {
                 .in('id', courseIds);
 
             if (coursesError) {
-                console.error("Error fetching courses:", coursesError);
+                console.error("Error fetching courses:", coursesError.message);
                 setLoadingCourses(false);
                 return;
             }
@@ -121,11 +123,19 @@ const UserDashboard: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {enrolledCourses.map(course => {
                             const progress = course.module_count > 0 ? (course.completed_modules_count / course.module_count) * 100 : 0;
+                            
+                            let courseTitle = course.title;
+                            let courseDescription = course.description;
+                            if (language === 'en' && course.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito') {
+                                courseTitle = 'Introduction to Petroleum, Natural Gas, and Liquefied Natural Gas';
+                                courseDescription = 'A comprehensive introduction to the oil and gas industry, covering key concepts and processes related to petroleum, natural gas, and LNG production and distribution.';
+                            }
+                            
                             return (
                             <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                 <div>
-                                    <h3 className="font-bold text-xl text-gray-800 mb-2">{course.title}</h3>
-                                    <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{course.description}</p>
+                                    <h3 className="font-bold text-xl text-gray-800 mb-2">{courseTitle}</h3>
+                                    <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{courseDescription}</p>
                                     <div className="space-y-2">
                                         <div className="w-full bg-gray-200 rounded-full h-2">
                                             <div className="bg-brand-moz h-2 rounded-full" style={{width: `${progress}%`}}></div>

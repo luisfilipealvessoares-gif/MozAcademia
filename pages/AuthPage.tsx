@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -22,6 +21,7 @@ const AuthPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
   
   // States for resend functionality
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -30,6 +30,14 @@ const AuthPage: React.FC = () => {
 
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { t } = useI18n();
+  
+  useEffect(() => {
+    // Check for password update success message from sessionStorage
+    if (sessionStorage.getItem('password_updated')) {
+        setNotification('Senha alterada com sucesso! Por favor, faça login com suas novas credenciais.');
+        sessionStorage.removeItem('password_updated');
+    }
+  }, []);
   
   // useEffect for immediate password validation feedback
   useEffect(() => {
@@ -78,6 +86,7 @@ const AuthPage: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
     setResendMessage('');
+    setNotification(null);
 
     try {
       if (view === 'login') {
@@ -229,6 +238,13 @@ const AuthPage: React.FC = () => {
                   {view === 'login' ? t('auth.loginTitle') : t('auth.registerTitle')}
                 </h2>
             </div>
+
+            {notification && (
+              <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-4" role="alert">
+                  <p className="font-bold">Sucesso</p>
+                  <p>{notification}</p>
+              </div>
+            )}
             
             <form className="mt-8 space-y-6" onSubmit={handleAuth}>
                 <div className="space-y-4">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -6,7 +5,7 @@ import { EyeIcon, EyeSlashIcon } from '../components/Icons';
 import { useI18n } from '../contexts/I18nContext';
 
 const ProfilePage: React.FC = () => {
-    const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+    const { user, profile, loading: authLoading, refreshProfile, signOut, controlUserUpdateSignOut } = useAuth();
     const { t } = useI18n();
     
     // State for profile info
@@ -19,9 +18,10 @@ const ProfilePage: React.FC = () => {
 
     // State for password change
     const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
-    const [passwordMessage, setPasswordMessage] = useState('');
+    const [passwordMessage, setPasswordMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+    const [passwordUpdateSuccess, setPasswordUpdateSuccess] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
@@ -62,33 +62,39 @@ const ProfilePage: React.FC = () => {
 
     const handlePasswordUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setPasswordMessage('');
-        
+        if (passwordLoading || passwordUpdateSuccess) return;
+
+        setPasswordMessage(null);
+
         if (newPassword.length < 8) {
-            setPasswordMessage(t('auth.passwordMinLengthError'));
+            setPasswordMessage({ text: t('profile.page.passwordMinLength'), type: 'error' });
             return;
         }
-
-        if (newPassword !== confirmPassword) {
-            setPasswordMessage(t('auth.passwordsMismatchError'));
+        if (newPassword !== confirmNewPassword) {
+            setPasswordMessage({ text: t('auth.passwordsMismatchError'), type: 'error' });
             return;
         }
-
+        
         setPasswordLoading(true);
-        try {
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
+        controlUserUpdateSignOut(false);
+        
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        
+        setPasswordLoading(false);
 
-            if (error) {
-                setPasswordMessage(t('profile.page.passwordUpdateError', { message: error.message }));
-            } else {
-                setPasswordMessage(t('profile.page.passwordUpdateSuccess'));
-                setNewPassword('');
-                setConfirmPassword('');
-            }
-        } catch (err: any) {
-            setPasswordMessage(t('auth.unexpectedError'));
-        } finally {
-            setPasswordLoading(false);
+        if (error) {
+            setPasswordMessage({ text: `Erro ao alterar senha: ${error.message}`, type: 'error' });
+            controlUserUpdateSignOut(true);
+        } else {
+            setPasswordUpdateSuccess(true);
+            setPasswordMessage({
+                text: '✓ Senha alterada com sucesso! A sua sessão será terminada em 3 segundos por segurança.',
+                type: 'success'
+            });
+            
+            setTimeout(async () => {
+                await signOut();
+            }, 3000);
         }
     };
 
@@ -194,35 +200,38 @@ const ProfilePage: React.FC = () => {
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                                disabled={passwordLoading || passwordUpdateSuccess}
+                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
                             <button
                                 type="button"
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                                 aria-label={isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}
+                                disabled={passwordLoading || passwordUpdateSuccess}
                             >
                                 {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                             </button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{t('profile.page.passwordMinLength')}</p>
                     </div>
-                    <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">{t('profile.page.confirmNewPassword')}</label>
-                         <div className="relative mt-1">
+                     <div>
+                        <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700">{t('profile.page.confirmNewPassword')}</label>
+                        <div className="relative mt-1">
                             <input
-                                id="confirmPassword"
+                                id="confirmNewPassword"
                                 type={isConfirmPasswordVisible ? "text" : "password"}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                value={confirmNewPassword}
+                                onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                                disabled={passwordLoading || passwordUpdateSuccess}
+                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
-                             <button
+                            <button
                                 type="button"
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                                 onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
                                 aria-label={isConfirmPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}
+                                disabled={passwordLoading || passwordUpdateSuccess}
                             >
                                 {isConfirmPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                             </button>
@@ -231,14 +240,36 @@ const ProfilePage: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            disabled={passwordLoading}
-                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold"
+                            disabled={passwordLoading || passwordUpdateSuccess}
+                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold transition-colors"
                         >
-                            {passwordLoading ? t('profile.page.changingPassword') : t('profile.page.changePasswordButton')}
+                            {passwordLoading ? (
+                                <span className="flex items-center justify-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {t('profile.page.changingPassword')}
+                                </span>
+                            ) : t('profile.page.changePasswordButton')}
                         </button>
                     </div>
                 </form>
-                {passwordMessage && <p className={`mt-4 text-center text-sm ${passwordMessage.includes('Erro') || passwordMessage.includes('não') ? 'text-red-600' : 'text-brand-up'}`}>{passwordMessage}</p>}
+                {passwordMessage && (
+                    <div className={`mt-4 p-4 rounded-lg text-center ${
+                        passwordMessage.type === 'success'
+                            ? 'bg-brand-light border border-brand-moz'
+                            : 'bg-red-50 border border-red-200'
+                    }`}>
+                        <p className={`font-semibold ${
+                            passwordMessage.type === 'success'
+                                ? 'text-brand-up'
+                                : 'text-red-700'
+                        }`}>
+                            {passwordMessage.text}
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );

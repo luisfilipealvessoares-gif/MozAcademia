@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -40,7 +41,7 @@ const translations = {
     'footer.adminLogin': 'Acesso Admin',
     'footer.maputo': 'Maputo',
     'footer.pemba': 'Pemba',
-    'footer.slogan': 'Capacitação profissional para o futuro, hoje.',
+    'footer.slogan': 'Vamos trabalhar juntos',
     'footer.copyright': 'Todos os direitos reservados.',
 
     // Home Page
@@ -52,6 +53,7 @@ const translations = {
     'home.courses.enrolled': 'Inscrito',
     'home.courses.continue': 'Continuar Curso',
     'home.courses.enroll': 'Inscrever-se',
+    'home.courses.manage': 'Gerenciar Curso',
     'home.courses.noCourses': 'Nenhum curso disponível no momento.',
     'home.courses.new': 'Novo',
     'home.whyUs.title': 'Por que escolher a MozupAcademy?',
@@ -103,6 +105,39 @@ const translations = {
     'user.dashboard.course.continue': 'Continuar Curso',
     'user.dashboard.course.modulesCompleted': '{completed} de {total} módulos completos',
 
+    // Course player
+    'course.player.backToDashboard': 'Voltar ao Meu Painel',
+    'course.player.course': 'CURSO',
+    'course.player.progress': 'Progresso',
+    'course.player.modulesCompleted': '{completed} de {total} módulos completos',
+    'course.player.modules': 'Módulos',
+    'course.player.finalQuiz': 'Quiz Final',
+    'course.player.backToLastModule': 'Voltar para o último módulo',
+    'course.player.congratulations': 'Parabéns!',
+    'course.player.courseComplete': 'Você concluiu o curso "{title}" e passou no quiz!',
+    'course.player.certificateRequested': 'Seu pedido de certificado foi recebido e será processado em breve.',
+    'course.player.requestCertificate': 'Solicitar Certificado',
+    'course.player.requestSuccess': 'Pedido de certificado enviado com sucesso!',
+    'course.player.requestError': 'Erro ao pedir certificado. Você já pode ter solicitado.',
+    'course.player.videoNotSupported': 'Seu navegador não suporta o vídeo.',
+    'course.player.videoLoadError': 'Não foi possível carregar o vídeo. Tente novamente mais tarde.',
+    'course.player.videoSupportContact': 'Se o problema persistir, por favor contacte o suporte.',
+    'course.player.loadingVideo': 'Carregando vídeo seguro...',
+    'course.player.dataLoadError': 'Não foi possível carregar os dados do curso. Isso pode ser um problema temporário de conexão ou permissão. Por favor, tente recarregar a página.',
+    'course.player.retry': 'Tentar Novamente',
+    'course.player.errorTitle': 'Ocorreu um Erro',
+    
+    // Quiz Component
+    'quiz.resultsTitle': 'Resultados do Quiz',
+    'quiz.yourFinalScore': 'Sua pontuação final:',
+    'quiz.passedMessage': 'Parabéns, você passou! Pode solicitar seu certificado.',
+    'quiz.failedMessage': 'Você não atingiu a pontuação mínima de 70%.',
+    'quiz.questionLabel': 'PERGUNTA {current} DE {total}',
+    'quiz.previous': 'Anterior',
+    'quiz.next': 'Próximo',
+    'quiz.finish': 'Finalizar Quiz',
+    'quiz.loading': 'Carregando quiz...',
+
     // Complete Profile Modal
     'profile.modal.title': 'Complete seu Perfil',
     'profile.modal.subtitle': 'Para continuar, precisamos que você preencha as informações abaixo.',
@@ -153,24 +188,24 @@ const translations = {
     'about.p1': 'A MozupAcademy é a plataforma de e-learning do MozUp, o centro de excelência dedicado a tornar as empresas moçambicanas mais competitivas. A nossa academia é uma extensão digital da missão do MozUp: transferir competências e conhecimentos essenciais para apoiar o desenvolvimento económico local.',
     'about.p2': 'Através de cursos online desenvolvidos por especialistas, focados em setores estratégicos como o de GNL, capacitamos profissionais e PMEs para que possam competir em oportunidades de negócios locais e internacionais. A MozupAcademy oferece a flexibilidade necessária para que você aprenda no seu ritmo, preparando-o para os desafios do mercado atual.',
 
-    // Support Page
-    'support.title': 'Suporte e Contactos',
-    'support.subtitle': 'Estamos aqui para ajudar. Encontre respostas ou entre em contacto connosco.',
-    'support.contacts.title': 'Nossos Contactos',
-    'support.contacts.email': 'Email',
-    'support.contacts.email.desc': 'Para dúvidas gerais e suporte técnico.',
-    'support.contacts.phone': 'Telefone',
-    'support.contacts.address': 'Endereços',
-    'support.faq.title': 'Perguntas Frequentes',
-    'support.faq.q1': 'Como altero a minha senha?',
-    'support.faq.a1': 'Você pode redefinir sua senha na página de login, clicando na opção \'Esqueceu a senha?\'. Um link para redefinição será enviado para o seu e-mail.',
-    'support.faq.q2': 'O acesso aos cursos expira?',
-    'support.faq.a2': 'Não, o seu acesso aos materiais do curso é vitalício. Uma vez inscrito, você pode aprender no seu próprio ritmo, sem prazos.',
-    'support.faq.q3': 'Como obtenho o meu certificado?',
-    'support.faq.a3': 'Após completar 100% dos módulos do curso e ser aprovado no quiz final, a opção para \'Solicitar Certificado\' ficará disponível na página do curso.',
-    'support.faq.q4': 'Não consigo visualizar os vídeos. O que faço?',
-    'support.faq.a4': 'Certifique-se de que sua conexão com a internet está estável. Tente limpar o cache do seu navegador ou usar um navegador diferente. Se o problema persistir, entre em contato conosco.',
-    
+    // Support Page (User)
+    'user.support.title': 'Suporte e Contactos',
+    'user.support.subtitle': 'Estamos aqui para ajudar. Encontre respostas ou entre em contacto connosco.',
+    'user.support.contacts.title': 'Nossos Contactos',
+    'user.support.contacts.email.title': 'Email',
+    'user.support.contacts.email.desc': 'Para dúvidas gerais e suporte técnico.',
+    'user.support.contacts.phone.title': 'Telefone',
+    'user.support.contacts.address.title': 'Endereços',
+    'user.support.faq.title': 'Perguntas Frequentes',
+    'user.support.faq.q1': 'Como altero a minha senha?',
+    'user.support.faq.a1': 'Você pode alterar sua senha a qualquer momento na sua página de perfil. Navegue até "Meu Perfil" e procure pela seção "Alterar Senha".',
+    'user.support.faq.q2': 'O acesso aos cursos expira?',
+    'user.support.faq.a2': 'Não, o acesso aos cursos é vitalício. Uma vez que você se inscreve em um curso, ele fica disponível na sua conta para sempre, permitindo que você aprenda no seu próprio ritmo.',
+    'user.support.faq.q3': 'Como obtenho o meu certificado?',
+    'user.support.faq.a3': 'Após completar todos os módulos do curso e ser aprovado no quiz final com uma pontuação de 70% ou mais, a opção para solicitar seu certificado aparecerá na página do curso.',
+    'user.support.faq.q4': 'Não consigo visualizar os vídeos. O que faço?',
+    'user.support.faq.a4': 'Primeiro, verifique sua conexão com a internet. Se estiver estável, tente limpar o cache do seu navegador ou usar um navegador diferente (recomendamos Chrome ou Firefox). Se o problema persistir, por favor, entre em contato com nosso suporte técnico.',
+
     // Error Boundary
     'error.boundary.title': 'Ocorreu um erro inesperado.',
     'error.boundary.subtitle': 'Nossa equipe foi notificada. Por favor, tente recarregar a página.',
@@ -242,7 +277,7 @@ const translations = {
     'footer.adminLogin': 'Admin Access',
     'footer.maputo': 'Maputo',
     'footer.pemba': 'Pemba',
-    'footer.slogan': 'Professional training for the future, today.',
+    'footer.slogan': "Let's work together",
     'footer.copyright': 'All rights reserved.',
 
     // Home Page
@@ -254,6 +289,7 @@ const translations = {
     'home.courses.enrolled': 'Enrolled',
     'home.courses.continue': 'Continue Course',
     'home.courses.enroll': 'Enroll',
+    'home.courses.manage': 'Manage Course',
     'home.courses.noCourses': 'No courses available at the moment.',
     'home.courses.new': 'New',
     'home.whyUs.title': 'Why choose MozupAcademy?',
@@ -305,6 +341,39 @@ const translations = {
     'user.dashboard.course.continue': 'Continue Course',
     'user.dashboard.course.modulesCompleted': '{completed} of {total} modules completed',
 
+    // Course player
+    'course.player.backToDashboard': 'Back to My Dashboard',
+    'course.player.course': 'COURSE',
+    'course.player.progress': 'Progress',
+    'course.player.modulesCompleted': '{completed} of {total} modules completed',
+    'course.player.modules': 'Modules',
+    'course.player.finalQuiz': 'Final Quiz',
+    'course.player.backToLastModule': 'Back to the last module',
+    'course.player.congratulations': 'Congratulations!',
+    'course.player.courseComplete': 'You have completed the course "{title}" and passed the quiz!',
+    'course.player.certificateRequested': 'Your certificate request has been received and will be processed shortly.',
+    'course.player.requestCertificate': 'Request Certificate',
+    'course.player.requestSuccess': 'Certificate request sent successfully!',
+    'course.player.requestError': 'Error requesting certificate. You may have already requested it.',
+    'course.player.videoNotSupported': 'Your browser does not support the video.',
+    'course.player.videoLoadError': 'Could not load the video. Please try again later.',
+    'course.player.videoSupportContact': 'If the problem persists, please contact support.',
+    'course.player.loadingVideo': 'Loading secure video...',
+    'course.player.dataLoadError': 'Could not load course data. This may be a temporary connection or permission issue. Please try reloading the page.',
+    'course.player.retry': 'Try Again',
+    'course.player.errorTitle': 'An Error Occurred',
+    
+    // Quiz Component
+    'quiz.resultsTitle': 'Quiz Results',
+    'quiz.yourFinalScore': 'Your final score:',
+    'quiz.passedMessage': 'Congratulations, you passed! You can now request your certificate.',
+    'quiz.failedMessage': 'You did not reach the minimum score of 70%.',
+    'quiz.questionLabel': 'QUESTION {current} OF {total}',
+    'quiz.previous': 'Previous',
+    'quiz.next': 'Next',
+    'quiz.finish': 'Finish Quiz',
+    'quiz.loading': 'Loading quiz...',
+
     // Complete Profile Modal
     'profile.modal.title': 'Complete your Profile',
     'profile.modal.subtitle': 'To continue, we need you to fill in the information below.',
@@ -355,24 +424,24 @@ const translations = {
     'about.p1': 'MozupAcademy is the official e-learning platform of MozUp, the center of excellence dedicated to making Mozambican companies more competitive. Our academy is a digital extension of MozUp\'s mission: to transfer essential skills and knowledge to support local economic development.',
     'about.p2': 'Through online courses developed by experts, focused on strategic sectors such as LNG, we empower professionals and SMEs to compete for local and international business opportunities. MozupAcademy offers the flexibility you need to learn at your own pace, preparing you for the challenges of today\'s market.',
 
-    // Support Page
-    'support.title': 'Support and Contacts',
-    'support.subtitle': 'We are here to help. Find answers or get in touch with us.',
-    'support.contacts.title': 'Our Contacts',
-    'support.contacts.email': 'Email',
-    'support.contacts.email.desc': 'For general inquiries and technical support.',
-    'support.contacts.phone': 'Phone',
-    'support.contacts.address': 'Addresses',
-    'support.faq.title': 'Frequently Asked Questions',
-    'support.faq.q1': 'How do I change my password?',
-    'support.faq.a1': 'You can reset your password on the login page by clicking the \'Forgot password?\' option. A reset link will be sent to your email.',
-    'support.faq.q2': 'Does course access expire?',
-    'support.faq.a2': 'No, your access to course materials is for life. Once enrolled, you can learn at your own pace, with no deadlines.',
-    'support.faq.q3': 'How do I get my certificate?',
-    'support.faq.a3': 'After completing 100% of the course modules and passing the final quiz, the option to \'Request Certificate\' will become available on the course page.',
-    'support.faq.q4': 'I can\'t watch the videos. What should I do?',
-    'support.faq.a4': 'Make sure your internet connection is stable. Try clearing your browser\'s cache or using a different browser. If the problem persists, please contact us.',
-    
+    // Support Page (User)
+    'user.support.title': 'Support and Contacts',
+    'user.support.subtitle': 'We\'re here to help. Find answers or get in touch with us.',
+    'user.support.contacts.title': 'Our Contacts',
+    'user.support.contacts.email.title': 'Email',
+    'user.support.contacts.email.desc': 'For general inquiries and technical support.',
+    'user.support.contacts.phone.title': 'Phone',
+    'user.support.contacts.address.title': 'Addresses',
+    'user.support.faq.title': 'Frequently Asked Questions',
+    'user.support.faq.q1': 'How do I change my password?',
+    'user.support.faq.a1': 'You can change your password at any time on your profile page. Navigate to "My Profile" and look for the "Change Password" section.',
+    'user.support.faq.q2': 'Does course access expire?',
+    'user.support.faq.a2': 'No, access to courses is for life. Once you enroll in a course, it will be available in your account forever, allowing you to learn at your own pace.',
+    'user.support.faq.q3': 'How do I get my certificate?',
+    'user.support.faq.a3': 'After completing all course modules and passing the final quiz with a score of 70% or higher, the option to request your certificate will appear on the course page.',
+    'user.support.faq.q4': 'I can\'t watch the videos. What should I do?',
+    'user.support.faq.a4': 'First, check your internet connection. If it\'s stable, try clearing your browser\'s cache or using a different browser (we recommend Chrome or Firefox). If the problem persists, please contact our technical support.',
+
     // Error Boundary
     'error.boundary.title': 'An unexpected error occurred.',
     'error.boundary.subtitle': 'Our team has been notified. Please try reloading the page.',

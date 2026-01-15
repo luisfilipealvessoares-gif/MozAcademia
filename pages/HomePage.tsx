@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
@@ -23,8 +25,8 @@ const ChartBarIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const HomePage: React.FC = () => {
-  const { user } = useAuth();
-  const { t } = useI18n();
+  const { user, isAdmin } = useAuth();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -50,7 +52,7 @@ const HomePage: React.FC = () => {
         .select('*');
       
       if (coursesError) {
-        console.error('Error fetching courses:', coursesError);
+        console.error('Error fetching courses:', coursesError.message);
       } else if (coursesData) {
         setCourses(coursesData);
       }
@@ -72,7 +74,7 @@ const HomePage: React.FC = () => {
         .eq('user_id', user.id);
       
       if (enrollmentsError) {
-        console.error('Error fetching enrollments:', enrollmentsError);
+        console.error('Error fetching enrollments:', enrollmentsError.message);
       } else if (enrollmentsData) {
         setEnrolledCourses(enrollmentsData.map(e => e.course_id));
       }
@@ -97,6 +99,7 @@ const HomePage: React.FC = () => {
     } else {
       alert('Inscrição realizada com sucesso!');
       setEnrolledCourses([...enrolledCourses, courseId]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
   
@@ -142,13 +145,21 @@ const HomePage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses.map((course) => {
                         const isEnrolled = enrolledCourses.includes(course.id);
+                        
+                        let courseTitle = course.title;
+                        let courseDescription = course.description;
+                        if (language === 'en' && course.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito') {
+                            courseTitle = 'Introduction to Petroleum, Natural Gas, and Liquefied Natural Gas';
+                            courseDescription = 'A comprehensive introduction to the oil and gas industry, covering key concepts and processes related to petroleum, natural gas, and LNG production and distribution.';
+                        }
+
                         return (
                             <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 group">
                                 {/* Image Container with Branding Tag */}
                                 <div className="relative">
                                     <img 
                                         src={getCourseImage(course.title)} 
-                                        alt={course.title} 
+                                        alt={courseTitle} 
                                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                     {course.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito' && (
@@ -160,12 +171,16 @@ const HomePage: React.FC = () => {
                                 
                                 {/* Content Container that grows to fill space */}
                                 <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{course.title}</h3>
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{course.description}</p>
+                                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{courseTitle}</h3>
+                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{courseDescription}</p>
                                     
                                     {/* Button container, pushed to the bottom */}
                                     <div className="mt-auto pt-4">
-                                        {isEnrolled ? (
+                                        {isAdmin ? (
+                                            <Link to={`/admin/courses/${course.id}`} className="block w-full text-center bg-gray-700 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 shadow-md hover:shadow-lg">
+                                                {t('home.courses.manage')}
+                                            </Link>
+                                        ) : isEnrolled ? (
                                             <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
                                                 {t('home.courses.continue')}
                                             </Link>

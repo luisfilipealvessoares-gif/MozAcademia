@@ -1,110 +1,298 @@
-
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
-import { Link } from 'react-router-dom';
-import { ActivityLog } from '../types';
 
-// --- Icon Components ---
-const UserGroupIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a3.002 3.002 0 013.4-1.857m-3.4 1.857a3 3 0 00-3.4-1.857M12 6V3m0 3h-3m3 0h3m-3 0v3m0-3V3m0 3H9m3 0h3m0-3h-3m3 0h3m0 0v3"></path></svg>;
-const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
-const AcademicCapIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422A12.083 12.083 0 0122 12V6"></path><path d="M12 21.76V14l-9-5v6.76c0 .54.2 1.05.57 1.43L12 21.76z"></path></svg>;
-const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5-5 5M6 12h12"></path></svg>;
+// --- Data Interfaces ---
+interface ChartDataPoint { label: string; value: number; }
+interface StudentStatusData { inProgress: number; completed: number; requestedCertificate: number; }
+interface TimeProgressDataPoint { date: string; enrollments: number; completions: number; }
+interface KpiStatsData { totalUsers: number; totalEnrollments: number; totalCompletions: number; pendingCertificates: number; }
 
-// --- Helper Components ---
-// FIX: Changed icon prop from React.ReactNode to React.ReactElement for better type safety with React.cloneElement.
-const ActionStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactElement; to: string; }> = ({ title, value, icon, to }) => (
-    <Link to={to} className="bg-white p-4 rounded-xl shadow-md border border-gray-200 group hover:border-brand-moz hover:shadow-lg transition-all duration-300 flex flex-col justify-between hover:-translate-y-1">
+// --- Icons ---
+// FIX: Explicitly type icon components as React.FC for better type inference with cloneElement.
+const UsersIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.663M12 3.375c-3.418 0-6.162 2.744-6.162 6.162s2.744 6.162 6.162 6.162 6.162-2.744 6.162-6.162S15.418 3.375 12 3.375z" /></svg>;
+const ClipboardListIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75c0-.231-.035-.454-.1-.664M6.75 7.5H18a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25-2.25H6.75a2.25 2.25 0 01-2.25-2.25v-9a2.25 2.25 0 012.25-2.25z" /></svg>;
+const AcademicCapIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422A12.083 12.083 0 0122 12V6" /><path d="M12 21.76V14l-9-5v6.76c0 .54.2 1.05.57 1.43L12 21.76z" /></svg>;
+const ClockIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
+// --- Interactive/Animated Components ---
+const CountUp: React.FC<{ end: number; duration?: number }> = ({ end, duration = 1500 }) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        let startTime: number;
+        const animate = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            const percentage = Math.min(progress / duration, 1);
+            setCount(Math.floor(end * percentage));
+            if (progress < duration) requestAnimationFrame(animate); else setCount(end);
+        };
+        requestAnimationFrame(animate);
+    }, [end, duration]);
+    return <>{count}</>;
+};
+
+// FIX: Update the `icon` prop type to be more specific. This allows TypeScript to
+// correctly infer that props like `className` are valid for the cloned element.
+const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; color: string }> = ({ title, value, icon, color }) => (
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-1">
         <div className="flex items-start justify-between">
-            <div className="bg-brand-light p-2.5 rounded-full group-hover:bg-brand-moz transition-colors duration-300">
-                {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6 text-brand-moz group-hover:text-white transition-colors duration-300"})}
+            <div>
+                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
+                <p className="text-4xl font-extrabold text-gray-800 mt-2"><CountUp end={value} /></p>
             </div>
-            <p className="text-3xl font-extrabold text-gray-700">{value}</p>
-        </div>
-        <div className="mt-2">
-            <h3 className="text-base font-bold text-gray-800">{title}</h3>
-            <div className="mt-1 flex items-center text-brand-up font-semibold text-sm">
-                Gerenciar <ArrowRightIcon className="w-4 h-4 ml-1.5 transform transition-transform duration-300 group-hover:translate-x-1" />
+            <div className={`p-3 rounded-full ${color}`}>
+                {React.cloneElement(icon, { className: "w-7 h-7 text-white" })}
             </div>
         </div>
-    </Link>
+    </div>
 );
 
 
+const ChartCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => (
+    <div className={`bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 h-full flex flex-col transition-all duration-300 transform hover:-translate-y-1 ${className}`}>
+        <h3 className="font-bold text-lg mb-4 text-gray-800 flex-shrink-0">{title}</h3>
+        <div className="flex-grow flex flex-col justify-center">
+            {children}
+        </div>
+    </div>
+);
+
+const BarChart: React.FC<{ data: ChartDataPoint[] }> = ({ data }) => {
+    const maxValue = Math.max(...data.map(d => d.value), 1);
+    const AnimatedBar: React.FC<{ item: ChartDataPoint }> = ({ item }) => {
+        const [width, setWidth] = useState('0%');
+        useEffect(() => {
+            const timer = setTimeout(() => setWidth(`${(item.value / maxValue) * 100}%`), 100);
+            return () => clearTimeout(timer);
+        }, [item.value]);
+        return (
+            <div className="flex items-center text-sm group transition-transform duration-200 hover:scale-[1.02]">
+                <div className="w-1/3 truncate pr-2 text-gray-600 font-medium">{item.label}</div>
+                <div className="w-2/3 flex items-center">
+                    <div className="w-full bg-gray-200 rounded-full h-6">
+                        <div className="bg-gradient-to-r from-brand-up to-brand-moz h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold transition-all duration-1000 ease-out" style={{ width }}>
+                            <span className="transition-opacity duration-500" style={{ opacity: width === '0%' ? 0 : 1 }}>{item.value}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+    return (
+        <div className="space-y-3">
+            {data.length > 0 ? data.map(item => <AnimatedBar key={item.label} item={item} />) : <p className="text-gray-500 text-center py-8">Não há dados para exibir.</p>}
+        </div>
+    );
+};
+
+interface PieChartProps { data: StudentStatusData; highlightedStatus: string | null; onHighlight: (status: string | null) => void; }
+const PieChart: React.FC<PieChartProps> = ({ data, highlightedStatus, onHighlight }) => {
+    const chartData = [
+        { label: 'Em progresso', value: data.inProgress, color: '#f7941d' },
+        { label: 'Concluíram', value: data.completed, color: '#d95829' },
+        { label: 'Cert. Solicitado', value: data.requestedCertificate, color: '#6b7280' }
+    ];
+    const total = chartData.reduce((sum, item) => sum + item.value, 0);
+    if (total === 0) return <div className="flex items-center justify-center h-full"><p className="text-gray-500 text-center py-8">Não há dados de alunos.</p></div>;
+    const selectedItem = highlightedStatus ? chartData.find(item => item.label === highlightedStatus) : null;
+    let conicGradient: string;
+    if (selectedItem) {
+        conicGradient = selectedItem.color;
+    } else {
+        let cumulativePercentage = 0;
+        const gradientParts = chartData.map(item => {
+            const percentage = (item.value / total) * 100;
+            const start = cumulativePercentage;
+            cumulativePercentage += percentage;
+            return `${item.color} ${start}% ${cumulativePercentage}%`;
+        });
+        conicGradient = `conic-gradient(${gradientParts.join(', ')})`;
+    }
+    return (
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 h-full">
+            <div className="relative flex items-center justify-center">
+                 <div className="w-40 h-40 rounded-full transition-all duration-500 ease-in-out" style={{ background: conicGradient }}></div>
+                 <div className={`absolute w-24 h-24 bg-white rounded-full transition-opacity duration-300 ${selectedItem ? 'opacity-0' : 'opacity-100'}`}></div>
+                 {selectedItem && (
+                    <div className="absolute text-center animate-fadeInUp" style={{ animationDuration: '0.3s' }}>
+                        <p className="text-4xl font-bold" style={{ color: selectedItem.color }}>{selectedItem.value}</p>
+                        <p className="text-sm text-gray-600 font-semibold max-w-[100px] leading-tight">{selectedItem.label}</p>
+                    </div>
+                )}
+            </div>
+            <ul className="space-y-2 text-sm">
+                {chartData.map(item => (
+                    <li key={item.label} onClick={() => onHighlight(highlightedStatus === item.label ? null : item.label)} className={`flex items-center p-1 rounded-md transition-all duration-300 cursor-pointer ${highlightedStatus && highlightedStatus !== item.label ? 'opacity-50 hover:opacity-100' : 'opacity-100'} ${highlightedStatus === item.label ? 'bg-gray-200' : 'hover:bg-gray-100'}`}>
+                        <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
+                        <span className="font-semibold text-gray-700">{item.label}:</span>
+                        <span className="ml-2 text-gray-600">{item.value}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+const VerticalBarChart: React.FC<{ data: TimeProgressDataPoint[] }> = ({ data }) => {
+    // Ensure y-axis has a sensible max value, minimum of 5 for visual spacing
+    const maxValue = Math.max(...data.flatMap(d => [d.enrollments, d.completions]), 5); 
+
+    const Bar = ({ value, color }: { value: number; color: string }) => {
+        const [height, setHeight] = useState('0%');
+        useEffect(() => {
+            // Animate the bar height on load
+            const timer = setTimeout(() => setHeight(`${(value / maxValue) * 100}%`), 100);
+            return () => clearTimeout(timer);
+        }, [value]);
+        return (
+            <div
+                className={`w-full ${color} rounded-t-sm transition-all duration-1000 ease-out`}
+                style={{ height }}
+            ></div>
+        );
+    };
+
+    if (data.length === 0) return <p className="text-gray-500 text-center py-8">Não há dados para exibir.</p>;
+
+    return (
+        <div className="h-72 flex flex-col">
+            <div className="flex justify-end space-x-4 text-xs mb-4 text-gray-600">
+                <div className="flex items-center"><div className="w-3 h-3 rounded-sm bg-brand-moz mr-2"></div><span>Inscrições</span></div>
+                <div className="flex items-center"><div className="w-3 h-3 rounded-sm bg-brand-up mr-2"></div><span>Conclusões</span></div>
+            </div>
+            <div className="flex-grow flex items-end justify-around gap-1 border-l border-b border-gray-200 pl-2">
+                {data.map(item => (
+                    <div key={item.date} className="flex-1 flex flex-col items-center text-center group relative pt-4">
+                        <div className="w-full flex-grow flex items-end gap-1">
+                            <div className="w-1/2 relative">
+                                <Bar value={item.enrollments} color="bg-brand-moz" />
+                            </div>
+                            <div className="w-1/2 relative">
+                                <Bar value={item.completions} color="bg-brand-up" />
+                            </div>
+                        </div>
+                        {/* Tooltip on hover */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-32 bg-gray-800 text-white text-xs rounded-lg py-2 px-3 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                            <p className="font-bold capitalize">{item.date}</p>
+                            <p className="text-left"><span className="text-brand-moz font-bold">●</span> Inscrições: {item.enrollments}</p>
+                            <p className="text-left"><span className="text-brand-up font-bold">●</span> Conclusões: {item.completions}</p>
+                            <div className="absolute left-1/2 -bottom-1 w-2 h-2 bg-gray-800 transform -translate-x-1/2 rotate-45"></div>
+                        </div>
+                        <span className="text-[10px] text-gray-500 mt-2 capitalize">{item.date}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+
 const AdminDashboard: React.FC = () => {
-    const [stats, setStats] = useState({ enrollments: 0, certRequests: 0, courses: 0 });
-    const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const [kpiStats, setKpiStats] = useState<KpiStatsData>({ totalUsers: 0, totalEnrollments: 0, totalCompletions: 0, pendingCertificates: 0 });
+    const [coursePopularity, setCoursePopularity] = useState<ChartDataPoint[]>([]);
+    const [studentStatus, setStudentStatus] = useState<StudentStatusData>({ inProgress: 0, completed: 0, requestedCertificate: 0 });
+    const [timeProgress, setTimeProgress] = useState<TimeProgressDataPoint[]>([]);
+    const [highlightedStatus, setHighlightedStatus] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
+        const fetchAllData = async () => {
             setLoading(true);
-            const [coursesRes, enrollmentsRes, certRequestsRes, activityRes] = await Promise.all([
-                supabase.from('courses').select('*', { count: 'exact', head: true }),
-                supabase.from('enrollments').select('*', { count: 'exact', head: true }),
-                supabase.from('certificate_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-                supabase.from('activity_log').select('*, user_profiles(full_name), courses(title), modules(title)').order('created_at', { ascending: false }).limit(5)
-            ]);
-            setStats({
-                courses: coursesRes.count ?? 0,
-                enrollments: enrollmentsRes.count ?? 0,
-                certRequests: certRequestsRes.count ?? 0
-            });
-            setRecentActivity(activityRes.data as ActivityLog[] || []);
-            setLoading(false);
-        };
-        fetchDashboardData();
-    }, []);
+            try {
+                const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes, totalUsersRes ] = await Promise.all([
+                    supabase.from('enrollments').select('courses(title)'),
+                    supabase.from('enrollments').select('user_id', { count: 'exact' }),
+                    supabase.from('quiz_attempts').select('user_id').eq('passed', true),
+                    supabase.from('certificate_requests').select('user_id'),
+                    supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                    supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false),
+                ]);
 
+                // KPI Stats
+                const completedUsers = new Set(completionsRes.data?.map(c => c.user_id));
+                setKpiStats({
+                    totalUsers: totalUsersRes.count ?? 0,
+                    totalEnrollments: enrollmentsRes.count ?? 0,
+                    totalCompletions: completedUsers.size,
+                    pendingCertificates: pendingCertsRes.count ?? 0,
+                });
+
+                // Course Popularity Chart
+                if (popularityRes.data) {
+                    const popularity = popularityRes.data.reduce<Record<string, number>>((acc, curr) => {
+                        if (curr.courses?.title) acc[curr.courses.title] = (acc[curr.courses.title] || 0) + 1;
+                        return acc;
+                    }, {});
+                    setCoursePopularity(Object.entries(popularity).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value));
+                }
+
+                // Student Status Pie Chart
+                const enrolledUsers = new Set(enrollmentsRes.data?.map(e => e.user_id));
+                const requestedUsers = new Set(requestsRes.data?.map(r => r.user_id));
+                let inProgress = 0, completed = 0;
+                enrolledUsers.forEach(userId => {
+                    if (completedUsers.has(userId)) {
+                        if (!requestedUsers.has(userId)) completed++;
+                    } else { inProgress++; }
+                });
+                setStudentStatus({ inProgress, completed, requestedCertificate: requestedUsers.size });
+
+                // Time Progress Chart
+                const fifteenDaysAgo = new Date(); fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+                const { data: recentEnrollments } = await supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', fifteenDaysAgo.toISOString());
+                const { data: recentCompletions } = await supabase.from('quiz_attempts').select('completed_at').eq('passed', true).gte('completed_at', fifteenDaysAgo.toISOString());
+                const timeMap: Record<string, { enrollments: number; completions: number }> = {};
+                for (let i = 0; i < 15; i++) {
+                    const d = new Date(); d.setDate(d.getDate() - i);
+                    timeMap[d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })] = { enrollments: 0, completions: 0 };
+                }
+                recentEnrollments?.forEach(e => {
+                    const key = new Date(e.enrolled_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+                    if (timeMap[key]) timeMap[key].enrollments++;
+                });
+                recentCompletions?.forEach(c => {
+                    const key = new Date(c.completed_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+                    if (timeMap[key]) timeMap[key].completions++;
+                });
+                 setTimeProgress(Object.entries(timeMap).map(([date, data]) => ({ date, ...data })).sort((a, b) => {
+                    const dateA = new Date(a.date.replace(/ de /g, ' ') + ' ' + new Date().getFullYear());
+                    const dateB = new Date(b.date.replace(/ de /g, ' ') + ' ' + new Date().getFullYear());
+                    return dateA.getTime() - dateB.getTime();
+                }));
+
+            } catch (error) { console.error("Error fetching dashboard data:", error);
+            } finally { setLoading(false); }
+        };
+        fetchAllData();
+    }, []);
+    
     if (loading) return (
-        <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
-        </div>
+        <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div></div>
     );
 
     return (
-        <div className="space-y-10">
-            <div>
-                <h1 className="text-4xl font-extrabold text-gray-900">Painel de Controle</h1>
-                <p className="text-xl text-gray-600 mt-2">Visão geral do sistema MozupAcademy.</p>
+        <div className="space-y-8">
+             <div>
+                <h1 className="text-4xl font-extrabold text-gray-900">Dashboard de Análise</h1>
+                <p className="text-xl text-gray-600 mt-2">Visão geral da performance da plataforma.</p>
             </div>
             
-            {/* Stats & Navigation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ActionStatCard title="Total de Cursos" value={stats.courses} icon={<BookOpenIcon />} to="/admin/courses" />
-                <ActionStatCard title="Total de Inscrições" value={stats.enrollments} icon={<UserGroupIcon />} to="/admin/progress" />
-                <ActionStatCard title="Certificados Pendentes" value={stats.certRequests} icon={<AcademicCapIcon />} to="/admin/certificates" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard title="Total de Alunos" value={kpiStats.totalUsers} icon={<UsersIcon />} color="bg-blue-500" />
+                <StatCard title="Total de Inscrições" value={kpiStats.totalEnrollments} icon={<ClipboardListIcon />} color="bg-brand-moz" />
+                <StatCard title="Conclusões de Cursos" value={kpiStats.totalCompletions} icon={<AcademicCapIcon />} color="bg-brand-up" />
+                <StatCard title="Certificados Pendentes" value={kpiStats.pendingCertificates} icon={<ClockIcon />} color="bg-gray-500" />
             </div>
 
-            {/* Recent Activity */}
-             <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Atividades Recentes dos Alunos</h2>
-                <div className="bg-white shadow-md rounded-lg overflow-hidden border">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atividade</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {recentActivity.length > 0 ? recentActivity.map(log => (
-                                    <tr key={log.id} className="hover:bg-gray-50 transition-colors duration-200">
-                                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{log.user_profiles?.full_name || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                            Visualizou "{log.modules?.title}" no curso "{log.courses?.title}"
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan={3} className="text-center p-6 text-gray-500">Nenhuma atividade recente.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div className="lg:col-span-3"><ChartCard title="Total de Inscrições por Curso"><BarChart data={coursePopularity} /></ChartCard></div>
+                <div className="lg:col-span-2"><ChartCard title="Estado dos Alunos"><PieChart data={studentStatus} highlightedStatus={highlightedStatus} onHighlight={setHighlightedStatus} /></ChartCard></div>
+            </div>
+
+            <div>
+                <ChartCard title="Progresso nos Últimos 15 Dias">
+                    <VerticalBarChart data={timeProgress} />
+                </ChartCard>
             </div>
         </div>
     );

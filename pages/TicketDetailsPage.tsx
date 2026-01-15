@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,10 +17,13 @@ const TicketDetailsPage: React.FC = () => {
 
     const fetchTicketAndReplies = useCallback(async () => {
         if (!userId || !ticketId) return;
+        setLoading(true);
 
-        // Fetch ticket details
-        const ticketQuery = supabase.from('support_tickets').select('*, user_profiles(full_name, id)').eq('id', ticketId);
-        // Security: Non-admins can only fetch their own tickets
+        const ticketQuery = supabase
+            .from('support_tickets')
+            .select('*, user_profiles(full_name, id)')
+            .eq('id', ticketId);
+            
         if (!isAdmin) {
             ticketQuery.eq('user_id', userId);
         }
@@ -32,14 +36,18 @@ const TicketDetailsPage: React.FC = () => {
         }
         setTicket(ticketData as any);
 
-        // Fetch replies
-        const { data: repliesData } = await supabase
+        const { data: repliesData, error: repliesError } = await supabase
             .from('ticket_replies')
             .select('*, user_profiles(full_name, is_admin)')
             .eq('ticket_id', ticketId)
             .order('created_at', { ascending: true });
 
-        if (repliesData) setReplies(repliesData as any);
+        if (repliesData) {
+            setReplies(repliesData as any);
+        } else if (repliesError) {
+            console.error("Error fetching replies:", repliesError);
+        }
+        
         setLoading(false);
     }, [ticketId, userId, isAdmin]);
 
@@ -81,93 +89,97 @@ const TicketDetailsPage: React.FC = () => {
             default: return 'bg-gray-100 text-gray-800';
         }
     };
+    
+    const getStatusText = (status: 'open' | 'in_progress' | 'closed') => {
+      switch (status) {
+        case 'open': return 'Aberto';
+        case 'in_progress': return 'Em Progresso';
+        case 'closed': return 'Fechado';
+        default: return status;
+      }
+    };
 
-    if (loading) return <div>Carregando ticket...</div>;
-    if (!ticket) return <div>Ticket não encontrado ou acesso negado.</div>;
+    if (loading) return (
+        <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div>
+        </div>
+    );
+
+    if (!ticket) return (
+        <div className="text-center p-8 bg-white rounded-lg shadow-md border">
+            <h2 className="text-xl font-semibold text-red-600">Ticket não encontrado ou acesso negado.</h2>
+            <Link to={isAdmin ? "/admin/support" : "/support"} className="mt-4 inline-block text-brand-moz hover:underline">Voltar para Tickets</Link>
+        </div>
+    );
 
     const backLink = isAdmin ? "/admin/support" : "/support";
 
     return (
         <div className="space-y-6">
-            <Link to={backLink} className="text-brand-moz hover:underline">&larr; Voltar para Tickets</Link>
+            <Link to={backLink} className="font-semibold text-brand-up hover:text-brand-moz">&larr; Voltar para Tickets</Link>
             
-            <div className="bg-white p-6 rounded-lg shadow-md border">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-2xl font-bold">{ticket.subject}</h1>
+            <div className="bg-white p-6 rounded-xl shadow-md border">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-grow">
+                        <h1 className="text-2xl font-bold text-gray-800">{ticket.subject}</h1>
                         <p className="text-sm text-gray-500 mt-1">
-                            Aberto por {ticket.user_profiles?.full_name} em {new Date(ticket.created_at).toLocaleString()}
+                            Aberto por <span className="font-medium text-gray-700">{ticket.user_profiles?.full_name}</span> em {new Date(ticket.created_at).toLocaleString()}
                         </p>
                     </div>
-                    <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${getStatusClass(ticket.status)}`}>
-                        {ticket.status === 'open' ? 'Aberto' : ticket.status === 'in_progress' ? 'Em Progresso' : 'Fechado'}
-                    </span>
+                    <div className="flex items-center gap-4">
+                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(ticket.status)}`}>
+                            {getStatusText(ticket.status)}
+                        </span>
+                        {isAdmin && (
+                            <select 
+                                value={ticket.status} 
+                                onChange={(e) => handleStatusChange(e.target.value as any)}
+                                className="text-xs font-semibold rounded-md border-gray-300 focus:ring-brand-moz focus:border-brand-moz"
+                            >
+                                <option value="open">Aberto</option>
+                                <option value="in_progress">Em Progresso</option>
+                                <option value="closed">Fechado</option>
+                            </select>
+                        )}
+                    </div>
+                </div>
+                <div className="mt-6 pt-6 border-t">
+                    <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
                 </div>
             </div>
 
             <div className="space-y-4">
-                {/* Initial Description */}
-                <div className="flex">
-                     <div className="flex-shrink-0 mr-3">
-                        <div className="w-10 h-10 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold">
-                           {ticket.user_profiles?.full_name?.charAt(0)}
-                        </div>
-                    </div>
-                    <div className="bg-gray-100 p-4 rounded-lg flex-1">
-                        <p className="font-semibold text-gray-800">{ticket.user_profiles?.full_name}</p>
-                        <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
-                    </div>
-                </div>
-
-                {/* Replies */}
                 {replies.map(reply => (
-                    <div key={reply.id} className={`flex ${reply.user_id === user?.id ? 'justify-end' : ''}`}>
-                         <div className={`flex items-start max-w-xl ${reply.user_id === user?.id ? 'flex-row-reverse' : ''}`}>
-                            <div className={`flex-shrink-0 ${reply.user_id === user?.id ? 'ml-3' : 'mr-3'}`}>
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${reply.user_profiles?.is_admin ? 'bg-gray-700 text-white' : 'bg-brand-light text-brand-up'}`}>
-                                    {reply.user_profiles?.is_admin ? 'A' : reply.user_profiles?.full_name?.charAt(0)}
-                                </div>
-                            </div>
-                            <div className={`${reply.user_id === user?.id ? 'bg-brand-moz text-white' : 'bg-white border'} p-4 rounded-lg shadow-sm`}>
-                                <p className={`font-semibold ${reply.user_id === user?.id ? 'text-white' : 'text-gray-800'}`}>{reply.user_profiles?.is_admin ? `${reply.user_profiles.full_name} (Admin)` : reply.user_profiles?.full_name}</p>
-                                <p className="whitespace-pre-wrap">{reply.message}</p>
-                                <p className={`text-xs mt-2 ${reply.user_id === user?.id ? 'text-gray-200' : 'text-gray-500'}`}>{new Date(reply.created_at).toLocaleString()}</p>
-                            </div>
-                         </div>
+                    <div key={reply.id} className={`flex ${reply.user_profiles?.is_admin ? 'justify-start' : 'justify-end'}`}>
+                        <div className={`p-4 rounded-xl max-w-lg ${reply.user_profiles?.is_admin ? 'bg-gray-100' : 'bg-brand-light'}`}>
+                            <p className="font-bold text-sm mb-1 text-gray-800">{reply.user_profiles?.full_name}</p>
+                            <p className="text-gray-800 whitespace-pre-wrap">{reply.message}</p>
+                            <p className="text-xs text-gray-500 text-right mt-2">{new Date(reply.created_at).toLocaleString()}</p>
+                        </div>
                     </div>
                 ))}
             </div>
 
             {ticket.status !== 'closed' && (
-                <div className="bg-white p-6 rounded-lg shadow-md border">
-                    <h3 className="font-bold mb-4">Responder ao Ticket</h3>
+                <div className="bg-white p-6 rounded-lg shadow-md border mt-6">
+                    <h3 className="text-lg font-bold mb-4">Adicionar Resposta</h3>
                     <form onSubmit={handlePostReply}>
                         <textarea
                             value={newMessage}
-                            onChange={e => setNewMessage(e.target.value)}
+                            onChange={(e) => setNewMessage(e.target.value)}
                             rows={5}
-                            className="w-full p-2 border rounded-md"
-                            placeholder="Digite sua mensagem aqui..."
+                            className="w-full p-2 border rounded-md focus:ring-brand-moz focus:border-brand-moz"
+                            placeholder="Escreva sua resposta..."
                             required
+                            disabled={submitting}
                         />
                         <div className="text-right mt-4">
-                            <button type="submit" disabled={submitting} className="bg-brand-moz text-white px-6 py-2 rounded-md hover:bg-brand-up disabled:opacity-50">
+                            <button type="submit" disabled={submitting || !newMessage.trim()} className="px-6 py-2 bg-brand-moz text-white font-semibold rounded-lg hover:bg-brand-up disabled:opacity-50">
                                 {submitting ? 'Enviando...' : 'Enviar Resposta'}
                             </button>
                         </div>
                     </form>
                 </div>
-            )}
-            
-            {isAdmin && (
-                 <div className="bg-white p-6 rounded-lg shadow-md border">
-                    <h3 className="font-bold mb-4">Ações de Administrador</h3>
-                    <div className="flex space-x-4">
-                        <button onClick={() => handleStatusChange('open')} disabled={ticket.status === 'open'} className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50">Marcar como Aberto</button>
-                        <button onClick={() => handleStatusChange('in_progress')} disabled={ticket.status === 'in_progress'} className="bg-yellow-500 text-white px-4 py-2 rounded disabled:opacity-50">Marcar como Em Progresso</button>
-                        <button onClick={() => handleStatusChange('closed')} disabled={ticket.status === 'closed'} className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Marcar como Fechado</button>
-                    </div>
-                 </div>
             )}
         </div>
     );

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
@@ -12,6 +11,7 @@ interface AuthContextType {
   isAdmin: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
+  controlUserUpdateSignOut: (enabled: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,32 +24,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const inactivityTimer = useRef<number>();
+  // FIX: Provide an initial value to `useRef`. The hook expects an argument.
+  const inactivityTimer = useRef<number | null>(null);
+  const isSigningOut = useRef(false);
+  const userUpdateSignOutEnabled = useRef(true);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    // Manually clear state for immediate UI update, ensuring responsiveness.
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
+    if (isSigningOut.current) return;
+    isSigningOut.current = true;
+    
+    try {
+      await supabase.auth.signOut();
+      // Manually clear state for immediate UI update
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setIsAdmin(false);
+    } finally {
+      isSigningOut.current = false;
+    }
   }, []);
 
-  const fetchProfile = useCallback(async (user: User) => {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+  const controlUserUpdateSignOut = (enabled: boolean) => {
+    userUpdateSignOutEnabled.current = enabled;
+  };
 
-    if (error) {
-      console.error("Critical Error: User profile not found or RLS blocks access. Forcing sign out.", error);
-      // FIX: Call the local signOut function to ensure state is cleared properly.
-      await signOut();
+  const fetchProfile = useCallback(async (user: User) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error("Critical Error: User profile not found or RLS blocks access.", error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error("Error fetching profile:", err);
       return null;
     }
-    return data;
-  }, [signOut]);
+  }, []);
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -66,27 +83,56 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (userProfile) {
           setSession(initialSession);
           setUser(initialSession.user);
-          setProfile(userProfile);
+          // FIX: Cast userProfile to UserProfile to match the state's stricter type,
+          // specifically for the 'sexo' property.
+          setProfile(userProfile as UserProfile);
           setIsAdmin(userProfile.is_admin);
         }
       }
       
       setLoading(false);
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-        
-        if (newSession?.user) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+        if (isSigningOut.current) {
+          return;
+        }
+
+        if (event === 'PASSWORD_RECOVERY') {
+          return;
+        }
+
+        if (event === 'USER_UPDATED') {
+          if (userUpdateSignOutEnabled.current) {
+            await signOut();
+          } else {
+            // The handler was temporarily disabled by the ProfilePage to show a success message.
+            // We re-enable it now so it works for other cases (e.g., password recovery flow).
+            userUpdateSignOutEnabled.current = true;
+          }
+          return;
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setIsAdmin(false);
+          return;
+        }
+
+        if (newSession?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
           const userProfile = await fetchProfile(newSession.user);
           if (userProfile) {
             setSession(newSession);
             setUser(newSession.user);
-            setProfile(userProfile);
+            // FIX: Cast userProfile to UserProfile to match the state's stricter type,
+            // specifically for the 'sexo' property.
+            setProfile(userProfile as UserProfile);
             setIsAdmin(userProfile.is_admin);
           } else {
-            signOut();
+            await signOut();
           }
-        } else {
-          // Explicitly clear state on sign out event
+        } else if (!newSession) {
           setUser(null);
           setSession(null);
           setProfile(null);
@@ -114,14 +160,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
       }
-      return; // Sai sem configurar o temporizador.
+      return;
     }
 
     const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
     activityEvents.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
     
-    // Função de limpeza para remover os ouvintes de eventos e o temporizador.
     return () => {
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
@@ -134,13 +179,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (user) {
       const userProfile = await fetchProfile(user);
       if (userProfile) {
-        setProfile(userProfile);
+        // FIX: Cast userProfile to UserProfile to match the state's stricter type,
+        // specifically for the 'sexo' property.
+        setProfile(userProfile as UserProfile);
         setIsAdmin(userProfile.is_admin);
       }
     }
   }, [user, fetchProfile]);
 
-  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut }), 
+  const value = useMemo(() => ({ user, session, profile, loading, isAdmin, refreshProfile, signOut, controlUserUpdateSignOut }), 
     [user, session, profile, loading, isAdmin, refreshProfile, signOut]
   );
 

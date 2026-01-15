@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useI18n } from '../contexts/I18nContext';
 import { Module, UserProgress, Course, QuizQuestion, QuizAttempt } from '../types';
+
+const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    </svg>
+);
 
 const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
@@ -27,6 +34,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     const [showResults, setShowResults] = useState(false);
     const [score, setScore] = useState(0);
     const { user } = useAuth();
+    const { t } = useI18n();
   
     useEffect(() => {
       const fetchQuestions = async () => {
@@ -35,7 +43,9 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
           .select('*')
           .eq('course_id', courseId);
         if (data) {
-          setQuestions(data);
+          // FIX: Cast data to 'any' to resolve the type mismatch between Supabase's 'Json'
+          // type for the 'options' field and the application's expected 'string[]' type.
+          setQuestions(data as any);
           setAnswers(new Array(data.length).fill(null));
         }
       };
@@ -76,26 +86,27 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
       const passed = score >= 70;
       return (
         <div className="text-center p-8 bg-white rounded-xl shadow-lg border">
-          <h3 className="text-3xl font-bold mb-4">Resultados do Quiz</h3>
-          <p className="text-xl mb-2">Sua pontuação final:</p>
+          <h3 className="text-3xl font-bold mb-4">{t('quiz.resultsTitle')}</h3>
+          <p className="text-xl mb-2">{t('quiz.yourFinalScore')}</p>
           <p className={`text-6xl font-bold mb-6 ${passed ? 'text-brand-moz' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
           {passed ? (
-            <p className="text-brand-up font-semibold text-lg">Parabéns, você passou! Pode solicitar seu certificado.</p>
+            <p className="text-brand-up font-semibold text-lg">{t('quiz.passedMessage')}</p>
           ) : (
-            <p className="text-red-600 font-semibold text-lg">Você não atingiu a pontuação mínima de 70%.</p>
+            <p className="text-red-600 font-semibold text-lg">{t('quiz.failedMessage')}</p>
           )}
         </div>
       );
     }
   
     const currentQuestion = questions[currentQuestionIndex];
+    const currentOptions = currentQuestion?.options || [];
   
     return currentQuestion ? (
       <div className="p-8 bg-white rounded-xl shadow-lg border">
-        <p className="text-sm font-semibold text-brand-moz mb-2">PERGUNTA {currentQuestionIndex + 1} DE {questions.length}</p>
+        <p className="text-sm font-semibold text-brand-moz mb-2">{t('quiz.questionLabel', {current: currentQuestionIndex + 1, total: questions.length})}</p>
         <h3 className="text-2xl font-bold mb-6">{currentQuestion.question_text}</h3>
         <div className="space-y-4">
-          {currentQuestion.options.map((option, index) => (
+          {currentOptions.map((option, index) => (
             <label key={index} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-brand-moz bg-brand-light' : 'border-gray-200 hover:border-brand-moz/50'}`}>
               <input
                 type="radio"
@@ -114,14 +125,14 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
             disabled={currentQuestionIndex === 0}
             className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50 font-semibold"
           >
-            Anterior
+            {t('quiz.previous')}
           </button>
           {currentQuestionIndex < questions.length - 1 ? (
             <button 
               onClick={() => setCurrentQuestionIndex(i => Math.min(questions.length - 1, i + 1))}
               className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up"
             >
-              Próximo
+              {t('quiz.next')}
             </button>
           ) : (
             <button 
@@ -129,17 +140,18 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
               disabled={answers.includes(null)}
               className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50"
             >
-              Finalizar Quiz
+              {t('quiz.finish')}
             </button>
           )}
         </div>
       </div>
-    ) : <div>Carregando quiz...</div>;
+    ) : <div>{t('quiz.loading')}</div>;
 };
 
 const CoursePlayerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const { user } = useAuth();
+    const { t, language } = useI18n();
     const navigate = useNavigate();
     const userId = user?.id;
 
@@ -186,8 +198,8 @@ const CoursePlayerPage: React.FC = () => {
                 
                 if (isActive) {
                     if (error) {
-                        console.error("Error creating signed URL:", error);
-                        setVideoError("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
+                        console.error("Error creating signed URL:", error.message);
+                        setVideoError(t('course.player.videoLoadError'));
                     } else {
                         setSignedVideoUrl(data.signedUrl);
                     }
@@ -198,7 +210,7 @@ const CoursePlayerPage: React.FC = () => {
         return () => {
             isActive = false;
         };
-    }, [activeModule]);
+    }, [activeModule, t]);
 
     useEffect(() => {
         let isActive = true;
@@ -224,7 +236,7 @@ const CoursePlayerPage: React.FC = () => {
                 const { data: modulesData, error: modulesError } = modulesRes;
                 if (modulesError) throw modulesError;
                 const modulesList = modulesData || [];
-                setModules(modulesList);
+                setModules(modulesList as Module[]);
 
                 const { data: progressData, error: progressError } = progressRes;
                 if (progressError) throw progressError;
@@ -255,7 +267,7 @@ const CoursePlayerPage: React.FC = () => {
             } catch (error: any) {
                 console.error("Failed to load course data:", error.message);
                 if (isActive) {
-                    setFetchError("Não foi possível carregar os dados do curso. Isso pode ser um problema temporário de conexão ou permissão. Por favor, tente recarregar a página.");
+                    setFetchError(t('course.player.dataLoadError'));
                 }
             } finally {
                 if (isActive) setLoading(false);
@@ -267,7 +279,7 @@ const CoursePlayerPage: React.FC = () => {
         return () => {
             isActive = false;
         };
-    }, [userId, courseId, navigate, logActivity]);
+    }, [userId, courseId, navigate, logActivity, t]);
 
     const handleSelectModule = (module: Module) => {
         setActiveModule(module);
@@ -306,9 +318,9 @@ const CoursePlayerPage: React.FC = () => {
         const { error } = await supabase.from('certificate_requests').insert({user_id: userId, course_id: courseId});
         if(!error) {
             setCertificateRequested(true);
-            alert("Pedido de certificado enviado com sucesso!");
+            alert(t('course.player.requestSuccess'));
         } else {
-            alert("Erro ao pedir certificado. Você já pode ter solicitado.");
+            alert(t('course.player.requestError'));
         }
     };
 
@@ -322,13 +334,13 @@ const CoursePlayerPage: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
               <div className="bg-white p-8 rounded-xl shadow-lg border max-w-lg">
-                <h2 className="text-2xl font-bold text-red-600 mb-4">Ocorreu um Erro</h2>
+                <h2 className="text-2xl font-bold text-red-600 mb-4">{t('course.player.errorTitle')}</h2>
                 <p className="text-gray-700 mb-6">{fetchError}</p>
                 <button
                     onClick={() => window.location.reload()}
                     className="bg-brand-moz text-white font-semibold py-2 px-6 rounded-lg hover:bg-brand-up transition"
                 >
-                    Tentar Novamente
+                    {t('course.player.retry')}
                 </button>
               </div>
             </div>
@@ -337,12 +349,31 @@ const CoursePlayerPage: React.FC = () => {
 
     const totalModules = modules.length;
     const progressPercentage = totalModules > 0 ? (completedModules.length / totalModules) * 100 : 0;
+    
+    const moduleTranslations: { [key: string]: string } = {
+        'Módulo 1: Introdução ao Petróleo e Gás': 'Module 1: Introduction to Oil and Gas',
+        'Módulo 2: Introdução ao Gás Natural Liquefeito (GNL)': 'Module 2: Introduction to Liquefied Natural Gas (LNG)',
+        'Módulo 3: Indústria de Petróleo e Gás em Moçambique': 'Module 3: Oil and Gas Industry in Mozambique'
+    };
+    
+    const getTranslatedTitle = (originalTitle: string) => {
+        return language === 'en' ? (moduleTranslations[originalTitle] || originalTitle) : originalTitle;
+    };
+
+    let courseTitle = course?.title || '';
+    if (language === 'en' && course?.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito') {
+        courseTitle = 'Introduction to Petroleum, Natural Gas, and Liquefied Natural Gas';
+    }
 
     return (
         <div className="bg-brand-light -mx-8 -my-8 p-8 rounded-xl">
+            <Link to="/dashboard" className="inline-flex items-center gap-2 mb-6 font-semibold text-brand-up hover:text-brand-moz transition-colors">
+                <ArrowLeftIcon className="w-5 h-5" />
+                {t('course.player.backToDashboard')}
+            </Link>
             <div className="mb-8 p-6 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
-                <p className="font-semibold opacity-90 tracking-wider">CURSO</p>
-                <h1 className="text-4xl font-extrabold drop-shadow-md">{course?.title}</h1>
+                <p className="font-semibold opacity-90 tracking-wider">{t('course.player.course')}</p>
+                <h1 className="text-4xl font-extrabold drop-shadow-md">{courseTitle}</h1>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <main className="lg:col-span-3">
@@ -363,53 +394,70 @@ const CoursePlayerPage: React.FC = () => {
                                         onContextMenu={(e) => e.preventDefault()}
                                     >
                                         <source src={signedVideoUrl} type="video/mp4" />
-                                        Seu navegador não suporta o vídeo.
+                                        {t('course.player.videoNotSupported')}
                                     </video>
                                 ) : videoError ? (
                                     <div className="text-red-400 p-4 text-center">
                                         <p className="font-semibold">{videoError}</p>
-                                        <p className="text-sm text-gray-400 mt-2">Se o problema persistir, por favor contacte o suporte.</p>
+                                        <p className="text-sm text-gray-400 mt-2">{t('course.player.videoSupportContact')}</p>
                                     </div>
                                 ) : (
                                     <div className="text-white flex items-center space-x-2">
                                       <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                      <span>Carregando vídeo seguro...</span>
+                                      <span>{t('course.player.loadingVideo')}</span>
                                     </div>
                                 )}
                             </div>
                              <div className="p-4">
-                                <h2 className="text-2xl font-bold mt-2">{activeModule.title}</h2>
+                                <h2 className="text-2xl font-bold mt-2">{getTranslatedTitle(activeModule.title)}</h2>
                             </div>
                         </div>
                     )}
-                    {view === 'quiz' && courseId && <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />}
+                    {view === 'quiz' && courseId && (
+                        <div>
+                            <button
+                                onClick={() => {
+                                    const lastModule = modules.length > 0 ? modules[modules.length - 1] : null;
+                                    if (lastModule) {
+                                        handleSelectModule(lastModule);
+                                    }
+                                }}
+                                className="flex items-center gap-2 mb-4 font-semibold text-brand-up hover:text-brand-moz transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-5 h-5" />
+                                {t('course.player.backToLastModule')}
+                            </button>
+                            <QuizComponent courseId={courseId} onQuizComplete={handleQuizComplete} />
+                        </div>
+                    )}
                     {view === 'certificate' && quizPassed && (
                         <div className="bg-white p-8 rounded-xl shadow-lg border text-center">
-                            <h2 className="text-4xl font-bold text-brand-up mb-4">Parabéns!</h2>
-                            <p className="text-xl mb-6">Você concluiu o curso "{course?.title}" e passou no quiz!</p>
+                            <h2 className="text-4xl font-bold text-brand-up mb-4">{t('course.player.congratulations')}</h2>
+                            <p className="text-xl mb-6">{t('course.player.courseComplete', { title: courseTitle })}</p>
                             {certificateRequested ? (
-                                <p className="text-blue-600 font-semibold text-lg">Seu pedido de certificado foi recebido e será processado em breve.</p>
+                                <p className="text-blue-600 font-semibold text-lg">{t('course.player.certificateRequested')}</p>
                             ) : (
                                 <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                    Solicitar Certificado
+                                    {t('course.player.requestCertificate')}
                                 </button>
                             )}
                         </div>
                     )}
                 </main>
                 <aside className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border">
-                    <h3 className="text-xl font-bold mb-4">Progresso</h3>
+                    <h3 className="text-xl font-bold mb-4">{t('course.player.progress')}</h3>
                      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
                         <div className="bg-brand-moz h-2.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-6 text-center">{completedModules.length} de {totalModules} módulos completos</p>
+                    <p className="text-sm text-gray-600 mb-6 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
 
-                    <h3 className="text-xl font-bold mb-4">Módulos</h3>
+                    <h3 className="text-xl font-bold mb-4">{t('course.player.modules')}</h3>
                     <ul className="space-y-2">
                     {modules.map((module, index) => {
                         const isCompleted = completedModules.includes(module.id);
                         const isLocked = index > 0 && !completedModules.includes(modules[index - 1].id);
                         const isActive = activeModule?.id === module.id && view === 'video';
+                        const moduleTitle = getTranslatedTitle(module.title);
                         
                         let Icon;
                         let iconClasses = "w-5 h-5 mr-3 ";
@@ -434,7 +482,7 @@ const CoursePlayerPage: React.FC = () => {
                             } ${isActive ? 'bg-brand-light ring-2 ring-brand-moz font-semibold text-brand-up' : 'text-gray-700'}`}
                             >
                             {Icon && <Icon className={iconClasses} />}
-                            <span className="flex-1 truncate">{index + 1}. {module.title}</span>
+                            <span className="flex-1 truncate">{index + 1}. {moduleTitle}</span>
                             </button>
                         </li>
                         );
@@ -446,7 +494,7 @@ const CoursePlayerPage: React.FC = () => {
                             className="w-full text-left p-3 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
                              <LockIcon className={`w-5 h-5 mr-3 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
-                            Quiz Final
+                            {t('course.player.finalQuiz')}
                         </button>
                     </li>
                     </ul>

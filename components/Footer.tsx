@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
@@ -58,9 +59,9 @@ const Footer: React.FC = () => {
           </div>
 
         </div>
-        <div className="mt-12 border-t border-white/20 pt-8 text-center text-sm text-gray-200 space-y-2">
-          <p className="font-semibold">{t('footer.slogan')}</p>
-          <p>&copy; {new Date().getFullYear()} MozupAcademy. {t('footer.copyright')}</p>
+        <div className="mt-12 border-t border-white/20 pt-8 text-center text-gray-200 space-y-4">
+          <p className="text-2xl font-bold tracking-tight text-white">{t('footer.slogan')}</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} MozupAcademy. {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>

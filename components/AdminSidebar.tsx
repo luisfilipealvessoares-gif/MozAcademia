@@ -15,7 +15,9 @@ const ChartBarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => <svg {.
 
 interface NavLinkProps {
     to: string;
-    icon: React.ReactElement;
+    // FIX: The type for 'icon' was too generic. Specifying React.SVGProps<SVGSVGElement>
+    // ensures TypeScript knows that props like 'className' are valid.
+    icon: React.ReactElement<React.SVGProps<SVGSVGElement>>;
     children: React.ReactNode;
 }
 const NavLink: React.FC<NavLinkProps> = ({ to, icon, children }) => {
