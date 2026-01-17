@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -7,6 +8,7 @@ import { useI18n } from '../contexts/I18nContext';
 import { Module, UserProgress, Course, QuizQuestion, QuizAttempt } from '../types';
 import Module1FinalQuiz from '../components/Module1FinalQuiz';
 import Module2FinalQuiz from '../components/Module2FinalQuiz';
+import Module3FinalQuiz from '../components/Module3FinalQuiz';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -189,7 +191,7 @@ const CoursePlayerPage: React.FC = () => {
 
     // In-video quiz state
     const [inVideoQuizActive, setInVideoQuizActive] = useState(false);
-    const [activeQuizType, setActiveQuizType] = useState<'security' | 'layers' | 'pgChain' | 'seismicSurvey' | 'epiQuiz' | 'module1Final' | 'module2Final' | null>(null);
+    const [activeQuizType, setActiveQuizType] = useState<'security' | 'layers' | 'pgChain' | 'seismicSurvey' | 'epiQuiz' | 'module1Final' | 'module2Final' | 'module3Final' | null>(null);
     const [securityQuizComplete, setSecurityQuizComplete] = useState(false);
     const [layersQuizComplete, setLayersQuizComplete] = useState(false);
     const [pgChainQuizComplete, setPgChainQuizComplete] = useState(false);
@@ -197,6 +199,7 @@ const CoursePlayerPage: React.FC = () => {
     const [epiQuizComplete, setEpiQuizComplete] = useState(false);
     const [module1FinalQuizComplete, setModule1FinalQuizComplete] = useState(false);
     const [module2FinalQuizComplete, setModule2FinalQuizComplete] = useState(false);
+    const [module3FinalQuizComplete, setModule3FinalQuizComplete] = useState(false);
     const [videoQuizShowSuccess, setVideoQuizShowSuccess] = useState(false);
     const [videoQuizAttempts, setVideoQuizAttempts] = useState(0);
     const [videoQuizFeedback, setVideoQuizFeedback] = useState<string | null>(null);
@@ -232,6 +235,23 @@ const CoursePlayerPage: React.FC = () => {
 
     // Quiz 5 (EPI) State
     const [selectedEpiAnswer, setSelectedEpiAnswer] = useState<boolean | null>(null);
+    
+    // Navigation blocking logic
+    const isModuleIncomplete = view === 'video' && activeModule && !completedModules.includes(activeModule.id);
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (isModuleIncomplete) {
+                event.preventDefault();
+                event.returnValue = t('user.course.exitWarning');
+                return t('user.course.exitWarning');
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [isModuleIncomplete, t]);
 
     // Robust audio pause and visual visibility effect
     useEffect(() => {
@@ -280,6 +300,10 @@ const CoursePlayerPage: React.FC = () => {
         } else if (activeModule?.title.includes("Módulo 2")) {
             quizZones = [
                 { trigger: 601, resume: 607, isComplete: module2FinalQuizComplete, quizType: 'module2Final' as const },
+            ];
+        } else if (activeModule?.title.includes("Módulo 3")) {
+            quizZones = [
+                { trigger: 993, resume: 1000, isComplete: module3FinalQuizComplete, quizType: 'module3Final' as const },
             ];
         } else {
             return; // No quizzes for other modules yet
@@ -419,6 +443,10 @@ const CoursePlayerPage: React.FC = () => {
             setModule2FinalQuizComplete(true);
             resumeAt(607); // 10:07
         }
+        else if (activeQuizType === 'module3Final') {
+            setModule3FinalQuizComplete(true);
+            resumeAt(1000); // 16:40
+        }
         
         setActiveQuizType(null);
     };
@@ -535,6 +563,11 @@ const CoursePlayerPage: React.FC = () => {
     }, [userId, courseId, navigate, logActivity, t]);
 
     const handleSelectModule = (module: Module) => {
+        if (isModuleIncomplete && activeModule && module.id !== activeModule.id) {
+            if (!window.confirm(t('user.course.changeModuleWarning'))) {
+                return;
+            }
+        }
         setActiveModule(module);
         setView('video');
         setSecurityQuizComplete(false);
@@ -544,6 +577,7 @@ const CoursePlayerPage: React.FC = () => {
         setEpiQuizComplete(false);
         setModule1FinalQuizComplete(false);
         setModule2FinalQuizComplete(false);
+        setModule3FinalQuizComplete(false);
         setInVideoQuizActive(false);
         setVideoQuizShowSuccess(false);
         setVideoQuizAttempts(0);
@@ -687,6 +721,8 @@ const CoursePlayerPage: React.FC = () => {
                                             <Module1FinalQuiz onComplete={handleResumeVideoAfterQuiz} />
                                         ) : activeQuizType === 'module2Final' ? (
                                             <Module2FinalQuiz onComplete={handleResumeVideoAfterQuiz} />
+                                        ) : activeQuizType === 'module3Final' ? (
+                                            <Module3FinalQuiz onComplete={handleResumeVideoAfterQuiz} />
                                         ) : videoQuizShowSuccess ? (
                                             <div className="text-center space-y-8 animate-fadeIn max-w-lg bg-black/75 backdrop-blur-3xl p-10 rounded-3xl border border-white/20 shadow-2xl">
                                                 <div className="bg-white rounded-full p-4 inline-block shadow-2xl animate-bounce">

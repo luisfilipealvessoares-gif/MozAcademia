@@ -1,6 +1,7 @@
 
 
 
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -128,6 +129,8 @@ const translations = {
     'course.player.dataLoadError': 'Não foi possível carregar os dados do curso. Isto pode ser um problema temporário de conexão ou permissão. Por favor, tente recarregar a página.',
     'course.player.retry': 'Tentar Novamente',
     'course.player.errorTitle': 'Ocorreu um Erro',
+    'user.course.exitWarning': 'O seu progresso neste módulo não foi guardado. Se sair agora, terá de recomeçar. Tem a certeza que deseja sair?',
+    'user.course.changeModuleWarning': 'O seu progresso neste módulo não foi guardado. Tem a certeza que deseja mudar de módulo?',
     
     // Quiz Component
     'quiz.resultsTitle': 'Resultados do Quiz',
@@ -365,7 +368,9 @@ const translations = {
     'course.player.dataLoadError': 'Could not load course data. This may be a temporary connection or permission issue. Please try reloading the page.',
     'course.player.retry': 'Try Again',
     'course.player.errorTitle': 'An Error Occurred',
-    
+    'user.course.exitWarning': 'Your progress in this module has not been saved. If you leave now, you will have to start over. Are you sure you want to leave?',
+    'user.course.changeModuleWarning': 'Your progress in this module has not been saved. Are you sure you want to switch modules?',
+
     // Quiz Component
     'quiz.resultsTitle': 'Quiz Results',
     'quiz.yourFinalScore': 'Your final score:',
