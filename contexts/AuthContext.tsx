@@ -72,6 +72,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   useEffect(() => {
+    // If the URL indicates a password recovery flow, we stop here.
+    // The AuthContext should not initialize a session, as it's a special temporary one.
+    // The UpdatePasswordPage will handle this flow exclusively.
+    if (window.location.hash.includes('type=recovery')) {
+        setLoading(false); // Stop the global loading spinner, allowing the page component to render.
+        return;
+    }
+
     const setupAuth = async () => {
       const { data: { session: initialSession }, error } = await supabase.auth.getSession();
 

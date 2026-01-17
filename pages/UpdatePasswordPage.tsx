@@ -20,22 +20,35 @@ const UpdatePasswordPage: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-            if (event === 'PASSWORD_RECOVERY') {
+        let isMounted = true;
+        const hasFired = { value: false };
+
+        // O listener onAuthStateChange é a forma definitiva de saber se o token é válido.
+        // Ele dispara quando o Supabase processa o token do URL.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (isMounted && event === 'PASSWORD_RECOVERY' && session) {
+                hasFired.value = true;
                 setIsTokenValid(true);
                 setCheckingToken(false);
             }
         });
 
-        const timer = setTimeout(() => {
-            setCheckingToken(false);
-        }, 2500);
+        // getSession() força o cliente Supabase a processar o URL.
+        // Após a sua conclusão, o evento onAuthStateChange já terá sido disparado (se o token for válido).
+        supabase.auth.getSession().then(() => {
+            if (isMounted && !hasFired.value) {
+                // Se o evento não disparou, o token é inválido ou ausente.
+                setIsTokenValid(false);
+                setCheckingToken(false);
+            }
+        });
 
         return () => {
+            isMounted = false;
             subscription.unsubscribe();
-            clearTimeout(timer);
         };
     }, []);
+
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,8 +72,9 @@ const UpdatePasswordPage: React.FC = () => {
             setSuccess(t('auth.updatePassword.success'));
             sessionStorage.setItem('password_updated', 'true');
             
-            setTimeout(() => {
-                // The global onAuthStateChange listener in AuthContext will handle the signOut
+            setTimeout(async () => {
+                // Desconecta o utilizador para invalidar a sessão temporária de recuperação.
+                await supabase.auth.signOut();
                 navigate('/login');
             }, 3000);
         }
@@ -68,8 +82,7 @@ const UpdatePasswordPage: React.FC = () => {
     };
 
     const handleResend = async () => {
-        // This is a simplified version. A real-world scenario might need a way to get the user's email again.
-        // For now, we redirect to login where they can restart the process.
+        // Redireciona o utilizador para a página de login para que possa reiniciar o processo.
         navigate('/login');
     }
 

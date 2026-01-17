@@ -32,10 +32,9 @@ interface ErrorBoundaryInternalProps {
     children: ReactNode;
 }
 
-// FIX: Rewrote the class component to use modern class field syntax for state
-// initialization. The previous constructor-based approach was causing type
-// errors in the build environment, likely due to a configuration issue. This
-// version is cleaner and resolves the "Property 'state' does not exist" errors.
+// FIX: Refactored to use class field syntax for state initialization. The previous constructor-based
+// approach was causing persistent TypeScript errors related to accessing `this.props` and `this.state`.
+// This modern syntax is cleaner and correctly binds the component's state.
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
   state: State = { hasError: false };
 
