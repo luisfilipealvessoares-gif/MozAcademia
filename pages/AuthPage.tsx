@@ -125,7 +125,7 @@ const AuthPage: React.FC = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}${window.location.pathname}#/welcome`,
+            emailRedirectTo: `${window.location.origin}/welcome`,
             data: {
               full_name: fullName,
             }
@@ -196,7 +196,7 @@ const AuthPage: React.FC = () => {
     setResetMessage({ text: '', type: '' });
 
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `https://moz-academia.vercel.app/#/update-password`,
+        redirectTo: `https://moz-academia.vercel.app/update-password`,
     });
     
     setResetLoading(false);
