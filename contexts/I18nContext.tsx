@@ -4,6 +4,15 @@
 
 
 
+
+
+
+
+
+
+
+
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -76,6 +85,7 @@ const translations = {
     'auth.passwordPlaceholder': 'Palavra-passe',
     'auth.confirmPasswordPlaceholder': 'Confirmar palavra-passe',
     'auth.rememberMe': 'Lembrar-me',
+    'auth.forgotPassword': 'Esqueceu-se da palavra-passe?',
     'auth.terms.agree': 'Li e aceito os',
     'auth.terms.link': 'Termos de Serviço',
     'auth.passwordMinLengthError': 'A palavra-passe deve ter no mínimo 8 caracteres.',
@@ -98,6 +108,18 @@ const translations = {
     'auth.emailConfirmation.backToLoginButton': 'Voltar para o Login',
     'auth.showPassword': 'Mostrar palavra-passe',
     'auth.hidePassword': 'Ocultar palavra-passe',
+    'auth.resetPassword.title': 'Redefinir Palavra-passe',
+    'auth.resetPassword.instructions': 'Insira o seu e-mail para receber as instruções de redefinição da palavra-passe.',
+    'auth.resetPassword.button': 'Enviar Instruções',
+    'auth.resetPassword.success': 'Se existir uma conta com este e-mail, as instruções foram enviadas.',
+    'auth.resetPassword.error': 'Erro ao enviar: {message}',
+    'auth.passwordResetSuccess': 'Senha alterada com sucesso! Por favor, faça login com as suas novas credenciais.',
+    'auth.updatePassword.title': 'Defina a sua Nova Senha',
+    'auth.updatePassword.success': 'Senha alterada com sucesso! A redirecionar para o login...',
+    'auth.updatePassword.error': 'Não foi possível alterar a senha: {message}',
+    'auth.updatePassword.invalidTitle': 'Link Inválido ou Expirado',
+    'auth.updatePassword.invalidMessage': 'O link de redefinição de senha que utilizou é inválido ou já expirou. Por favor, solicite um novo.',
+    'auth.updatePassword.retryButton': 'Solicitar Novo Link',
 
     // User Dashboard
     'user.dashboard.title': 'O Meu Painel',
@@ -131,6 +153,9 @@ const translations = {
     'course.player.dataLoadError': 'Não foi possível carregar os dados do curso. Isto pode ser um problema temporário de conexão ou permissão. Por favor, tente recarregar a página.',
     'course.player.retry': 'Tentar Novamente',
     'course.player.errorTitle': 'Ocorreu um Erro',
+    'course.player.profileIncomplete.title': 'Perfil Incompleto',
+    'course.player.profileIncomplete.message': 'Para aceder ao conteúdo do curso, por favor, complete o seu perfil com todas as informações necessárias.',
+    'course.player.profileIncomplete.button': 'Completar Perfil',
     'user.course.exitWarning': 'O seu progresso neste módulo não foi guardado. Se sair agora, terá de recomeçar. Tem a certeza que deseja sair?',
     'user.course.changeModuleWarning': 'O seu progresso neste módulo não foi guardado. Tem a certeza que deseja mudar de módulo?',
     
@@ -321,6 +346,7 @@ const translations = {
     'auth.passwordPlaceholder': 'Password',
     'auth.confirmPasswordPlaceholder': 'Confirm password',
     'auth.rememberMe': 'Remember me',
+    'auth.forgotPassword': 'Forgot your password?',
     'auth.terms.agree': 'I have read and accept the',
     'auth.terms.link': 'Terms of Service',
     'auth.passwordMinLengthError': 'Password must be at least 8 characters long.',
@@ -343,6 +369,18 @@ const translations = {
     'auth.emailConfirmation.backToLoginButton': 'Back to Login',
     'auth.showPassword': 'Show password',
     'auth.hidePassword': 'Hide password',
+    'auth.resetPassword.title': 'Reset Password',
+    'auth.resetPassword.instructions': 'Enter your email to receive password reset instructions.',
+    'auth.resetPassword.button': 'Send Instructions',
+    'auth.resetPassword.success': 'If an account exists for this email, instructions have been sent.',
+    'auth.resetPassword.error': 'Error sending: {message}',
+    'auth.passwordResetSuccess': 'Password changed successfully! Please log in with your new credentials.',
+    'auth.updatePassword.title': 'Set Your New Password',
+    'auth.updatePassword.success': 'Password changed successfully! Redirecting to login...',
+    'auth.updatePassword.error': 'Failed to update password: {message}',
+    'auth.updatePassword.invalidTitle': 'Invalid or Expired Link',
+    'auth.updatePassword.invalidMessage': 'The password reset link you used is either invalid or has expired. Please request a new one.',
+    'auth.updatePassword.retryButton': 'Request New Link',
 
     // User Dashboard
     'user.dashboard.title': 'My Dashboard',
@@ -376,6 +414,9 @@ const translations = {
     'course.player.dataLoadError': 'Could not load course data. This may be a temporary connection or permission issue. Please try reloading the page.',
     'course.player.retry': 'Try Again',
     'course.player.errorTitle': 'An Error Occurred',
+    'course.player.profileIncomplete.title': 'Incomplete Profile',
+    'course.player.profileIncomplete.message': 'To access the course content, please complete your profile with all the required information.',
+    'course.player.profileIncomplete.button': 'Complete Profile',
     'user.course.exitWarning': 'Your progress in this module has not been saved. If you leave now, you will have to start over. Are you sure you want to leave?',
     'user.course.changeModuleWarning': 'Your progress in this module has not been saved. Are you sure you want to switch modules?',
 

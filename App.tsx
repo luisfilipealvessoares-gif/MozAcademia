@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -27,6 +29,7 @@ import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AboutPage from './pages/AboutPage';
 import ScrollToTop from './components/ScrollToTop';
 import { supabase } from './services/supabase';
+import UpdatePasswordPage from './pages/UpdatePasswordPage';
 
 
 // Este componente contém a lógica de roteamento.
@@ -61,6 +64,7 @@ const AppRoutes: React.FC = () => {
                             <Route path="/login" element={<AuthPage />} />
                             <Route path="/welcome" element={<WelcomePage />} />
                             <Route path="/about" element={<AboutPage />} />
+                            <Route path="/update-password" element={<UpdatePasswordPage />} />
 
                             {/* Rotas Protegidas de Usuário */}
                             <Route path="/course/:courseId" element={<ProtectedRoute><CoursePlayerPage /></ProtectedRoute>} />

@@ -150,7 +150,10 @@ const AdminAnalyticsPage: React.FC = () => {
                     if (user.pais) acc[user.pais] = (acc[user.pais] || 0) + 1;
                     return acc;
                 }, {});
-                const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]);
+                // FIX: TypeScript may infer the value from Object.entries as `unknown`.
+                // We type the result as [string, number][] to ensure type safety for subsequent operations.
+                const countryEntries: [string, number][] = Object.entries(countryCounts);
+                const sortedCountries = countryEntries.sort((a, b) => b[1] - a[1]);
                 const top5 = sortedCountries.slice(0, 5);
                 const others = sortedCountries.slice(5).reduce((sum, curr) => sum + curr[1], 0);
                 const countryChartData = top5.map(([label, value]) => ({ label, value }));

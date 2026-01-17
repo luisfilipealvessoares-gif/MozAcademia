@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +21,17 @@ const UserDashboard: React.FC = () => {
     const userId = user?.id;
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const isProfileComplete = !!(profile && profile.company_name && profile.phone_number && profile.sexo);
+    const isProfileComplete = !!(
+        profile &&
+        profile.company_name &&
+        profile.phone_number &&
+        profile.sexo &&
+        profile.endereco &&
+        profile.provincia &&
+        profile.pais &&
+        profile.atividade_comercial &&
+        profile.idade
+    );
     
     const fetchEnrolledCourses = useCallback(async () => {
         if (!userId) return;

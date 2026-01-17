@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -170,7 +171,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
 
 const CoursePlayerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { t, language } = useI18n();
     const navigate = useNavigate();
     const userId = user?.id;
@@ -236,6 +237,18 @@ const CoursePlayerPage: React.FC = () => {
     // Quiz 5 (EPI) State
     const [selectedEpiAnswer, setSelectedEpiAnswer] = useState<boolean | null>(null);
     
+    const isProfileComplete = !!(
+        profile &&
+        profile.company_name &&
+        profile.phone_number &&
+        profile.sexo &&
+        profile.endereco &&
+        profile.provincia &&
+        profile.pais &&
+        profile.atividade_comercial &&
+        profile.idade
+    );
+
     // Navigation blocking logic
     const isModuleIncomplete = view === 'video' && activeModule && !completedModules.includes(activeModule.id);
 
@@ -452,6 +465,11 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!isProfileComplete) {
+            setLoading(false);
+            return;
+        }
+
         let isActive = true;
         const generateSignedUrl = async () => {
             if (activeModule && activeModule.video_url) {
@@ -484,9 +502,11 @@ const CoursePlayerPage: React.FC = () => {
         return () => {
             isActive = false;
         };
-    }, [activeModule, t]);
+    }, [activeModule, t, isProfileComplete]);
 
     useEffect(() => {
+        if (!isProfileComplete) return;
+
         const controller = new AbortController();
         const { signal } = controller;
 
@@ -560,7 +580,7 @@ const CoursePlayerPage: React.FC = () => {
         return () => {
             controller.abort();
         };
-    }, [userId, courseId, navigate, logActivity, t]);
+    }, [userId, courseId, navigate, logActivity, t, isProfileComplete]);
 
     const handleSelectModule = (module: Module) => {
         if (isModuleIncomplete && activeModule && module.id !== activeModule.id) {
@@ -632,6 +652,23 @@ const CoursePlayerPage: React.FC = () => {
             <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
         </div>
     );
+    
+    if (!isProfileComplete) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
+                <div className="bg-white p-8 rounded-xl shadow-lg border max-w-lg">
+                    <h2 className="text-2xl font-bold text-brand-up mb-4">{t('course.player.profileIncomplete.title')}</h2>
+                    <p className="text-gray-700 mb-6">{t('course.player.profileIncomplete.message')}</p>
+                    <Link
+                        to="/profile"
+                        className="bg-brand-moz text-white font-semibold py-3 px-8 rounded-lg hover:bg-brand-up transition shadow-md"
+                    >
+                        {t('course.player.profileIncomplete.button')}
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     if (fetchError) {
         return (

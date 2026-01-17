@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -17,6 +18,10 @@ const AuthPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -35,10 +40,10 @@ const AuthPage: React.FC = () => {
   useEffect(() => {
     // Check for password update success message from sessionStorage
     if (sessionStorage.getItem('password_updated')) {
-        setNotification('Senha alterada com sucesso! Por favor, faça login com suas novas credenciais.');
+        setNotification(t('auth.passwordResetSuccess'));
         sessionStorage.removeItem('password_updated');
     }
-  }, []);
+  }, [t]);
   
   // useEffect for immediate password validation feedback
   useEffect(() => {
@@ -184,6 +189,23 @@ const AuthPage: React.FC = () => {
     }
     setResendLoading(false);
   };
+  
+  const handlePasswordResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetMessage({ text: '', type: '' });
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}${window.location.pathname}#/update-password`,
+    });
+    
+    setResetLoading(false);
+    if (error) {
+        setResetMessage({ text: t('auth.resetPassword.error', { message: error.message }), type: 'error' });
+    } else {
+        setResetMessage({ text: t('auth.resetPassword.success'), type: 'success' });
+    }
+  }
 
 
   if (authLoading) {
@@ -209,6 +231,27 @@ const AuthPage: React.FC = () => {
           setIsTermsModalOpen(false);
       }}
     />
+    {isResetModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+             <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+                 <h2 className="text-2xl font-bold text-brand-up mb-4">{t('auth.resetPassword.title')}</h2>
+                 <p className="text-gray-600 mb-6">{t('auth.resetPassword.instructions')}</p>
+                 <form onSubmit={handlePasswordResetRequest} className="space-y-4">
+                     <div>
+                        <label htmlFor="reset-email" className="sr-only">{t('auth.emailPlaceholder')}</label>
+                        <input id="reset-email" type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-moz" />
+                     </div>
+                     <button type="submit" disabled={resetLoading} className="w-full bg-brand-moz text-white font-semibold py-3 rounded-lg hover:bg-brand-up disabled:opacity-50">
+                         {resetLoading ? t('loading') : t('auth.resetPassword.button')}
+                     </button>
+                 </form>
+                 {resetMessage.text && <p className={`mt-4 text-sm text-center font-semibold ${resetMessage.type === 'error' ? 'text-red-600' : 'text-green-600'}`}>{resetMessage.text}</p>}
+                 <div className="mt-6 text-center">
+                    <button onClick={() => { setIsResetModalOpen(false); setResetMessage({ text: '', type: '' }); }} className="text-sm text-gray-600 hover:underline">{t('back')}</button>
+                 </div>
+             </div>
+        </div>
+    )}
     <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-brand-light to-gray-50">
       <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
         {successMessage ? (
@@ -249,8 +292,8 @@ const AuthPage: React.FC = () => {
             </div>
 
             {notification && (
-              <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-4" role="alert">
-                  <p className="font-bold">Sucesso</p>
+              <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-md shadow-sm" role="alert">
+                  <p className="font-bold">{t('success')}</p>
                   <p>{notification}</p>
               </div>
             )}
@@ -306,6 +349,11 @@ const AuthPage: React.FC = () => {
                             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                                 {t('auth.rememberMe')}
                             </label>
+                        </div>
+                        <div className="text-sm">
+                            <button type="button" onClick={() => setIsResetModalOpen(true)} className="font-medium text-brand-up hover:text-brand-moz">
+                                {t('auth.forgotPassword')}
+                            </button>
                         </div>
                     </div>
                 )}
