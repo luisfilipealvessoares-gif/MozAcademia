@@ -1,8 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { EyeIcon, EyeSlashIcon } from '../components/Icons';
 import { useI18n } from '../contexts/I18nContext';
+
+const countries = ["Afeganistão", "África do Sul", "Albânia", "Alemanha", "Andorra", "Angola", "Antiga e Barbuda", "Arábia Saudita", "Argélia", "Argentina", "Arménia", "Austrália", "Áustria", "Azerbaijão", "Bahamas", "Bangladexe", "Barbados", "Barém", "Bélgica", "Belize", "Benim", "Bielorrússia", "Bolívia", "Bósnia e Herzegovina", "Botsuana", "Brasil", "Brunei", "Bulgária", "Burquina Faso", "Burúndi", "Butão", "Cabo Verde", "Camarões", "Camboja", "Canadá", "Catar", "Cazaquistão", "Chade", "Chile", "China", "Chipre", "Colômbia", "Comores", "Congo-Brazzaville", "Congo-Kinshasa", "Coreia do Norte", "Coreia do Sul", "Cosovo", "Costa do Marfim", "Costa Rica", "Croácia", "Cuaite", "Cuba", "Dinamarca", "Jibuti", "Dominica", "Egito", "Emirados Árabes Unidos", "Equador", "Eritreia", "Eslováquia", "Eslovénia", "Espanha", "Estado da Palestina", "Estados Unidos", "Estónia", "Etiópia", "Fiji", "Filipinas", "Finlândia", "França", "Gabão", "Gâmbia", "Gana", "Geórgia", "Granada", "Grécia", "Guatemala", "Guiana", "Guiné", "Guiné Equatorial", "Guiné-Bissau", "Haiti", "Honduras", "Hungria", "Iémen", "Ilhas Marechal", "Ilhas Salomão", "Índia", "Indonésia", "Irão", "Iraque", "Irlanda", "Islândia", "Israel", "Itália", "Jamaica", "Japão", "Jordânia", "Kiribati", "Laus", "Lesoto", "Letónia", "Líbano", "Libéria", "Líbia", "Listenstaine", "Lituânia", "Luxemburgo", "Macedónia do Norte", "Madagáscar", "Malásia", "Maláui", "Maldivas", "Mali", "Malta", "Marrocos", "Maurícia", "Mauritânia", "México", "Mianmar", "Micronésia", "Moçambique", "Moldávia", "Mónaco", "Mongólia", "Montenegro", "Namíbia", "Nauru", "Nepal", "Nicarágua", "Níger", "Nigéria", "Noruega", "Nova Zelândia", "Omã", "Países Baixos", "Palau", "Panamá", "Papua Nova Guiné", "Paquistão", "Paraguai", "Peru", "Polónia", "Portugal", "Quénia", "Quirguistão", "Reino Unido", "República Centro-Africana", "República Checa", "República Dominicana", "Roménia", "Ruanda", "Rússia", "Salvador", "Samoa", "Santa Lúcia", "São Cristóvão e Neves", "São Marinho", "São Tomé e Príncipe", "São Vicente e Granadinas", "Senegal", "Serra Leoa", "Sérvia", "Seicheles", "Singapura", "Síria", "Somália", "Sri Lanca", "Essuatíni", "Sudão", "Sudão do Sul", "Suécia", "Suíça", "Suriname", "Tailândia", "Taiuã", "Tajiquistão", "Tanzânia", "Timor-Leste", "Togo", "Tonga", "Trindade e Tobago", "Tunísia", "Turcomenistão", "Turquia", "Tuvalu", "Ucrânia", "Uganda", "Uruguai", "Usbequistão", "Vanuatu", "Vaticano", "Venezuela", "Vietname", "Zâmbia", "Zimbábue"];
 
 const ProfilePage: React.FC = () => {
     const { user, profile, loading: authLoading, refreshProfile, signOut, controlUserUpdateSignOut } = useAuth();
@@ -13,6 +16,11 @@ const ProfilePage: React.FC = () => {
     const [companyName, setCompanyName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [sexo, setSexo] = useState<'masculino' | 'feminino' | ''>('');
+    const [endereco, setEndereco] = useState('');
+    const [provincia, setProvincia] = useState('');
+    const [pais, setPais] = useState('');
+    const [atividadeComercial, setAtividadeComercial] = useState('');
+    const [idade, setIdade] = useState<number | ''>('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -31,6 +39,11 @@ const ProfilePage: React.FC = () => {
             setCompanyName(profile.company_name || '');
             setPhoneNumber(profile.phone_number || '');
             setSexo(profile.sexo || '');
+            setEndereco(profile.endereco || '');
+            setProvincia(profile.provincia || '');
+            setPais(profile.pais || '');
+            setAtividadeComercial(profile.atividade_comercial || '');
+            setIdade(profile.idade || '');
         }
     }, [profile]);
 
@@ -48,6 +61,11 @@ const ProfilePage: React.FC = () => {
                 company_name: companyName,
                 phone_number: phoneNumber,
                 sexo: sexo,
+                endereco: endereco,
+                provincia: provincia,
+                pais: pais,
+                atividade_comercial: atividadeComercial,
+                idade: idade ? Number(idade) : null,
             })
             .eq('id', user.id);
 
@@ -173,6 +191,29 @@ const ProfilePage: React.FC = () => {
                             <option value="masculino">{t('profile.modal.gender.male')}</option>
                             <option value="feminino">{t('profile.modal.gender.female')}</option>
                         </select>
+                    </div>
+                    <div>
+                        <label htmlFor="endereco" className="block text-sm font-medium text-gray-700">{t('profile.page.address')} <span className="text-red-500">*</span></label>
+                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                    </div>
+                    <div>
+                        <label htmlFor="provincia" className="block text-sm font-medium text-gray-700">{t('profile.page.province')} <span className="text-red-500">*</span></label>
+                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                    </div>
+                    <div>
+                        <label htmlFor="pais" className="block text-sm font-medium text-gray-700">{t('profile.page.country')} <span className="text-red-500">*</span></label>
+                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz">
+                            <option value="" disabled>{t('profile.page.country.select')}</option>
+                            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="atividadeComercial" className="block text-sm font-medium text-gray-700">{t('profile.page.businessActivity')} <span className="text-red-500">*</span></label>
+                        <input id="atividadeComercial" type="text" value={atividadeComercial} onChange={(e) => setAtividadeComercial(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                    </div>
+                    <div>
+                        <label htmlFor="idade" className="block text-sm font-medium text-gray-700">{t('profile.page.age')} <span className="text-red-500">*</span></label>
+                        <input id="idade" type="number" value={idade} onChange={(e) => setIdade(e.target.value === '' ? '' : parseInt(e.target.value, 10))} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
                     </div>
                     <div>
                         <button

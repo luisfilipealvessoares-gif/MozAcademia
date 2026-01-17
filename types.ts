@@ -9,7 +9,12 @@ export interface UserProfile {
   phone_number: string | null;
   sexo: 'masculino' | 'feminino' | null;
   is_admin: boolean;
-  email?: string | null; // Added email field as per new schema
+  email?: string | null;
+  endereco: string | null;
+  provincia: string | null;
+  pais: string | null;
+  atividade_comercial: string | null;
+  idade: number | null;
 }
 
 export interface Course {
@@ -466,6 +471,11 @@ export type Database = {
           phone_number: string | null
           sexo: string | null
           email: string | null
+          endereco: string | null
+          provincia: string | null
+          pais: string | null
+          atividade_comercial: string | null
+          idade: number | null
         }
         Insert: {
           company_name?: string | null
@@ -475,6 +485,11 @@ export type Database = {
           phone_number?: string | null
           sexo?: string | null
           email?: string | null
+          endereco?: string | null
+          provincia?: string | null
+          pais?: string | null
+          atividade_comercial?: string | null
+          idade?: number | null
         }
         Update: {
           company_name?: string | null
@@ -484,6 +499,11 @@ export type Database = {
           phone_number?: string | null
           sexo?: string | null
           email?: string | null
+          endereco?: string | null
+          provincia?: string | null
+          pais?: string | null
+          atividade_comercial?: string | null
+          idade?: number | null
         }
         Relationships: [
           {

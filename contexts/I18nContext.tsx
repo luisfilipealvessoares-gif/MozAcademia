@@ -2,6 +2,8 @@
 
 
 
+
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -175,6 +177,12 @@ const translations = {
     'profile.page.changingPassword': 'A alterar...',
     'profile.page.passwordUpdateSuccess': 'Palavra-passe alterada com sucesso!',
     'profile.page.passwordUpdateError': 'Erro ao alterar a palavra-passe: {message}',
+    'profile.page.address': 'Endereço',
+    'profile.page.province': 'Província',
+    'profile.page.country': 'País',
+    'profile.page.country.select': 'Selecione um país...',
+    'profile.page.businessActivity': 'Actividade Comercial da Empresa',
+    'profile.page.age': 'Idade',
     
     // Admin
     'admin.sidebar.dashboard': 'Painel',
@@ -414,6 +422,12 @@ const translations = {
     'profile.page.changingPassword': 'Changing...',
     'profile.page.passwordUpdateSuccess': 'Password changed successfully!',
     'profile.page.passwordUpdateError': 'Error changing password: {message}',
+    'profile.page.address': 'Address',
+    'profile.page.province': 'Province',
+    'profile.page.country': 'Country',
+    'profile.page.country.select': 'Select a country...',
+    'profile.page.businessActivity': 'Company\'s Business Activity',
+    'profile.page.age': 'Age',
     
     // Admin
     'admin.sidebar.dashboard': 'Dashboard',

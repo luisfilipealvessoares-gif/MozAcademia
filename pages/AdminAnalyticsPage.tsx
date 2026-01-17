@@ -7,6 +7,7 @@ interface AnalyticsStats {
     totalUsers: number;
     totalEnrollments: number;
     completedCoursesUsers: number;
+    averageAge: number;
 }
 
 interface CoursePopularity {
@@ -83,10 +84,12 @@ const BarChart: React.FC<{ title: string; data: { label: string; value: number }
 
 const AdminAnalyticsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState<AnalyticsStats>({ totalUsers: 0, totalEnrollments: 0, completedCoursesUsers: 0 });
+    const [stats, setStats] = useState<AnalyticsStats>({ totalUsers: 0, totalEnrollments: 0, completedCoursesUsers: 0, averageAge: 0 });
     const [coursePopularity, setCoursePopularity] = useState<CoursePopularity[]>([]);
     const [enrollmentsOverTime, setEnrollmentsOverTime] = useState<EnrollmentsOverTime[]>([]);
     const [genderDistribution, setGenderDistribution] = useState<GenderDistribution>({ masculino: 0, feminino: 0 });
+    const [ageDistribution, setAgeDistribution] = useState<{ label: string; value: number }[]>([]);
+    const [countryDistribution, setCountryDistribution] = useState<{ label: string; value: number }[]>([]);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const [modalData, setModalData] = useState<{
@@ -108,7 +111,7 @@ const AdminAnalyticsPage: React.FC = () => {
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
             const [usersRes, enrollmentsRes, passedAttemptsRes, enrollmentsWithCoursesRes, recentEnrollmentsRes] = await Promise.all([
-                supabase.from('user_profiles').select('id, sexo', { count: 'exact' }).eq('is_admin', false).abortSignal(signal),
+                supabase.from('user_profiles').select('id, sexo, idade, pais', { count: 'exact' }).eq('is_admin', false).abortSignal(signal),
                 supabase.from('enrollments').select('id', { count: 'exact', head: true }).abortSignal(signal),
                 supabase.from('quiz_attempts').select('user_id').eq('passed', true).abortSignal(signal),
                 supabase.from('enrollments').select('courses(id, title)').abortSignal(signal),
@@ -117,10 +120,10 @@ const AdminAnalyticsPage: React.FC = () => {
 
             if (signal.aborted) return;
             
-            // Handle users and gender
+            // Handle users, gender, age, country
             const { data: usersData, count: totalUsers, error: usersError } = usersRes;
             if (usersError) throw usersError;
-            setStats(prev => ({...prev, totalUsers: totalUsers ?? 0}));
+            
             if (usersData) {
                 const genderCounts = usersData.reduce((acc, user) => {
                     if (user.sexo === 'masculino') acc.masculino++;
@@ -128,6 +131,31 @@ const AdminAnalyticsPage: React.FC = () => {
                     return acc;
                 }, { masculino: 0, feminino: 0 });
                 setGenderDistribution(genderCounts);
+
+                const ages = usersData.map(u => u.idade).filter(Boolean) as number[];
+                const averageAge = ages.length > 0 ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+                setStats(prev => ({...prev, totalUsers: totalUsers ?? 0, averageAge }));
+
+                const ageBins: { [key: string]: number } = { '18-25': 0, '26-35': 0, '36-45': 0, '46-55': 0, '56+': 0 };
+                ages.forEach(age => {
+                    if (age >= 18 && age <= 25) ageBins['18-25']++;
+                    else if (age >= 26 && age <= 35) ageBins['26-35']++;
+                    else if (age >= 36 && age <= 45) ageBins['36-45']++;
+                    else if (age >= 46 && age <= 55) ageBins['46-55']++;
+                    else if (age >= 56) ageBins['56+']++;
+                });
+                setAgeDistribution(Object.entries(ageBins).map(([label, value]) => ({ label, value })));
+
+                const countryCounts = usersData.reduce<Record<string, number>>((acc, user) => {
+                    if (user.pais) acc[user.pais] = (acc[user.pais] || 0) + 1;
+                    return acc;
+                }, {});
+                const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]);
+                const top5 = sortedCountries.slice(0, 5);
+                const others = sortedCountries.slice(5).reduce((sum, curr) => sum + curr[1], 0);
+                const countryChartData = top5.map(([label, value]) => ({ label, value }));
+                if (others > 0) countryChartData.push({ label: 'Outros', value: others });
+                setCountryDistribution(countryChartData);
             }
 
             // Handle enrollments count
@@ -300,29 +328,46 @@ const AdminAnalyticsPage: React.FC = () => {
                 ['Total de Alunos Ativos', stats.totalUsers],
                 ['Total de Inscrições em Cursos', stats.totalEnrollments],
                 ['Alunos com Pelo Menos 1 Curso Concluído', stats.completedCoursesUsers],
+                ['Idade Média dos Alunos', stats.averageAge > 0 ? stats.averageAge : 'N/A'],
                 ['Total de Alunos (Homens)', genderDistribution.masculino],
                 ['Total de Alunos (Mulheres)', genderDistribution.feminino],
             ],
             theme: 'grid'
         });
 
+        let lastY = (doc as any).lastAutoTable.finalY;
+
         autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 15,
+            startY: lastY + 15,
             head: [['Curso', 'Nº de Inscrições']],
             body: coursePopularity.map(c => [c.title, c.enrollments]),
             didDrawPage: (data) => {
                 doc.setFontSize(14);
-                doc.text("Popularidade dos Cursos", data.settings.margin.left, (doc as any).lastAutoTable.finalY + 10);
+                doc.text("Popularidade dos Cursos", data.settings.margin.left, lastY + 10);
             }
         });
         
+        lastY = (doc as any).lastAutoTable.finalY;
+
         autoTable(doc, {
-             startY: (doc as any).lastAutoTable.finalY + 15,
-            head: [['Data', 'Nº de Novas Inscrições']],
-            body: enrollmentsOverTime.map(e => [e.date, e.count]),
-             didDrawPage: (data) => {
+            startY: lastY + 15,
+            head: [['Faixa Etária', 'Nº de Alunos']],
+            body: ageDistribution.map(item => [item.label, item.value]),
+            didDrawPage: (data) => {
                 doc.setFontSize(14);
-                doc.text("Inscrições nos Últimos 30 Dias", data.settings.margin.left, (doc as any).lastAutoTable.finalY + 10);
+                doc.text("Distribuição por Idade", data.settings.margin.left, lastY + 10);
+            }
+        });
+
+        lastY = (doc as any).lastAutoTable.finalY;
+
+        autoTable(doc, {
+            startY: lastY + 15,
+            head: [['País', 'Nº de Alunos']],
+            body: countryDistribution.map(item => [item.label, item.value]),
+            didDrawPage: (data) => {
+                doc.setFontSize(14);
+                doc.text("Distribuição Geográfica", data.settings.margin.left, lastY + 10);
             }
         });
 
@@ -349,13 +394,18 @@ const AdminAnalyticsPage: React.FC = () => {
                 <StatCard title="Total de Alunos" value={stats.totalUsers} description="Número de usuários não-administradores." />
                 <StatCard title="Total de Inscrições" value={stats.totalEnrollments} description="Inscrições totais em todos os cursos." />
                 <StatCard title="Conclusões" value={stats.completedCoursesUsers} description="Alunos que concluíram pelo menos um curso." />
-                <StatCard title="Homens / Mulheres" value={`${genderDistribution.masculino} / ${genderDistribution.feminino}`} description="Distribuição de alunos por sexo." />
+                <StatCard title="Idade Média" value={stats.averageAge > 0 ? stats.averageAge : 'N/A'} description="Média de idade dos alunos." />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <BarChart title="Popularidade dos Cursos" data={coursePopularity.map(c => ({ label: c.title, value: c.enrollments }))} onBarClick={handleCourseBarClick} />
                 <BarChart title="Novas Inscrições (Últimos 30 Dias)" data={enrollmentsOverTime.map(e => ({ label: e.date, value: e.count }))} onBarClick={handleEnrollmentDateClick} />
             </div>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <BarChart title="Distribuição por Idade" data={ageDistribution} />
+                 <BarChart title="Distribuição Geográfica" data={countryDistribution} />
+            </div>
+
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
                     <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-xl flex flex-col max-h-[80vh]">
