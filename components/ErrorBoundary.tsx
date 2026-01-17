@@ -1,4 +1,3 @@
-
 import React, { ErrorInfo, ReactNode } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 
@@ -27,11 +26,19 @@ const ErrorFallback: React.FC<FallbackProps> = ({ t }) => (
     </div>
 );
 
-// FIX: Refactored the class component to use a constructor for state initialization.
-// This resolves an issue where TypeScript was not correctly identifying `this.props`,
-// likely due to build environment configurations that don't fully support class field syntax for state.
-class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) => string }, State> {
-  constructor(props: Props & { t: (key: string) => string }) {
+// Define a proper interface for the internal component props.
+interface ErrorBoundaryInternalProps {
+    t: (key: string) => string;
+    children: ReactNode;
+}
+
+// FIX: Switched to extending `React.Component` directly to resolve a TypeScript
+// issue where `this.props` was not correctly recognized on the class component instance.
+class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
+  // FIX: Added an explicit constructor. While class fields are modern, an explicit constructor
+  // can resolve type inference issues in some TypeScript/babel configurations, which was
+  // likely causing the "Property 'props' does not exist" error.
+  constructor(props: ErrorBoundaryInternalProps) {
     super(props);
     this.state = { hasError: false };
   }
@@ -44,7 +51,7 @@ class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) =
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       return <ErrorFallback t={this.props.t} />;
     }
@@ -55,7 +62,7 @@ class ErrorBoundaryInternal extends React.Component<Props & { t: (key: string) =
 
 const ErrorBoundary: React.FC<Props> = ({ children }) => {
     const { t } = useI18n();
-    return <ErrorBoundaryInternal t={t}>{children}</ErrorBoundaryInternal>;
+    return <ErrorBoundaryInternal t={t} children={children} />;
 };
 
 export default ErrorBoundary;

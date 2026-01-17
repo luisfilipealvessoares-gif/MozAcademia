@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
@@ -44,7 +41,11 @@ const HomePage: React.FC = () => {
             const coursesPromise = supabase.from('courses').select('*').abortSignal(signal);
             
             const { data: coursesData, error: coursesError } = await coursesPromise;
-            if (coursesError) throw coursesError;
+            if (coursesError) {
+                if (signal.aborted) return;
+                throw coursesError;
+            }
+            if (signal.aborted) return;
             setCourses(coursesData || []);
 
             if (user) {
@@ -54,15 +55,19 @@ const HomePage: React.FC = () => {
                     .eq('user_id', user.id)
                     .abortSignal(signal);
                 const { data: enrollmentsData, error: enrollmentsError } = await enrollmentsPromise;
-                if (enrollmentsError) throw enrollmentsError;
+                if (enrollmentsError) {
+                    if (signal.aborted) return;
+                    throw enrollmentsError;
+                }
+                if (signal.aborted) return;
                 setEnrolledCourses(enrollmentsData ? enrollmentsData.map(e => e.course_id) : []);
             } else {
                 setEnrolledCourses([]);
             }
 
         } catch (error: any) {
-            if (error.name !== 'AbortError') {
-                console.error('Error fetching home page data:', error.message);
+            if (error.name !== 'AbortError' && !signal.aborted) {
+                console.error('Error fetching home page data:', error.message || error);
             }
         } finally {
             if (!signal.aborted) {

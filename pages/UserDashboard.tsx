@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,7 +39,10 @@ const UserDashboard: React.FC = () => {
                 .eq('user_id', userId)
                 .abortSignal(signal);
 
-            if (enrollmentsError) throw enrollmentsError;
+            if (enrollmentsError) {
+                if (signal.aborted) return;
+                throw enrollmentsError;
+            }
             if (signal.aborted) return;
 
             if (!enrollments || enrollments.length === 0) {
@@ -57,7 +57,10 @@ const UserDashboard: React.FC = () => {
                 .in('id', courseIds)
                 .abortSignal(signal);
 
-            if (coursesError) throw coursesError;
+            if (coursesError) {
+                if (signal.aborted) return;
+                throw coursesError;
+            }
             if (signal.aborted || !coursesData) return;
 
             const coursePromises = coursesData.map(async (course) => {
@@ -68,7 +71,10 @@ const UserDashboard: React.FC = () => {
                     .abortSignal(signal);
 
                 const { data: moduleIdsForCourse, error: miError } = await supabase.from('modules').select('id').eq('course_id', course.id).abortSignal(signal);
-                if (miError) throw miError;
+                if (miError) {
+                    if (signal.aborted) return null;
+                    throw miError;
+                }
                 const moduleIds = moduleIdsForCourse?.map(m => m.id) || [];
                 
                 const { data: progressData } = await supabase
@@ -78,6 +84,8 @@ const UserDashboard: React.FC = () => {
                     .in('module_id', moduleIds)
                     .abortSignal(signal);
                 
+                if (signal.aborted) return null;
+
                 return {
                     ...course,
                     module_count: module_count || 0,
@@ -85,13 +93,14 @@ const UserDashboard: React.FC = () => {
                 };
             });
             
-            const finalCourses = await Promise.all(coursePromises);
+            const results = await Promise.all(coursePromises);
+            const finalCourses = results.filter(Boolean) as EnrolledCourse[];
             if (!signal.aborted) {
-                setEnrolledCourses(finalCourses as EnrolledCourse[]);
+                setEnrolledCourses(finalCourses);
             }
         } catch (error: any) {
-            if (error.name !== 'AbortError') {
-                console.error("Error fetching enrolled courses:", error.message);
+            if (error.name !== 'AbortError' && !signal.aborted) {
+                console.error("Error fetching enrolled courses:", error.message || error);
             }
         } finally {
             if (!signal.aborted) {

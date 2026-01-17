@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { Module, UserProgress, Course, QuizQuestion, QuizAttempt } from '../types';
+import Module1FinalQuiz from '../components/Module1FinalQuiz';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -55,8 +57,6 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
         }
 
         if (data) {
-          // FIX: Cast data to 'any' to resolve the type mismatch between Supabase's 'Json'
-          // type for the 'options' field and the application's expected 'string[]' type.
           setQuestions(data as any);
           setAnswers(new Array(data.length).fill(null));
         }
@@ -171,6 +171,8 @@ const CoursePlayerPage: React.FC = () => {
     const { t, language } = useI18n();
     const navigate = useNavigate();
     const userId = user?.id;
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const [course, setCourse] = useState<Course | null>(null);
     const [modules, setModules] = useState<Module[]>([]);
@@ -184,6 +186,71 @@ const CoursePlayerPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
+    // In-video quiz state
+    const [inVideoQuizActive, setInVideoQuizActive] = useState(false);
+    const [activeQuizType, setActiveQuizType] = useState<'security' | 'layers' | 'pgChain' | 'seismicSurvey' | 'epiQuiz' | 'module1Final' | null>(null);
+    const [securityQuizComplete, setSecurityQuizComplete] = useState(false);
+    const [layersQuizComplete, setLayersQuizComplete] = useState(false);
+    const [pgChainQuizComplete, setPgChainQuizComplete] = useState(false);
+    const [seismicSurveyQuizComplete, setSeismicSurveyQuizComplete] = useState(false);
+    const [epiQuizComplete, setEpiQuizComplete] = useState(false);
+    const [module1FinalQuizComplete, setModule1FinalQuizComplete] = useState(false);
+    const [videoQuizShowSuccess, setVideoQuizShowSuccess] = useState(false);
+    const [videoQuizAttempts, setVideoQuizAttempts] = useState(0);
+    const [videoQuizFeedback, setVideoQuizFeedback] = useState<string | null>(null);
+    
+    // Quiz 1 (Security) State
+    const [selectedSecurityAnswer, setSelectedSecurityAnswer] = useState<number | null>(null);
+    
+    // Quiz 2 (Layers) State
+    const [selectedLayers, setSelectedLayers] = useState<string[]>(['', '', '', '']);
+    const layersOptions = ["Rocha Geradora", "Petróleo e Gás", "Rocha Reservatório", "Rocha Capeadora / Selo"];
+    
+    // Quiz 3 (PG Chain) State
+    const [pgChainAnswers, setPgChainAnswers] = useState<string[]>(['', '', '', '', '']);
+    const [showPgChainAnswers, setShowPgChainAnswers] = useState(false);
+    const pgChainQuestions = [
+        "Produção de tintas e diluentes:",
+        "Distribuição de gás doméstico:",
+        "Perfuração de poços de P&G:",
+        "Uso de gasolina / diesel:",
+        "Extração do petróleo:"
+    ];
+    const pgChainOptions = ["Upstream", "Midstream", "Downstream"];
+    
+    // Quiz 4 (Seismic Survey) State
+    const [selectedSeismicAnswer, setSelectedSeismicAnswer] = useState<number | null>(null);
+    const [showSeismicAnswerHint, setShowSeismicAnswerHint] = useState(false);
+    const seismicSurveyOptions = [
+        "Medir a profundidade do oceano",
+        "Analisar a composição química da água",
+        "Identificar armadilhas de hidrocarbonetos",
+        "Estudar a vida marinha"
+    ];
+
+    // Quiz 5 (EPI) State
+    const [selectedEpiAnswer, setSelectedEpiAnswer] = useState<boolean | null>(null);
+
+    // Robust audio pause and visual visibility effect
+    useEffect(() => {
+        if (inVideoQuizActive && videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.muted = true; // Safety to stop sound
+            
+            const pauseInterval = setInterval(() => {
+                if (videoRef.current && !videoRef.current.paused) {
+                    videoRef.current.pause();
+                    videoRef.current.muted = true;
+                }
+            }, 50);
+
+            return () => {
+                clearInterval(pauseInterval);
+                if (videoRef.current) videoRef.current.muted = false;
+            };
+        }
+    }, [inVideoQuizActive]);
+
     const logActivity = useCallback(async (moduleId: string) => {
         if (!userId || !courseId) return;
         await supabase.from('activity_log').insert({
@@ -193,6 +260,152 @@ const CoursePlayerPage: React.FC = () => {
             activity_type: 'MODULE_VIEWED',
         });
     }, [userId, courseId]);
+
+    const handleVideoTimeUpdate = () => {
+        if (!videoRef.current || !activeModule?.title.includes("Módulo 1") || inVideoQuizActive) return;
+
+        const quizZones = [
+            { trigger: 36, resume: 42, isComplete: securityQuizComplete, quizType: 'security' as const },
+            { trigger: 172, resume: 181, isComplete: layersQuizComplete, quizType: 'layers' as const },
+            { trigger: 247, resume: 258, isComplete: pgChainQuizComplete, quizType: 'pgChain' as const },
+            { trigger: 408, resume: 421, isComplete: seismicSurveyQuizComplete, quizType: 'seismicSurvey' as const },
+            { trigger: 721, resume: 730, isComplete: epiQuizComplete, quizType: 'epiQuiz' as const },
+            { trigger: 756, resume: 767, isComplete: module1FinalQuizComplete, quizType: 'module1Final' as const },
+        ];
+        
+        const currentTime = videoRef.current.currentTime;
+
+        // Gating logic to prevent seeing "hidden" content
+        for (const zone of quizZones) {
+            // Check if the current time is between the quiz trigger and the resume point
+            if (currentTime > zone.trigger + 1 && currentTime < zone.resume) {
+                if (zone.isComplete) {
+                    // If quiz is complete, jump user to the end of the hidden section
+                    videoRef.current.currentTime = zone.resume;
+                    return;
+                } else {
+                    // If quiz is not complete, force user back to the quiz trigger
+                    videoRef.current.currentTime = zone.trigger;
+                    return;
+                }
+            }
+        }
+
+        // Triggering logic for quizzes
+        for (const zone of quizZones) {
+            if (currentTime >= zone.trigger && currentTime < zone.trigger + 1) {
+                // Always show the quiz when the timeline hits the trigger point.
+                if (document.fullscreenElement) document.exitFullscreen();
+                videoRef.current.pause();
+                setActiveQuizType(zone.quizType);
+                setInVideoQuizActive(true);
+                return; // Exit after triggering a quiz
+            }
+        }
+    };
+
+    const handleConfirmVideoQuiz = () => {
+        if (activeQuizType === 'security') {
+            if (selectedSecurityAnswer === 0) { // A) Fogo
+                setVideoQuizShowSuccess(true);
+                setVideoQuizAttempts(0);
+                setVideoQuizFeedback(null);
+                setSecurityQuizComplete(true);
+            } else {
+                setVideoQuizAttempts(prev => prev + 1);
+                setVideoQuizFeedback("A resposta não está correta. Tente identificar o risco principal.");
+            }
+        } else if (activeQuizType === 'layers') {
+            const correctOrder = ["Rocha Geradora", "Petróleo e Gás", "Rocha Reservatório", "Rocha Capeadora / Selo"];
+            const isCorrect = selectedLayers.every((val, index) => val === correctOrder[index]);
+
+            if (isCorrect) {
+                setVideoQuizShowSuccess(true);
+                setVideoQuizAttempts(0);
+                setVideoQuizFeedback(null);
+                setLayersQuizComplete(true);
+            } else {
+                setVideoQuizAttempts(prev => prev + 1);
+                setVideoQuizFeedback("A ordem das camadas não está correta. Tente novamente!");
+            }
+        } else if (activeQuizType === 'pgChain') {
+            const correctAnswers = ['Downstream', 'Downstream', 'Upstream', 'Downstream', 'Upstream'];
+            const isCorrect = pgChainAnswers.every((answer, index) => answer === correctAnswers[index]);
+
+            if (isCorrect) {
+                setVideoQuizShowSuccess(true);
+                setVideoQuizAttempts(0);
+                setVideoQuizFeedback(null);
+                setPgChainQuizComplete(true);
+                setShowPgChainAnswers(false);
+            } else {
+                const newAttempts = videoQuizAttempts + 1;
+                setVideoQuizAttempts(newAttempts);
+                if (newAttempts >= 2) {
+                    setShowPgChainAnswers(true);
+                    setVideoQuizFeedback("Aqui estão as respostas correctas. Reveja-as antes de continuar.");
+                } else {
+                    setVideoQuizFeedback("Algumas respostas estão incorrectas. Tente novamente!");
+                }
+            }
+        } else if (activeQuizType === 'seismicSurvey') {
+            if (selectedSeismicAnswer === 2) { // Correct answer index
+                setVideoQuizShowSuccess(true);
+                setVideoQuizAttempts(0);
+                setVideoQuizFeedback(null);
+                setSeismicSurveyQuizComplete(true);
+                setShowSeismicAnswerHint(false);
+            } else {
+                const newAttempts = videoQuizAttempts + 1;
+                setVideoQuizAttempts(newAttempts);
+                if (newAttempts >= 2) {
+                    setShowSeismicAnswerHint(true);
+                    setVideoQuizFeedback("A resposta está incorreta. Veja a resposta correta no canto.");
+                } else {
+                    setVideoQuizFeedback("Resposta incorreta. Tente novamente!");
+                }
+            }
+        } else if (activeQuizType === 'epiQuiz') {
+            if (selectedEpiAnswer === false) { // Correct answer
+                setVideoQuizShowSuccess(true);
+                setVideoQuizAttempts(0);
+                setVideoQuizFeedback(null);
+                setEpiQuizComplete(true);
+            } else {
+                setVideoQuizAttempts(prev => prev + 1);
+                setVideoQuizFeedback("Incorreto. O uso de Equipamentos de Proteção Individual (EPI) é obrigatório por lei em situações de trabalho que ofereçam riscos à saúde e segurança do trabalhador.");
+            }
+        }
+    };
+
+    const handleResumeVideoAfterQuiz = () => {
+        setInVideoQuizActive(false);
+        setVideoQuizShowSuccess(false);
+        setVideoQuizAttempts(0);
+        setVideoQuizFeedback(null);
+        setShowPgChainAnswers(false);
+        setShowSeismicAnswerHint(false);
+
+        const resumeAt = (time: number) => {
+            if (videoRef.current) {
+                videoRef.current.muted = false;
+                videoRef.current.currentTime = time;
+                videoRef.current.play();
+            }
+        };
+
+        if (activeQuizType === 'security') resumeAt(42);
+        else if (activeQuizType === 'layers') resumeAt(181);
+        else if (activeQuizType === 'pgChain') resumeAt(258);
+        else if (activeQuizType === 'seismicSurvey') resumeAt(421);
+        else if (activeQuizType === 'epiQuiz') resumeAt(730);
+        else if (activeQuizType === 'module1Final') {
+            setModule1FinalQuizComplete(true);
+            resumeAt(767); // 12:47
+        }
+        
+        setActiveQuizType(null);
+    };
 
     useEffect(() => {
         let isActive = true;
@@ -308,6 +521,21 @@ const CoursePlayerPage: React.FC = () => {
     const handleSelectModule = (module: Module) => {
         setActiveModule(module);
         setView('video');
+        setSecurityQuizComplete(false);
+        setLayersQuizComplete(false);
+        setPgChainQuizComplete(false);
+        setSeismicSurveyQuizComplete(false);
+        setEpiQuizComplete(false);
+        setModule1FinalQuizComplete(false);
+        setInVideoQuizActive(false);
+        setVideoQuizShowSuccess(false);
+        setVideoQuizAttempts(0);
+        setVideoQuizFeedback(null);
+        setActiveQuizType(null);
+        setShowPgChainAnswers(false);
+        setShowSeismicAnswerHint(false);
+        setSelectedSeismicAnswer(null);
+        setSelectedEpiAnswer(null);
         logActivity(module.id);
     };
 
@@ -349,9 +577,9 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     if (loading) return (
-      <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
-      </div>
+        <div className="flex justify-center items-center h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
+        </div>
     );
 
     if (fetchError) {
@@ -402,18 +630,21 @@ const CoursePlayerPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <main className="lg:col-span-3">
                     {view === 'video' && activeModule && (
-                        <div className="bg-white p-4 rounded-xl shadow-lg border">
+                        <div className="bg-white p-4 rounded-xl shadow-lg border relative overflow-hidden">
                             <div 
-                                className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden"
+                                ref={containerRef}
+                                className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden relative"
                                 onContextMenu={(e) => e.preventDefault()}
                             >
                                 {signedVideoUrl ? (
                                     <video 
+                                        ref={videoRef}
                                         key={signedVideoUrl} 
                                         controls 
                                         autoPlay 
                                         className="w-full h-full" 
                                         onEnded={() => handleModuleComplete(activeModule.id)}
+                                        onTimeUpdate={handleVideoTimeUpdate}
                                         controlsList="nodownload"
                                         onContextMenu={(e) => e.preventDefault()}
                                     >
@@ -429,6 +660,162 @@ const CoursePlayerPage: React.FC = () => {
                                     <div className="text-white flex items-center space-x-2">
                                       <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                                       <span>{t('course.player.loadingVideo')}</span>
+                                    </div>
+                                )}
+
+                                {/* In-Video Quiz Overlay */}
+                                {inVideoQuizActive && (
+                                    <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 text-white overflow-y-auto bg-black/50">
+                                        {activeQuizType === 'module1Final' ? (
+                                            <Module1FinalQuiz onComplete={handleResumeVideoAfterQuiz} />
+                                        ) : videoQuizShowSuccess ? (
+                                            <div className="text-center space-y-8 animate-fadeIn max-w-lg bg-black/75 backdrop-blur-3xl p-10 rounded-3xl border border-white/20 shadow-2xl">
+                                                <div className="bg-white rounded-full p-4 inline-block shadow-2xl animate-bounce">
+                                                    <CheckCircleIcon className="w-20 h-20 text-brand-up" />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <h3 className="text-4xl font-black uppercase tracking-widest text-white">Parabéns!</h3>
+                                                    <p className="text-xl font-medium opacity-90 text-white">Você concluiu o desafio com sucesso.</p>
+                                                </div>
+                                                <button 
+                                                    onClick={handleResumeVideoAfterQuiz}
+                                                    className="bg-white text-brand-up font-bold py-4 px-10 rounded-full hover:bg-gray-100 transition-all shadow-xl flex items-center gap-3 mx-auto active:scale-95 text-lg"
+                                                >
+                                                    Continuar vídeo <span className="text-2xl font-bold ml-1">→</span>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="max-w-lg w-full space-y-6 bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-white/20">
+                                                <div className="text-center">
+                                                    <span className="bg-white/10 py-2 px-5 rounded-full text-sm font-bold uppercase tracking-widest">Desafio Mozup</span>
+                                                </div>
+                                                
+                                                {activeQuizType === 'security' && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-lg font-bold text-white text-center">Qual é o maior risco de segurança numa instalação de gás natural?</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                                                            {["A) Fogo", "B) Queda", "C) Ruído", "D) Calor"].map((opt, idx) => (
+                                                                <button key={idx} onClick={() => { setSelectedSecurityAnswer(idx); setVideoQuizFeedback(null); }} className={`p-3 rounded-lg border-2 transition-all font-semibold text-base ${selectedSecurityAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}>
+                                                                    {opt}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeQuizType === 'layers' && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-lg font-bold text-white leading-tight text-center">Associe as camadas geológicas (da mais profunda para a mais superficial).</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                                                            {[1, 2, 3, 4].map((num, idx) => (
+                                                                <div key={idx} className="space-y-1">
+                                                                    <label className="text-xs font-bold uppercase tracking-wider text-white/70">Camada {num} {num === 1 ? '↓' : num === 4 ? '↑' : ''}</label>
+                                                                    <select value={selectedLayers[idx]} onChange={(e) => { const newLayers = [...selectedLayers]; newLayers[idx] = e.target.value; setSelectedLayers(newLayers); setVideoQuizFeedback(null); }} className="w-full bg-slate-800/50 text-white p-2.5 rounded-lg font-semibold border border-white/20 focus:border-brand-moz focus:ring-brand-moz outline-none text-sm shadow-inner">
+                                                                        <option value="">Selecione...</option>
+                                                                        {layersOptions.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
+                                                                    </select>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeQuizType === 'pgChain' && (
+                                                    <div className="space-y-4 text-left">
+                                                        <p className="text-lg font-bold text-white leading-tight text-center pb-2">Selecione a etapa da cadeia de P&G para cada atividade.</p>
+                                                        {pgChainQuestions.map((question, qIndex) => (
+                                                            <div key={qIndex} className="bg-white/10 p-3 rounded-lg">
+                                                                <p className="font-semibold text-white mb-2 text-sm">{question}</p>
+                                                                {showPgChainAnswers ? (
+                                                                    <p className="text-sm font-bold text-green-300">Resposta Correcta: {['Downstream', 'Downstream', 'Upstream', 'Downstream', 'Upstream'][qIndex]}</p>
+                                                                ) : (
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {pgChainOptions.map((option, oIndex) => (
+                                                                            <button key={oIndex} onClick={() => { const newAnswers = [...pgChainAnswers]; newAnswers[qIndex] = option; setPgChainAnswers(newAnswers); setVideoQuizFeedback(null); }} className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${pgChainAnswers[qIndex] === option ? 'bg-brand-moz text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
+                                                                                {option}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                
+                                                {activeQuizType === 'seismicSurvey' && (
+                                                    <div className="space-y-4 relative">
+                                                        <p className="text-lg font-bold text-white text-center">Qual o objetivo das pesquisas sísmicas?</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                                                            {seismicSurveyOptions.map((opt, idx) => (
+                                                                <button
+                                                                    key={idx}
+                                                                    onClick={() => { setSelectedSeismicAnswer(idx); setVideoQuizFeedback(null); }}
+                                                                    className={`p-3 rounded-lg border-2 transition-all font-semibold text-sm ${selectedSeismicAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        {showSeismicAnswerHint && (
+                                                            <div className="absolute -top-2 -right-2 bg-green-600 text-white p-2 rounded-lg text-xs font-bold animate-fadeIn border-2 border-white/50">
+                                                                Resposta: {seismicSurveyOptions[2]}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {activeQuizType === 'epiQuiz' && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-lg font-bold text-white text-center">A afirmação "A utilização de EPI é opcional" é verdadeira ou falsa?</p>
+                                                        <div className="flex justify-center gap-4 text-left">
+                                                            <button
+                                                                onClick={() => { setSelectedEpiAnswer(true); setVideoQuizFeedback(null); }}
+                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-32 ${selectedEpiAnswer === true ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                            >
+                                                                Verdadeiro
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { setSelectedEpiAnswer(false); setVideoQuizFeedback(null); }}
+                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-32 ${selectedEpiAnswer === false ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                            >
+                                                                Falso
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+
+                                                {videoQuizFeedback && (
+                                                    <div className="bg-red-500/90 text-white p-3 rounded-lg font-semibold border-2 border-white/20 text-center">
+                                                        {videoQuizFeedback}
+                                                    </div>
+                                                )}
+
+                                                <div className="space-y-4 pt-4">
+                                                     {showPgChainAnswers ? (
+                                                        <button onClick={handleResumeVideoAfterQuiz} className="w-full bg-white text-brand-moz font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 text-base uppercase tracking-wider">
+                                                            Continuar Vídeo
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={handleConfirmVideoQuiz} disabled={(activeQuizType === 'security' && selectedSecurityAnswer === null) || (activeQuizType === 'layers' && selectedLayers.includes('')) || (activeQuizType === 'pgChain' && pgChainAnswers.includes('')) || (activeQuizType === 'seismicSurvey' && selectedSeismicAnswer === null) || (activeQuizType === 'epiQuiz' && selectedEpiAnswer === null)} className="w-full bg-white text-brand-moz font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 disabled:opacity-50 text-base uppercase tracking-wider">
+                                                            Confirmar Resposta
+                                                        </button>
+                                                    )}
+
+                                                    {videoQuizAttempts >= 2 && activeQuizType !== 'pgChain' && (
+                                                        <div className="bg-white/10 p-3 rounded-lg text-left border border-white/20 backdrop-blur-md animate-fadeIn">
+                                                            <p className="text-xs font-bold uppercase tracking-wider mb-1 border-b border-white/10 pb-1">Dica:</p>
+                                                            <p className="text-sm font-medium">
+                                                                {activeQuizType === 'security' 
+                                                                    ? "Pense em qual elemento químico do gás natural (metano) reage mais perigosamente com oxigênio e calor."
+                                                                    : "A Rocha Geradora fica no fundo, o Petróleo sobe para o Reservatório e o Selo segura tudo no topo."
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
