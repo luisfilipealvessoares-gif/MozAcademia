@@ -181,6 +181,7 @@ const AuthPage: React.FC = () => {
           email,
           password,
           options: {
+            captchaToken: hcaptchaToken,
             emailRedirectTo: `${window.location.origin}/welcome`,
             data: {
               full_name: fullName,
