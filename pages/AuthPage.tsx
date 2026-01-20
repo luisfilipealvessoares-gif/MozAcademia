@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Logo from '../components/Logo';
@@ -7,6 +7,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { EyeIcon, EyeSlashIcon } from '../components/Icons';
 import TermsModal from '../components/TermsModal';
+
+// Adicionado para a renderização programática do hCaptcha
+declare global {
+    interface Window {
+        hcaptcha: any;
+    }
+}
 
 const AuthPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,6 +44,50 @@ const AuthPage: React.FC = () => {
 
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { t } = useI18n();
+
+  // Refs e useEffect para a renderização programática do hCaptcha
+  const captchaContainer = useRef<HTMLDivElement | null>(null);
+  const captchaIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+      if (view !== 'register') {
+          return;
+      }
+
+      let intervalId: number;
+
+      const tryRender = () => {
+          if (captchaContainer.current && window.hcaptcha) {
+              clearInterval(intervalId);
+              // Garante que não é renderizado novamente
+              if (!captchaIdRef.current) {
+                  const widgetId = window.hcaptcha.render(captchaContainer.current, {
+                      sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
+                      callback: setHcaptchaToken,
+                      'expired-callback': () => setHcaptchaToken(null),
+                      'error-callback': () => setHcaptchaToken(null),
+                  });
+                  captchaIdRef.current = widgetId;
+              }
+          }
+      };
+
+      // Sondar para o script hCaptcha ser carregado
+      intervalId = window.setInterval(tryRender, 100);
+
+      return () => {
+          clearInterval(intervalId);
+          // Limpa o widget quando a vista muda ou o componente é desmontado
+          if (captchaIdRef.current && window.hcaptcha) {
+              try {
+                  window.hcaptcha.remove(captchaIdRef.current);
+              } catch (e) {
+                  console.warn("A limpeza do hCaptcha falhou:", e);
+              }
+              captchaIdRef.current = null;
+          }
+      };
+  }, [view]);
   
   useEffect(() => {
     // Check for password update success message from sessionStorage
@@ -387,13 +438,7 @@ const AuthPage: React.FC = () => {
                             </div>
                         </div>
                          <div className="flex justify-center">
-                            <div
-                                className="h-captcha"
-                                data-sitekey="548ec312-7f46-453c-811c-05b036e6a6fa"
-                                data-callback={setHcaptchaToken}
-                                data-expired-callback={() => setHcaptchaToken(null)}
-                                data-error-callback={() => setHcaptchaToken(null)}
-                            ></div>
+                            <div ref={captchaContainer}></div>
                         </div>
                     </>
                 )}

@@ -32,9 +32,13 @@ interface ErrorBoundaryInternalProps {
     children: ReactNode;
 }
 
-// FIX: Switched to class property syntax for state initialization. This is the modern approach and avoids potential issues with `this` context in constructors under certain TypeScript configurations.
+// FIX: Switched to class property syntax for state initialization. This is the modern approach and avoids potential issues with this context in constructors under certain TypeScript configurations.
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
-  state: State = { hasError: false };
+  // FIX: Reverted to constructor-based state initialization. The class property syntax, while modern, appears to cause a type inference issue in this environment where `this.props` is not recognized. Explicitly calling super(props) in a constructor resolves this.
+  constructor(props: ErrorBoundaryInternalProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
