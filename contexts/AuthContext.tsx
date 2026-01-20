@@ -132,7 +132,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         if (newSession?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-          const userProfile = await fetchProfile(newSession.user);
+          let userProfile = await fetchProfile(newSession.user);
+
+          // If this is a new sign-up, the profile might not have the full_name yet due to a trigger race condition.
+          // We can patch it here using the metadata from the user object.
+          if (event === 'SIGNED_IN' && userProfile && !userProfile.full_name && newSession.user.user_metadata?.full_name) {
+              const { data: updatedProfile, error: updateError } = await supabase
+                  .from('user_profiles')
+                  .update({ full_name: newSession.user.user_metadata.full_name })
+                  .eq('id', newSession.user.id)
+                  .select()
+                  .single();
+              
+              if (!updateError && updatedProfile) {
+                  userProfile = updatedProfile; // Use the newly updated profile data.
+              }
+          }
+
           if (userProfile) {
             setSession(newSession);
             setUser(newSession.user);
