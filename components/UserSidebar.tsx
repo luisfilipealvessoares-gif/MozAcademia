@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,15 +39,25 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, children }) => {
     );
 };
 
+// Helper to get initials
+const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '?';
+    const nameParts = name.trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length === 0) return '?';
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+};
+
 
 const UserSidebar: React.FC = () => {
     const { profile } = useAuth();
     const { t } = useI18n();
+    const userInitials = getInitials(profile?.full_name);
     return (
         <aside className="w-full md:w-64 bg-white flex flex-col flex-shrink-0 border rounded-xl p-4 self-start">
              <div className="flex flex-col items-center py-6 space-y-2 border-b">
-                <div className="w-20 h-20 rounded-full bg-brand-light text-brand-up flex items-center justify-center text-4xl font-bold">
-                    {profile?.full_name?.charAt(0) || '?'}
+                <div className={`w-20 h-20 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold ${userInitials.length > 1 ? 'text-3xl' : 'text-4xl'}`}>
+                    {userInitials}
                 </div>
                 <h3 className="font-semibold text-lg text-gray-800 text-center">{profile?.full_name}</h3>
                 <p className="text-sm text-gray-500 text-center">{profile?.company_name}</p>

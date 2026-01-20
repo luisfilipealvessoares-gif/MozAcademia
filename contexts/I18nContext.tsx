@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -111,6 +112,7 @@ const translations = {
     // User Dashboard
     'user.dashboard.title': 'O Meu Painel',
     'user.dashboard.welcome': 'Bem-vindo(a) de volta, {name}!',
+    'user.dashboard.completeProfilePrompt': 'complete o seu perfil para adicionar um nome',
     'user.dashboard.myCourses': 'Os Meus Cursos',
     'user.dashboard.noCourses.title': 'Nenhum curso inscrito',
     'user.dashboard.noCourses.subtitle': 'Ainda não se inscreveu em nenhum curso.',
@@ -373,6 +375,7 @@ const translations = {
     // User Dashboard
     'user.dashboard.title': 'My Dashboard',
     'user.dashboard.welcome': 'Welcome back, {name}!',
+    'user.dashboard.completeProfilePrompt': 'complete your profile to add a name',
     'user.dashboard.myCourses': 'My Courses',
     'user.dashboard.noCourses.title': 'No courses enrolled',
     'user.dashboard.noCourses.subtitle': 'You have not enrolled in any courses yet.',

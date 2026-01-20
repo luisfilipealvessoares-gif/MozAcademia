@@ -159,7 +159,14 @@ const UserDashboard: React.FC = () => {
         <div className="space-y-10">
             <div>
                 <h1 className="text-4xl font-extrabold text-gray-900">{t('user.dashboard.title')}</h1>
-                <p className="text-xl text-gray-600 mt-2">{t('user.dashboard.welcome', { name: profile?.full_name || user?.email })}</p>
+                <p className="text-xl text-gray-600 mt-2">
+                    {t('user.dashboard.welcome', { name: profile?.full_name || user?.email })}
+                    {!profile?.full_name && (
+                        <span className="text-sm ml-2 font-normal">
+                            (<Link to="/profile" className="text-brand-up hover:underline">{t('user.dashboard.completeProfilePrompt')}</Link>)
+                        </span>
+                    )}
+                </p>
             </div>
 
             <div className="bg-brand-light p-8 rounded-xl shadow-lg border border-brand-moz/20">

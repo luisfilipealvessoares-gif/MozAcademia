@@ -33,9 +33,12 @@ interface ErrorBoundaryInternalProps {
 }
 
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
-  // FIX: Using a class property to initialize state. This resolves errors where `this.state` and `this.props`
-  // were not being correctly recognized, which can happen with certain TypeScript configurations when using a constructor.
-  state: State = { hasError: false };
+  // FIX: Switched to a constructor for state initialization. This standard approach ensures `this.props`
+  // is correctly available, resolving TypeScript errors.
+  constructor(props: ErrorBoundaryInternalProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };

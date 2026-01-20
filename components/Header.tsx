@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +26,15 @@ const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const DashboardIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>;
 const ProfileIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>;
 const LogoutIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>;
+
+// Helper to get initials
+const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '?';
+    const nameParts = name.trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length === 0) return '?';
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+};
 
 // --- Helper Components ---
 const NavLink: React.FC<{ to: string, children: React.ReactNode, onClick?: () => void }> = ({ to, children, onClick }) => (
@@ -62,7 +72,7 @@ const Header: React.FC = () => {
   
   const dashboardLink = isAdmin ? '/admin' : '/dashboard';
   const dashboardText = isAdmin ? t('header.adminDashboard') : t('header.myDashboard');
-  const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || '?';
+  const userInitials = getInitials(profile?.full_name);
 
   return (
     <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
@@ -89,8 +99,8 @@ const Header: React.FC = () => {
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                 >
-                  <div className="w-10 h-10 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-lg">
-                    {userInitial}
+                  <div className={`w-10 h-10 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold ${userInitials.length > 1 ? 'text-base' : 'text-lg'}`}>
+                    {userInitials}
                   </div>
                   <span className="font-semibold hidden lg:inline">{profile?.full_name}</span>
                   <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
