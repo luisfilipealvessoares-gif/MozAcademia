@@ -56,40 +56,39 @@ const AuthPage: React.FC = () => {
 
   // useEffect for registration hCaptcha
   useEffect(() => {
-      if (view !== 'register') {
-          return;
+    if (view !== 'register') {
+      if (captchaIdRef.current && window.hcaptcha) {
+        try { window.hcaptcha.remove(captchaIdRef.current); } catch (e) { console.warn("Register captcha cleanup failed:", e); }
+        captchaIdRef.current = null;
       }
+      return;
+    }
 
-      let intervalId: number;
+    setHcaptchaToken(null);
+    let intervalId: number;
 
-      const tryRender = () => {
-          if (captchaContainer.current && window.hcaptcha) {
-              clearInterval(intervalId);
-              if (!captchaIdRef.current) {
-                  const widgetId = window.hcaptcha.render(captchaContainer.current, {
-                      sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
-                      callback: setHcaptchaToken,
-                      'expired-callback': () => setHcaptchaToken(null),
-                      'error-callback': () => setHcaptchaToken(null),
-                  });
-                  captchaIdRef.current = widgetId;
-              }
-          }
-      };
+    const tryRender = () => {
+      if (captchaContainer.current && window.hcaptcha && !captchaIdRef.current) {
+        clearInterval(intervalId);
+        const widgetId = window.hcaptcha.render(captchaContainer.current, {
+          sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
+          callback: setHcaptchaToken,
+          'expired-callback': () => setHcaptchaToken(null),
+          'error-callback': () => setHcaptchaToken(null),
+        });
+        captchaIdRef.current = widgetId;
+      }
+    };
 
-      intervalId = window.setInterval(tryRender, 100);
+    intervalId = window.setInterval(tryRender, 100);
 
-      return () => {
-          clearInterval(intervalId);
-          if (captchaIdRef.current && window.hcaptcha) {
-              try {
-                  window.hcaptcha.remove(captchaIdRef.current);
-              } catch (e) {
-                  console.warn("hCaptcha cleanup failed:", e);
-              }
-              captchaIdRef.current = null;
-          }
-      };
+    return () => {
+      clearInterval(intervalId);
+      if (captchaIdRef.current && window.hcaptcha) {
+        try { window.hcaptcha.remove(captchaIdRef.current); } catch (e) { console.warn("Register captcha cleanup failed on unmount:", e); }
+        captchaIdRef.current = null;
+      }
+    };
   }, [view]);
 
   // useEffect for password reset modal hCaptcha
@@ -106,6 +105,7 @@ const AuthPage: React.FC = () => {
           return;
       }
 
+      setResetHcaptchaToken(null);
       let intervalId: number;
       const tryRender = () => {
           if (resetCaptchaContainer.current && window.hcaptcha && !resetCaptchaIdRef.current) {
@@ -136,24 +136,30 @@ const AuthPage: React.FC = () => {
   }, [isResetModalOpen]);
   
   useEffect(() => {
+    // Check for password update success message from sessionStorage
     if (sessionStorage.getItem('password_updated')) {
         setNotification(t('auth.passwordResetSuccess'));
         sessionStorage.removeItem('password_updated');
     }
   }, [t]);
   
+  // useEffect for immediate password validation feedback
   useEffect(() => {
+    // Only run validation for the register view
     if (view === 'register') {
       if (password && password.length < 8) {
         setError(t('auth.passwordMinLengthError'));
       } else if (confirmPassword && password !== confirmPassword) {
         setError(t('auth.passwordsMismatchError'));
       } else {
+        // This clears the error state ONLY if it's one of our validation messages.
+        // This prevents clearing an unrelated API error message when the user types.
         if (error === t('auth.passwordMinLengthError') || error === t('auth.passwordsMismatchError')) {
           setError(null);
         }
       }
     } else {
+      // If we switch to login view, clear any lingering validation errors
       if (error === t('auth.passwordMinLengthError') || error === t('auth.passwordsMismatchError')) {
         setError(null);
       }
@@ -164,6 +170,7 @@ const AuthPage: React.FC = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Final validation before submitting
     if (view === 'register') {
         if (password.length < 8) {
             setError(t('auth.passwordMinLengthError'));
@@ -193,6 +200,7 @@ const AuthPage: React.FC = () => {
       if (view === 'login') {
         localStorage.removeItem('awaiting_confirmation');
         
+        // Define a preferência de "Lembrar-me" antes de fazer o login.
         if (rememberMe) {
             localStorage.setItem('rememberMe', 'true');
         } else {
@@ -229,15 +237,18 @@ const AuthPage: React.FC = () => {
         if (error) throw error;
         
         if (data.user) {
+            // Definitive check: If email_confirmed_at exists, the user is already registered and confirmed.
             if (data.user.email_confirmed_at) {
                 setError(t('auth.emailExistsError'));
                 setLoading(false);
                 return;
             }
 
+            // Differentiate between a brand new user and an existing, unconfirmed user.
+            // A user created more than 60 seconds ago is considered existing.
             const createdAt = new Date(data.user.created_at).getTime();
             const now = Date.now();
-            const isExistingUser = (now - createdAt) > 60000;
+            const isExistingUser = (now - createdAt) > 60000; // 60 seconds threshold
 
             localStorage.setItem('awaiting_confirmation', 'true');
             setRegisteredEmail(email);
@@ -300,11 +311,6 @@ const AuthPage: React.FC = () => {
     });
     
     setResetLoading(false);
-    if (window.hcaptcha && resetCaptchaIdRef.current) {
-        window.hcaptcha.reset(resetCaptchaIdRef.current);
-    }
-    setResetHcaptchaToken(null);
-
     if (error) {
         setResetMessage({ text: t('auth.resetPassword.error', { message: error.message }), type: 'error' });
     } else {
@@ -348,14 +354,14 @@ const AuthPage: React.FC = () => {
                      </div>
                      <div className="flex justify-center">
                         <div ref={resetCaptchaContainer}></div>
-                    </div>
+                     </div>
                      <button type="submit" disabled={resetLoading || !resetHcaptchaToken} className="w-full bg-brand-moz text-white font-semibold py-3 rounded-lg hover:bg-brand-up disabled:opacity-50">
                          {resetLoading ? t('loading') : t('auth.resetPassword.button')}
                      </button>
                  </form>
                  {resetMessage.text && <p className={`mt-4 text-sm text-center font-semibold ${resetMessage.type === 'error' ? 'text-red-600' : 'text-green-600'}`}>{resetMessage.text}</p>}
                  <div className="mt-6 text-center">
-                    <button onClick={() => { setIsResetModalOpen(false); setResetMessage({ text: '', type: '' }); setResetHcaptchaToken(null); }} className="text-sm text-gray-600 hover:underline">{t('back')}</button>
+                    <button onClick={() => { setIsResetModalOpen(false); setResetMessage({ text: '', type: '' }); }} className="text-sm text-gray-600 hover:underline">{t('back')}</button>
                  </div>
              </div>
         </div>
