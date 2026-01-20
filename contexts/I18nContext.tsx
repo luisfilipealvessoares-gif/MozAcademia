@@ -44,9 +44,9 @@ const translations = {
     'footer.copyright': 'Todos os direitos reservados.',
 
     // Home Page
-    'home.hero.title': 'Capacitação Profissional para',
-    'home.hero.title.highlight': 'o Futuro',
-    'home.hero.subtitle': 'A nossa missão é fornecer conhecimento acessível e de alta qualidade sobre sectores vitais da economia, impulsionando a sua carreira para o próximo nível.',
+    'home.hero.title': 'Capacitação empresarial',
+    'home.hero.title.highlight': 'digital',
+    'home.hero.subtitle': 'A nossa missão é fornecer conhecimento acessível e de alta qualidade sobre sectores vitais da economia, impulsionando a sua empresa para o próximo nível.',
     'home.hero.button': 'Explorar Cursos',
     'home.courses.title': 'Os Nossos Cursos',
     'home.courses.enrolled': 'Inscrito',
@@ -306,9 +306,9 @@ const translations = {
     'footer.copyright': 'All rights reserved.',
 
     // Home Page
-    'home.hero.title': 'Professional Training for',
-    'home.hero.title.highlight': 'the Future',
-    'home.hero.subtitle': 'Our mission is to provide accessible, high-quality knowledge about vital economic sectors, boosting your career to the next level.',
+    'home.hero.title': 'Digital business',
+    'home.hero.title.highlight': 'training',
+    'home.hero.subtitle': 'Our mission is to provide accessible, high-quality knowledge about vital economic sectors, boosting your company to the next level.',
     'home.hero.button': 'Explore Courses',
     'home.courses.title': 'Our Courses',
     'home.courses.enrolled': 'Enrolled',

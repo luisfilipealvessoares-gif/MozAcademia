@@ -30,7 +30,6 @@ const AuthPage: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState({ text: '', type: '' });
-  const [resetHcaptchaToken, setResetHcaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -49,10 +48,6 @@ const AuthPage: React.FC = () => {
   // Refs for registration hCaptcha
   const captchaContainer = useRef<HTMLDivElement | null>(null);
   const captchaIdRef = useRef<string | null>(null);
-
-  // Refs for password reset hCaptcha
-  const resetCaptchaContainer = useRef<HTMLDivElement | null>(null);
-  const resetCaptchaIdRef = useRef<string | null>(null);
 
   // useEffect for registration hCaptcha
   useEffect(() => {
@@ -90,50 +85,6 @@ const AuthPage: React.FC = () => {
       }
     };
   }, [view]);
-
-  // useEffect for password reset modal hCaptcha
-  useEffect(() => {
-      if (!isResetModalOpen) {
-          if (resetCaptchaIdRef.current && window.hcaptcha) {
-              try {
-                  window.hcaptcha.remove(resetCaptchaIdRef.current);
-              } catch (e) {
-                  console.warn("Reset modal hCaptcha cleanup failed:", e);
-              }
-              resetCaptchaIdRef.current = null;
-          }
-          return;
-      }
-
-      setResetHcaptchaToken(null);
-      let intervalId: number;
-      const tryRender = () => {
-          if (resetCaptchaContainer.current && window.hcaptcha && !resetCaptchaIdRef.current) {
-              clearInterval(intervalId);
-              const widgetId = window.hcaptcha.render(resetCaptchaContainer.current, {
-                  sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
-                  callback: setResetHcaptchaToken,
-                  'expired-callback': () => setResetHcaptchaToken(null),
-                  'error-callback': () => setResetHcaptchaToken(null),
-              });
-              resetCaptchaIdRef.current = widgetId;
-          }
-      };
-
-      intervalId = window.setInterval(tryRender, 100);
-
-      return () => {
-          clearInterval(intervalId);
-          if (resetCaptchaIdRef.current && window.hcaptcha) {
-              try {
-                  window.hcaptcha.remove(resetCaptchaIdRef.current);
-              } catch (e) {
-                  console.warn("Reset modal hCaptcha cleanup failed on unmount:", e);
-              }
-              resetCaptchaIdRef.current = null;
-          }
-      };
-  }, [isResetModalOpen]);
   
   useEffect(() => {
     // Check for password update success message from sessionStorage
@@ -299,15 +250,8 @@ const AuthPage: React.FC = () => {
     setResetLoading(true);
     setResetMessage({ text: '', type: '' });
 
-    if (!resetHcaptchaToken) {
-        setResetMessage({ text: t('auth.captchaError'), type: 'error' });
-        setResetLoading(false);
-        return;
-    }
-
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `https://moz-academia.vercel.app/update-password`,
-        captchaToken: resetHcaptchaToken,
     });
     
     setResetLoading(false);
@@ -352,10 +296,7 @@ const AuthPage: React.FC = () => {
                         <label htmlFor="reset-email" className="sr-only">{t('auth.emailPlaceholder')}</label>
                         <input id="reset-email" type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-moz" />
                      </div>
-                     <div className="flex justify-center">
-                        <div ref={resetCaptchaContainer}></div>
-                     </div>
-                     <button type="submit" disabled={resetLoading || !resetHcaptchaToken} className="w-full bg-brand-moz text-white font-semibold py-3 rounded-lg hover:bg-brand-up disabled:opacity-50">
+                     <button type="submit" disabled={resetLoading} className="w-full bg-brand-moz text-white font-semibold py-3 rounded-lg hover:bg-brand-up disabled:opacity-50">
                          {resetLoading ? t('loading') : t('auth.resetPassword.button')}
                      </button>
                  </form>
