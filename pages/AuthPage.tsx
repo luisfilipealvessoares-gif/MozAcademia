@@ -17,6 +17,7 @@ const AuthPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -84,6 +85,10 @@ const AuthPage: React.FC = () => {
         }
         if (!termsAccepted) {
             setError(t('auth.acceptTermsError'));
+            return;
+        }
+        if (!hcaptchaToken) {
+            setError(t('auth.captchaError'));
             return;
         }
     }
@@ -161,6 +166,7 @@ const AuthPage: React.FC = () => {
             setFullName('');
             setConfirmPassword('');
             setTermsAccepted(false);
+            setHcaptchaToken(null);
         } else if (!error) {
             setError(t('auth.unexpectedError'));
         }
@@ -359,32 +365,43 @@ const AuthPage: React.FC = () => {
                 )}
 
                 {view === 'register' && (
-                    <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                            <input
-                                id="terms"
-                                name="terms"
-                                type="checkbox"
-                                checked={termsAccepted}
-                                onChange={(e) => setTermsAccepted(e.target.checked)}
-                                className="focus:ring-brand-up h-4 w-4 text-brand-moz border-gray-300 rounded"
-                            />
+                    <>
+                        <div className="flex items-start">
+                            <div className="flex items-center h-5">
+                                <input
+                                    id="terms"
+                                    name="terms"
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="focus:ring-brand-up h-4 w-4 text-brand-moz border-gray-300 rounded"
+                                />
+                            </div>
+                            <div className="ml-3 text-sm">
+                                <label htmlFor="terms" className="font-medium text-gray-700">
+                                    {t('auth.terms.agree')}{' '}
+                                    <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-brand-up hover:underline font-semibold">
+                                        {t('auth.terms.link')}
+                                    </button>
+                                </label>
+                            </div>
                         </div>
-                        <div className="ml-3 text-sm">
-                            <label htmlFor="terms" className="font-medium text-gray-700">
-                                {t('auth.terms.agree')}{' '}
-                                <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-brand-up hover:underline font-semibold">
-                                    {t('auth.terms.link')}
-                                </button>
-                            </label>
+                         <div className="flex justify-center">
+                            <div
+                                className="h-captcha"
+                                data-sitekey="548ec312-7f46-453c-811c-05b036e6a6fa"
+                                data-callback={setHcaptchaToken}
+                                data-expired-callback={() => setHcaptchaToken(null)}
+                                data-error-callback={() => setHcaptchaToken(null)}
+                            ></div>
                         </div>
-                    </div>
+                    </>
                 )}
 
                 {error && <p className="text-red-500 text-sm text-center pt-2">{error}</p>}
 
                 <div>
-                    <button type="submit" disabled={loading || (view === 'register' && !termsAccepted)} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
+                    <button type="submit" disabled={loading || (view === 'register' && (!termsAccepted || !hcaptchaToken))} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
                     {loading ? t('loading') : (view === 'login' ? t('auth.loginButton') : t('auth.registerButton'))}
                     </button>
                 </div>
@@ -399,6 +416,7 @@ const AuthPage: React.FC = () => {
                         setError(null);
                         setSuccessMessage(null);
                         setTermsAccepted(false);
+                        setHcaptchaToken(null);
                     }}
                     className="font-medium text-brand-up hover:text-brand-moz"
                 >

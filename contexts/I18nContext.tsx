@@ -1,18 +1,4 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 
 // All translations will be managed here for simplicity.
@@ -91,6 +77,7 @@ const translations = {
     'auth.passwordMinLengthError': 'A palavra-passe deve ter no mínimo 8 caracteres.',
     'auth.passwordsMismatchError': 'As palavras-passe não coincidem.',
     'auth.acceptTermsError': 'Deve aceitar os Termos de Serviço para se registar.',
+    'auth.captchaError': 'Por favor, complete o desafio hCaptcha para continuar.',
     'auth.adminCredentialsError': 'Credenciais de administrador. Por favor, use o portal de Acesso de Admin.',
     'auth.emailExistsError': 'Este e-mail já está registado. Por favor, inicie sessão.',
     'auth.unexpectedError': 'Ocorreu um erro inesperado durante o registo. Por favor, tente novamente.',
@@ -352,6 +339,7 @@ const translations = {
     'auth.passwordMinLengthError': 'Password must be at least 8 characters long.',
     'auth.passwordsMismatchError': 'Passwords do not match.',
     'auth.acceptTermsError': 'You must accept the Terms of Service to register.',
+    'auth.captchaError': 'Please complete the hCaptcha challenge to continue.',
     'auth.adminCredentialsError': 'Administrator credentials. Please use the Admin Access portal.',
     'auth.emailExistsError': 'This email is already registered. Please log in.',
     'auth.unexpectedError': 'An unexpected error occurred during registration. Please try again.',
