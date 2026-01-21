@@ -32,9 +32,9 @@ interface ErrorBoundaryInternalProps {
     children: ReactNode;
 }
 
+// FIX: The class component must extend `React.Component` for `this.props` to be available.
+// This resolves the "Property 'props' does not exist" error.
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
-  // FIX: Initialize state as a class property. This modern approach is equivalent to using a constructor
-  // and resolves the TypeScript errors about `state` not being an existing property.
   state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {

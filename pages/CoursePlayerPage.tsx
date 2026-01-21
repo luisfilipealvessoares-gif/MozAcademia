@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -12,7 +13,7 @@ import Module2FinalQuiz from '../components/Module2FinalQuiz';
 import Module3FinalQuiz from '../components/Module3FinalQuiz';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
     </svg>
 );
@@ -236,6 +237,10 @@ const CoursePlayerPage: React.FC = () => {
 
     // Quiz 5 (EPI) State
     const [selectedEpiAnswer, setSelectedEpiAnswer] = useState<boolean | null>(null);
+
+    // State for seek blocking
+    const [seekMessage, setSeekMessage] = useState<string | null>(null);
+    const lastPlayerTimeRef = useRef<number>(0);
     
     const isProfileComplete = !!(
         profile &&
@@ -299,41 +304,50 @@ const CoursePlayerPage: React.FC = () => {
     const handleVideoTimeUpdate = () => {
         if (!videoRef.current || inVideoQuizActive) return;
 
-        let quizZones = [];
+        const currentTime = videoRef.current.currentTime;
+        const lastTime = lastPlayerTimeRef.current;
 
+        // --- SEEK BLOCKING LOGIC ---
+        let quizZones = [];
         if (activeModule?.title.includes("Módulo 1")) {
              quizZones = [
-                { trigger: 36, resume: 42, isComplete: securityQuizComplete, quizType: 'security' as const },
-                { trigger: 172, resume: 181, isComplete: layersQuizComplete, quizType: 'layers' as const },
-                { trigger: 247, resume: 258, isComplete: pgChainQuizComplete, quizType: 'pgChain' as const },
-                { trigger: 408, resume: 421, isComplete: seismicSurveyQuizComplete, quizType: 'seismicSurvey' as const },
-                { trigger: 721, resume: 730, isComplete: epiQuizComplete, quizType: 'epiQuiz' as const },
-                { trigger: 756, resume: 767, isComplete: module1FinalQuizComplete, quizType: 'module1Final' as const },
+                { trigger: 36, isComplete: securityQuizComplete, quizType: 'security' as const, resume: 42 },
+                { trigger: 172, isComplete: layersQuizComplete, quizType: 'layers' as const, resume: 181 },
+                { trigger: 247, isComplete: pgChainQuizComplete, quizType: 'pgChain' as const, resume: 258 },
+                { trigger: 408, isComplete: seismicSurveyQuizComplete, quizType: 'seismicSurvey' as const, resume: 421 },
+                { trigger: 721, isComplete: epiQuizComplete, quizType: 'epiQuiz' as const, resume: 730 },
+                { trigger: 756, isComplete: module1FinalQuizComplete, quizType: 'module1Final' as const, resume: 767 },
             ];
         } else if (activeModule?.title.includes("Módulo 2")) {
             quizZones = [
-                { trigger: 601, resume: 607, isComplete: module2FinalQuizComplete, quizType: 'module2Final' as const },
+                { trigger: 601, isComplete: module2FinalQuizComplete, quizType: 'module2Final' as const, resume: 607 },
             ];
         } else if (activeModule?.title.includes("Módulo 3")) {
             quizZones = [
-                { trigger: 993, resume: 1000, isComplete: module3FinalQuizComplete, quizType: 'module3Final' as const },
+                { trigger: 993, isComplete: module3FinalQuizComplete, quizType: 'module3Final' as const, resume: 1000 },
             ];
-        } else {
-            return; // No quizzes for other modules yet
         }
 
-        const currentTime = videoRef.current.currentTime;
+        const isSeekingForward = currentTime > lastTime + 2;
+        if (isSeekingForward) {
+            const jumpedOverQuiz = quizZones.find(zone => !zone.isComplete && zone.trigger > lastTime && zone.trigger < currentTime);
+            if (jumpedOverQuiz) {
+                videoRef.current.currentTime = lastTime;
+                setSeekMessage("Caro aluno, em breve terá um quiz para resolver. Paciência.");
+                const timer = setTimeout(() => setSeekMessage(null), 3000);
+                return; 
+            }
+        }
+        lastPlayerTimeRef.current = currentTime;
+        // --- END OF SEEK BLOCKING LOGIC ---
 
         // Gating logic to prevent seeing "hidden" content
         for (const zone of quizZones) {
-            // Check if the current time is between the quiz trigger and the resume point
             if (currentTime > zone.trigger + 1 && currentTime < zone.resume) {
                 if (zone.isComplete) {
-                    // If quiz is complete, jump user to the end of the hidden section
                     videoRef.current.currentTime = zone.resume;
                     return;
                 } else {
-                    // If quiz is not complete, force user back to the quiz trigger
                     videoRef.current.currentTime = zone.trigger;
                     return;
                 }
@@ -343,7 +357,6 @@ const CoursePlayerPage: React.FC = () => {
         // Triggering logic for quizzes
         for (const zone of quizZones) {
             if (currentTime >= zone.trigger && currentTime < zone.trigger + 1) {
-                // Always show the quiz when the timeline hits the trigger point.
                 if (document.fullscreenElement) document.exitFullscreen();
                 videoRef.current.pause();
                 setActiveQuizType(zone.quizType);
@@ -607,6 +620,7 @@ const CoursePlayerPage: React.FC = () => {
         setShowSeismicAnswerHint(false);
         setSelectedSeismicAnswer(null);
         setSelectedEpiAnswer(null);
+        lastPlayerTimeRef.current = 0;
         logActivity(module.id);
     };
 
@@ -750,6 +764,13 @@ const CoursePlayerPage: React.FC = () => {
                                       <span>{t('course.player.loadingVideo')}</span>
                                     </div>
                                 )}
+
+                                {seekMessage && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40 animate-fadeInUp" style={{animationDuration: '0.3s'}}>
+                                        <p className="text-white text-lg font-semibold text-center">{seekMessage}</p>
+                                    </div>
+                                )}
+
 
                                 {/* In-Video Quiz Overlay */}
                                 {inVideoQuizActive && (
