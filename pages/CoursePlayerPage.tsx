@@ -2,12 +2,14 @@
 
 
 
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
-import { Module, UserProgress, Course, QuizQuestion, QuizAttempt } from '../types';
+import { Module, UserProgress, Course, QuizQuestion, QuizAttempt, UserInVideoQuizCompletion } from '../types';
 import Module1FinalQuiz from '../components/Module1FinalQuiz';
 import Module2FinalQuiz from '../components/Module2FinalQuiz';
 import Module3FinalQuiz from '../components/Module3FinalQuiz';
@@ -301,6 +303,21 @@ const CoursePlayerPage: React.FC = () => {
         });
     }, [userId, courseId]);
 
+    const saveInVideoQuizProgress = async (quizType: string) => {
+        if (!userId || !courseId) return;
+        const { error } = await supabase.from('user_in_video_quiz_completions').upsert(
+            {
+                user_id: userId,
+                course_id: courseId,
+                quiz_type: quizType,
+            },
+            { onConflict: 'user_id,course_id,quiz_type' }
+        );
+        if (error) {
+            console.error(`Error saving progress for quiz "${quizType}":`, error);
+        }
+    };
+
     const handleVideoTimeUpdate = () => {
         if (!videoRef.current || inVideoQuizActive) return;
 
@@ -373,6 +390,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizAttempts(0);
                 setVideoQuizFeedback(null);
                 setSecurityQuizComplete(true);
+                saveInVideoQuizProgress('security');
             } else {
                 setVideoQuizAttempts(prev => prev + 1);
                 setVideoQuizFeedback("A resposta não está correta. Tente identificar o risco principal.");
@@ -386,6 +404,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizAttempts(0);
                 setVideoQuizFeedback(null);
                 setLayersQuizComplete(true);
+                saveInVideoQuizProgress('layers');
             } else {
                 setVideoQuizAttempts(prev => prev + 1);
                 setVideoQuizFeedback("A ordem das camadas não está correta. Tente novamente!");
@@ -399,6 +418,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizAttempts(0);
                 setVideoQuizFeedback(null);
                 setPgChainQuizComplete(true);
+                saveInVideoQuizProgress('pgChain');
                 setShowPgChainAnswers(false);
             } else {
                 const newAttempts = videoQuizAttempts + 1;
@@ -416,6 +436,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizAttempts(0);
                 setVideoQuizFeedback(null);
                 setSeismicSurveyQuizComplete(true);
+                saveInVideoQuizProgress('seismicSurvey');
                 setShowSeismicAnswerHint(false);
             } else {
                 const newAttempts = videoQuizAttempts + 1;
@@ -433,6 +454,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizAttempts(0);
                 setVideoQuizFeedback(null);
                 setEpiQuizComplete(true);
+                saveInVideoQuizProgress('epiQuiz');
             } else {
                 setVideoQuizAttempts(prev => prev + 1);
                 setVideoQuizFeedback("Incorreto. O uso de Equipamentos de Proteção Individual (EPI) é obrigatório por lei em situações de trabalho que ofereçam riscos à saúde e segurança do trabalhador.");
@@ -463,14 +485,17 @@ const CoursePlayerPage: React.FC = () => {
         else if (activeQuizType === 'epiQuiz') resumeAt(730);
         else if (activeQuizType === 'module1Final') {
             setModule1FinalQuizComplete(true);
+            saveInVideoQuizProgress('module1Final');
             resumeAt(767); // 12:47
         }
         else if (activeQuizType === 'module2Final') {
             setModule2FinalQuizComplete(true);
+            saveInVideoQuizProgress('module2Final');
             resumeAt(607); // 10:07
         }
         else if (activeQuizType === 'module3Final') {
             setModule3FinalQuizComplete(true);
+            saveInVideoQuizProgress('module3Final');
             resumeAt(1000); // 16:40
         }
         
@@ -529,12 +554,13 @@ const CoursePlayerPage: React.FC = () => {
             setFetchError(null);
 
             try {
-                const [courseRes, modulesRes, progressRes, attemptRes, certReqRes] = await Promise.all([
+                const [courseRes, modulesRes, progressRes, attemptRes, certReqRes, inVideoQuizRes] = await Promise.all([
                     supabase.from('courses').select('*').eq('id', courseId).single().abortSignal(signal),
                     supabase.from('modules').select('*').eq('course_id', courseId).order('order').abortSignal(signal),
                     supabase.from('user_progress').select('module_id').eq('user_id', userId).abortSignal(signal),
                     supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single().abortSignal(signal),
-                    supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single().abortSignal(signal)
+                    supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single().abortSignal(signal),
+                    supabase.from('user_in_video_quiz_completions').select('quiz_type').eq('user_id', userId).eq('course_id', courseId).abortSignal(signal)
                 ]);
 
                 if (signal.aborted) return;
@@ -559,6 +585,19 @@ const CoursePlayerPage: React.FC = () => {
                 const { data: certReqData, error: certReqError } = certReqRes;
                 if (certReqError && certReqError.code !== 'PGRST116') throw certReqError;
                 if (certReqData) setCertificateRequested(true);
+
+                const { data: quizCompletions } = inVideoQuizRes;
+                if (quizCompletions) {
+                    const completedTypes = new Set(quizCompletions.map(q => q.quiz_type));
+                    if (completedTypes.has('security')) setSecurityQuizComplete(true);
+                    if (completedTypes.has('layers')) setLayersQuizComplete(true);
+                    if (completedTypes.has('pgChain')) setPgChainQuizComplete(true);
+                    if (completedTypes.has('seismicSurvey')) setSeismicSurveyQuizComplete(true);
+                    if (completedTypes.has('epiQuiz')) setEpiQuizComplete(true);
+                    if (completedTypes.has('module1Final')) setModule1FinalQuizComplete(true);
+                    if (completedTypes.has('module2Final')) setModule2FinalQuizComplete(true);
+                    if (completedTypes.has('module3Final')) setModule3FinalQuizComplete(true);
+                }
 
                 const allModulesCompleted = modulesList.length > 0 && completedIds.length === modulesList.length;
 
@@ -627,6 +666,30 @@ const CoursePlayerPage: React.FC = () => {
     const handleModuleComplete = async (moduleId: string) => {
         if (!userId || completedModules.includes(moduleId)) return;
     
+        const module = modules.find(m => m.id === moduleId);
+        if (!module) return;
+
+        let allQuizzesForModuleComplete = false;
+        if (module.title.includes("Módulo 1")) {
+            allQuizzesForModuleComplete = securityQuizComplete && layersQuizComplete && pgChainQuizComplete && seismicSurveyQuizComplete && epiQuizComplete && module1FinalQuizComplete;
+        } else if (module.title.includes("Módulo 2")) {
+            allQuizzesForModuleComplete = module2FinalQuizComplete;
+        } else if (module.title.includes("Módulo 3")) {
+            allQuizzesForModuleComplete = module3FinalQuizComplete;
+        } else {
+            allQuizzesForModuleComplete = true; // Assume complete if no quizzes are defined for it
+        }
+
+        if (!allQuizzesForModuleComplete) {
+            alert("Para marcar este módulo como concluído, você deve primeiro passar em todos os quizzes do vídeo.");
+            if (videoRef.current) {
+                const newTime = Math.max(0, videoRef.current.duration - 5);
+                videoRef.current.currentTime = newTime;
+                videoRef.current.play().catch(e => console.error("Error replaying video:", e));
+            }
+            return;
+        }
+
         await supabase.from('user_progress').insert({ user_id: userId, module_id: moduleId });
         const newCompleted = [...completedModules, moduleId];
         setCompletedModules(newCompleted);

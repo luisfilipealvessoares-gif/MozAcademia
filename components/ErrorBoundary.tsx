@@ -32,8 +32,9 @@ interface ErrorBoundaryInternalProps {
     children: ReactNode;
 }
 
-// FIX: The class component must extend `React.Component` for `this.props` to be available.
-// This resolves the "Property 'props' does not exist" error.
+// FIX: The class component must extend `React.Component` with the correct props and state types
+// for `this.props` and `this.state` to be available and correctly typed. This resolves the
+// "Property 'props' does not exist" error.
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
   state: State = { hasError: false };
 

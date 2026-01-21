@@ -1,5 +1,6 @@
 
 
+
 import { User } from '@supabase/supabase-js';
 
 export interface UserProfile {
@@ -115,6 +116,15 @@ export interface TicketReply {
         is_admin: boolean;
     } | null;
 }
+
+export interface UserInVideoQuizCompletion {
+  id: string;
+  user_id: string;
+  course_id: string;
+  quiz_type: string;
+  created_at: string;
+}
+
 
 // Supabase generated types
 export type Json =
@@ -455,6 +465,45 @@ export type Database = {
           },
           {
             foreignKeyName: "ticket_replies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_in_video_quiz_completions: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          course_id: string
+          quiz_type: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          course_id: string
+          quiz_type: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          course_id?: string
+          quiz_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_in_video_quiz_completions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_in_video_quiz_completions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
