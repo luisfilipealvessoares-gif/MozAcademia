@@ -284,7 +284,7 @@ const AdminStudentProgress: React.FC = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Progresso dos Alunos</h1>
+                    <h1 className="text-2xl font-bold">Progresso dos Alunos</h1>
                     <p className="text-gray-600 mt-1">Acompanhe o andamento dos alunos nos cursos.</p>
                 </div>
                  <div className="space-x-2">
@@ -391,20 +391,20 @@ const AdminStudentProgress: React.FC = () => {
                         ) : filteredProgress.length > 0 ? (
                             filteredProgress.map(item => (
                                 <tr key={item.enrollmentId} className="hover:bg-gray-50 transition-colors duration-200">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm">
                                         <button onClick={() => handleShowStudentDetails(item.user)} className="font-medium text-brand-up hover:underline" disabled={item.user.full_name === '[Usuário Removido]'}>
                                             {item.user.full_name}
                                         </button>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{item.user.company_name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{item.course.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{item.user.company_name || 'N/A'}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{item.course.title}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-600">
                                         {new Date(item.enrolled_at).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-3 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5 mr-3">
-                                                <div className="bg-brand-moz h-2.5 rounded-full" style={{width: `${item.progress}%`}}></div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
+                                                <div className="bg-brand-moz h-2 rounded-full" style={{width: `${item.progress}%`}}></div>
                                             </div>
                                             <span className="text-sm text-gray-600 font-semibold w-10 text-right">{item.progress}%</span>
                                         </div>
@@ -422,25 +422,25 @@ const AdminStudentProgress: React.FC = () => {
 
             {showStudentDetailModal && selectedStudent && (
                  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-                    <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-xl">
-                        <div className="flex justify-between items-center pb-4 border-b">
-                            <h2 className="text-2xl font-bold text-gray-800">Detalhes do Aluno</h2>
+                    <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
+                        <div className="flex justify-between items-center pb-3 border-b">
+                            <h2 className="text-xl font-bold text-gray-800">Detalhes do Aluno</h2>
                             <button onClick={() => setShowStudentDetailModal(false)} className="text-gray-400 hover:text-gray-600 font-bold text-2xl">&times;</button>
                         </div>
-                        <div className="my-6 space-y-3 text-gray-700 text-sm">
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Nome:</strong> {selectedStudent.full_name}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Email:</strong> {selectedStudent.email || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Empresa:</strong> {selectedStudent.company_name || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Telefone:</strong> {selectedStudent.phone_number || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Sexo:</strong> {selectedStudent.sexo ? (selectedStudent.sexo.charAt(0).toUpperCase() + selectedStudent.sexo.slice(1)) : 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Idade:</strong> {selectedStudent.idade || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Endereço:</strong> {selectedStudent.endereco || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">Província:</strong> {selectedStudent.provincia || 'Não informado'}</div>
-                            <div><strong className="font-semibold text-gray-500 w-32 inline-block">País:</strong> {selectedStudent.pais || 'Não informado'}</div>
-                             <div><strong className="font-semibold text-gray-500 w-32 inline-block">Ativ. Comercial:</strong> {selectedStudent.atividade_comercial || 'Não informado'}</div>
+                        <div className="my-5 space-y-2 text-gray-700 text-sm">
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Nome:</strong> {selectedStudent.full_name}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Email:</strong> {selectedStudent.email || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Empresa:</strong> {selectedStudent.company_name || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Telefone:</strong> {selectedStudent.phone_number || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Sexo:</strong> {selectedStudent.sexo ? (selectedStudent.sexo.charAt(0).toUpperCase() + selectedStudent.sexo.slice(1)) : 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Idade:</strong> {selectedStudent.idade || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Endereço:</strong> {selectedStudent.endereco || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Província:</strong> {selectedStudent.provincia || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">País:</strong> {selectedStudent.pais || 'Não informado'}</div>
+                             <div><strong className="font-semibold text-gray-500 w-28 inline-block">Ativ. Comercial:</strong> {selectedStudent.atividade_comercial || 'Não informado'}</div>
                         </div>
-                        <div className="flex justify-end pt-4 border-t mt-auto">
-                            <button onClick={() => setShowStudentDetailModal(false)} className="bg-gray-200 px-5 py-2 rounded-md text-gray-800 font-semibold hover:bg-gray-300">
+                        <div className="flex justify-end pt-3 border-t mt-auto">
+                            <button onClick={() => setShowStudentDetailModal(false)} className="bg-gray-200 px-4 py-2 rounded-md text-gray-800 font-semibold hover:bg-gray-300 text-sm">
                                 Fechar
                             </button>
                         </div>

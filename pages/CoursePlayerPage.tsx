@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -109,14 +103,14 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     if (showResults) {
       const passed = score >= 70;
       return (
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg border">
-          <h3 className="text-3xl font-bold mb-4">{t('quiz.resultsTitle')}</h3>
-          <p className="text-xl mb-2">{t('quiz.yourFinalScore')}</p>
-          <p className={`text-6xl font-bold mb-6 ${passed ? 'text-brand-moz' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
+        <div className="text-center p-6 bg-white rounded-xl shadow-lg border">
+          <h3 className="text-2xl font-bold mb-4">{t('quiz.resultsTitle')}</h3>
+          <p className="text-lg mb-2">{t('quiz.yourFinalScore')}</p>
+          <p className={`text-5xl font-bold mb-6 ${passed ? 'text-brand-moz' : 'text-red-500'}`}>{score.toFixed(0)}%</p>
           {passed ? (
-            <p className="text-brand-up font-semibold text-lg">{t('quiz.passedMessage')}</p>
+            <p className="text-brand-up font-semibold text-base">{t('quiz.passedMessage')}</p>
           ) : (
-            <p className="text-red-600 font-semibold text-lg">{t('quiz.failedMessage')}</p>
+            <p className="text-red-600 font-semibold text-base">{t('quiz.failedMessage')}</p>
           )}
         </div>
       );
@@ -126,35 +120,35 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
     const currentOptions = currentQuestion?.options || [];
   
     return currentQuestion ? (
-      <div className="p-8 bg-white rounded-xl shadow-lg border">
+      <div className="p-6 bg-white rounded-xl shadow-lg border">
         <p className="text-sm font-semibold text-brand-moz mb-2">{t('quiz.questionLabel', {current: currentQuestionIndex + 1, total: questions.length})}</p>
-        <h3 className="text-2xl font-bold mb-6">{currentQuestion.question_text}</h3>
-        <div className="space-y-4">
+        <h3 className="text-xl font-bold mb-6">{currentQuestion.question_text}</h3>
+        <div className="space-y-3">
           {currentOptions.map((option, index) => (
-            <label key={index} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-brand-moz bg-brand-light' : 'border-gray-200 hover:border-brand-moz/50'}`}>
+            <label key={index} className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === index ? 'border-brand-moz bg-brand-light' : 'border-gray-200 hover:border-brand-moz/50'}`}>
               <input
                 type="radio"
                 name={`question-${currentQuestion.id}`}
                 checked={answers[currentQuestionIndex] === index}
                 onChange={() => handleAnswer(index)}
-                className="h-5 w-5 text-brand-up focus:ring-brand-moz"
+                className="h-4 w-4 text-brand-up focus:ring-brand-moz"
               />
-              <span className="ml-4 text-lg text-gray-800">{option}</span>
+              <span className="ml-3 text-base text-gray-800">{option}</span>
             </label>
           ))}
         </div>
-        <div className="mt-8 flex justify-between items-center">
+        <div className="mt-6 flex justify-between items-center">
           <button 
             onClick={() => setCurrentQuestionIndex(i => Math.max(0, i - 1))} 
             disabled={currentQuestionIndex === 0}
-            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50 font-semibold"
+            className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-50 font-semibold text-sm"
           >
             {t('quiz.previous')}
           </button>
           {currentQuestionIndex < questions.length - 1 ? (
             <button 
               onClick={() => setCurrentQuestionIndex(i => Math.min(questions.length - 1, i + 1))}
-              className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up"
+              className="px-5 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up text-sm"
             >
               {t('quiz.next')}
             </button>
@@ -162,7 +156,7 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
             <button 
               onClick={handleSubmit}
               disabled={answers.includes(null)}
-              className="px-6 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50"
+              className="px-5 py-2 bg-brand-moz text-white rounded-lg font-semibold shadow-sm hover:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 text-sm"
             >
               {t('quiz.finish')}
             </button>
@@ -783,19 +777,19 @@ const CoursePlayerPage: React.FC = () => {
     }
 
     return (
-        <div className="bg-brand-light -mx-8 -my-8 p-8 rounded-xl">
+        <div className="bg-brand-light -mx-6 -my-6 p-6 rounded-xl">
             <Link to="/dashboard" className="inline-flex items-center gap-2 mb-6 font-semibold text-brand-up hover:text-brand-moz transition-colors">
                 <ArrowLeftIcon className="w-5 h-5" />
                 {t('course.player.backToDashboard')}
             </Link>
-            <div className="mb-8 p-6 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
-                <p className="font-semibold opacity-90 tracking-wider">{t('course.player.course')}</p>
-                <h1 className="text-4xl font-extrabold drop-shadow-md">{courseTitle}</h1>
+            <div className="mb-6 p-5 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
+                <p className="font-semibold opacity-90 tracking-wider text-sm">{t('course.player.course')}</p>
+                <h1 className="text-3xl font-extrabold drop-shadow-md">{courseTitle}</h1>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <main className="lg:col-span-3">
                     {view === 'video' && activeModule && (
-                        <div className="bg-white p-4 rounded-xl shadow-lg border relative overflow-hidden">
+                        <div className="bg-white p-2 rounded-xl shadow-lg border relative overflow-hidden">
                             <div 
                                 ref={containerRef}
                                 className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden relative"
@@ -845,33 +839,33 @@ const CoursePlayerPage: React.FC = () => {
                                         ) : activeQuizType === 'module3Final' ? (
                                             <Module3FinalQuiz onComplete={handleResumeVideoAfterQuiz} />
                                         ) : videoQuizShowSuccess ? (
-                                            <div className="text-center space-y-8 animate-fadeIn max-w-lg bg-black/75 backdrop-blur-3xl p-10 rounded-3xl border border-white/20 shadow-2xl">
-                                                <div className="bg-white rounded-full p-4 inline-block shadow-2xl animate-bounce">
-                                                    <CheckCircleIcon className="w-20 h-20 text-brand-up" />
+                                            <div className="text-center space-y-6 animate-fadeIn max-w-lg bg-black/75 backdrop-blur-3xl p-8 rounded-3xl border border-white/20 shadow-2xl">
+                                                <div className="bg-white rounded-full p-3 inline-block shadow-2xl animate-bounce">
+                                                    <CheckCircleIcon className="w-16 h-16 text-brand-up" />
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <h3 className="text-4xl font-black uppercase tracking-widest text-white">Parabéns!</h3>
-                                                    <p className="text-xl font-medium opacity-90 text-white">Você concluiu o desafio com sucesso.</p>
+                                                <div className="space-y-2">
+                                                    <h3 className="text-3xl font-black uppercase tracking-widest text-white">Parabéns!</h3>
+                                                    <p className="text-lg font-medium opacity-90 text-white">Você concluiu o desafio com sucesso.</p>
                                                 </div>
                                                 <button 
                                                     onClick={handleResumeVideoAfterQuiz}
-                                                    className="bg-white text-brand-up font-bold py-4 px-10 rounded-full hover:bg-gray-100 transition-all shadow-xl flex items-center gap-3 mx-auto active:scale-95 text-lg"
+                                                    className="bg-white text-brand-up font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-all shadow-xl flex items-center gap-3 mx-auto active:scale-95 text-base"
                                                 >
-                                                    Continuar vídeo <span className="text-2xl font-bold ml-1">→</span>
+                                                    Continuar vídeo <span className="text-xl font-bold ml-1">→</span>
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="max-w-lg w-full space-y-6 bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-white/20">
+                                            <div className="max-w-lg w-full space-y-4 bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-white/20">
                                                 <div className="text-center">
-                                                    <span className="bg-white/10 py-2 px-5 rounded-full text-sm font-bold uppercase tracking-widest">Desafio Mozup</span>
+                                                    <span className="bg-white/10 py-1.5 px-4 rounded-full text-xs font-bold uppercase tracking-widest">Desafio Mozup</span>
                                                 </div>
                                                 
                                                 {activeQuizType === 'security' && (
                                                     <div className="space-y-4">
-                                                        <p className="text-lg font-bold text-white text-center">Qual é o maior risco de segurança numa instalação de gás natural?</p>
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                                                        <p className="text-base font-bold text-white text-center">Qual é o maior risco de segurança numa instalação de gás natural?</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
                                                             {["A) Fogo", "B) Queda", "C) Ruído", "D) Calor"].map((opt, idx) => (
-                                                                <button key={idx} onClick={() => { setSelectedSecurityAnswer(idx); setVideoQuizFeedback(null); }} className={`p-3 rounded-lg border-2 transition-all font-semibold text-base ${selectedSecurityAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}>
+                                                                <button key={idx} onClick={() => { setSelectedSecurityAnswer(idx); setVideoQuizFeedback(null); }} className={`p-2.5 rounded-lg border-2 transition-all font-semibold text-sm ${selectedSecurityAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}>
                                                                     {opt}
                                                                 </button>
                                                             ))}
@@ -881,12 +875,12 @@ const CoursePlayerPage: React.FC = () => {
 
                                                 {activeQuizType === 'layers' && (
                                                     <div className="space-y-4">
-                                                        <p className="text-lg font-bold text-white leading-tight text-center">Associe as camadas geológicas (da mais profunda para a mais superficial).</p>
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                                                        <p className="text-base font-bold text-white leading-tight text-center">Associe as camadas geológicas (da mais profunda para a mais superficial).</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
                                                             {[1, 2, 3, 4].map((num, idx) => (
                                                                 <div key={idx} className="space-y-1">
                                                                     <label className="text-xs font-bold uppercase tracking-wider text-white/70">Camada {num} {num === 1 ? '↓' : num === 4 ? '↑' : ''}</label>
-                                                                    <select value={selectedLayers[idx]} onChange={(e) => { const newLayers = [...selectedLayers]; newLayers[idx] = e.target.value; setSelectedLayers(newLayers); setVideoQuizFeedback(null); }} className="w-full bg-slate-800/50 text-white p-2.5 rounded-lg font-semibold border border-white/20 focus:border-brand-moz focus:ring-brand-moz outline-none text-sm shadow-inner">
+                                                                    <select value={selectedLayers[idx]} onChange={(e) => { const newLayers = [...selectedLayers]; newLayers[idx] = e.target.value; setSelectedLayers(newLayers); setVideoQuizFeedback(null); }} className="w-full bg-slate-800/50 text-white p-2 rounded-lg font-semibold border border-white/20 focus:border-brand-moz focus:ring-brand-moz outline-none text-sm shadow-inner">
                                                                         <option value="">Selecione...</option>
                                                                         {layersOptions.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
                                                                     </select>
@@ -897,17 +891,17 @@ const CoursePlayerPage: React.FC = () => {
                                                 )}
 
                                                 {activeQuizType === 'pgChain' && (
-                                                    <div className="space-y-4 text-left">
-                                                        <p className="text-lg font-bold text-white leading-tight text-center pb-2">Selecione a etapa da cadeia de P&G para cada atividade.</p>
+                                                    <div className="space-y-3 text-left">
+                                                        <p className="text-base font-bold text-white leading-tight text-center pb-2">Selecione a etapa da cadeia de P&G para cada atividade.</p>
                                                         {pgChainQuestions.map((question, qIndex) => (
-                                                            <div key={qIndex} className="bg-white/10 p-3 rounded-lg">
+                                                            <div key={qIndex} className="bg-white/10 p-2.5 rounded-lg">
                                                                 <p className="font-semibold text-white mb-2 text-sm">{question}</p>
                                                                 {showPgChainAnswers ? (
-                                                                    <p className="text-sm font-bold text-green-300">Resposta Correcta: {['Downstream', 'Downstream', 'Upstream', 'Downstream', 'Upstream'][qIndex]}</p>
+                                                                    <p className="text-xs font-bold text-green-300">Resposta Correcta: {['Downstream', 'Downstream', 'Upstream', 'Downstream', 'Upstream'][qIndex]}</p>
                                                                 ) : (
                                                                     <div className="flex flex-wrap gap-2">
                                                                         {pgChainOptions.map((option, oIndex) => (
-                                                                            <button key={oIndex} onClick={() => { const newAnswers = [...pgChainAnswers]; newAnswers[qIndex] = option; setPgChainAnswers(newAnswers); setVideoQuizFeedback(null); }} className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${pgChainAnswers[qIndex] === option ? 'bg-brand-moz text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
+                                                                            <button key={oIndex} onClick={() => { const newAnswers = [...pgChainAnswers]; newAnswers[qIndex] = option; setPgChainAnswers(newAnswers); setVideoQuizFeedback(null); }} className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${pgChainAnswers[qIndex] === option ? 'bg-brand-moz text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
                                                                                 {option}
                                                                             </button>
                                                                         ))}
@@ -920,13 +914,13 @@ const CoursePlayerPage: React.FC = () => {
                                                 
                                                 {activeQuizType === 'seismicSurvey' && (
                                                     <div className="space-y-4 relative">
-                                                        <p className="text-lg font-bold text-white text-center">Qual o objetivo das pesquisas sísmicas?</p>
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                                                        <p className="text-base font-bold text-white text-center">Qual o objetivo das pesquisas sísmicas?</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
                                                             {seismicSurveyOptions.map((opt, idx) => (
                                                                 <button
                                                                     key={idx}
                                                                     onClick={() => { setSelectedSeismicAnswer(idx); setVideoQuizFeedback(null); }}
-                                                                    className={`p-3 rounded-lg border-2 transition-all font-semibold text-sm ${selectedSeismicAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                                    className={`p-2.5 rounded-lg border-2 transition-all font-semibold text-sm ${selectedSeismicAnswer === idx ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
                                                                 >
                                                                     {opt}
                                                                 </button>
@@ -942,17 +936,17 @@ const CoursePlayerPage: React.FC = () => {
 
                                                 {activeQuizType === 'epiQuiz' && (
                                                     <div className="space-y-4">
-                                                        <p className="text-lg font-bold text-white text-center">A afirmação "A utilização de EPI é opcional" é verdadeira ou falsa?</p>
+                                                        <p className="text-base font-bold text-white text-center">A afirmação "A utilização de EPI é opcional" é verdadeira ou falsa?</p>
                                                         <div className="flex justify-center gap-4 text-left">
                                                             <button
                                                                 onClick={() => { setSelectedEpiAnswer(true); setVideoQuizFeedback(null); }}
-                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-32 ${selectedEpiAnswer === true ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-28 ${selectedEpiAnswer === true ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
                                                             >
                                                                 Verdadeiro
                                                             </button>
                                                             <button
                                                                 onClick={() => { setSelectedEpiAnswer(false); setVideoQuizFeedback(null); }}
-                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-32 ${selectedEpiAnswer === false ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
+                                                                className={`p-3 rounded-lg border-2 transition-all font-semibold text-base w-28 ${selectedEpiAnswer === false ? 'bg-brand-moz text-white border-transparent scale-105 shadow-lg' : 'bg-white/10 text-white hover:bg-white/20 border-transparent'}`}
                                                             >
                                                                 Falso
                                                             </button>
@@ -962,24 +956,24 @@ const CoursePlayerPage: React.FC = () => {
 
 
                                                 {videoQuizFeedback && (
-                                                    <div className="bg-red-500/90 text-white p-3 rounded-lg font-semibold border-2 border-white/20 text-center">
+                                                    <div className="bg-red-500/90 text-white p-2.5 rounded-lg font-semibold border-2 border-white/20 text-center text-sm">
                                                         {videoQuizFeedback}
                                                     </div>
                                                 )}
 
-                                                <div className="space-y-4 pt-4">
+                                                <div className="space-y-3 pt-3">
                                                      {showPgChainAnswers ? (
-                                                        <button onClick={handleResumeVideoAfterQuiz} className="w-full bg-white text-brand-moz font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 text-base uppercase tracking-wider">
+                                                        <button onClick={handleResumeVideoAfterQuiz} className="w-full bg-white text-brand-moz font-bold py-2.5 px-6 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 text-sm uppercase tracking-wider">
                                                             Continuar Vídeo
                                                         </button>
                                                     ) : (
-                                                        <button onClick={handleConfirmVideoQuiz} disabled={(activeQuizType === 'security' && selectedSecurityAnswer === null) || (activeQuizType === 'layers' && selectedLayers.includes('')) || (activeQuizType === 'pgChain' && pgChainAnswers.includes('')) || (activeQuizType === 'seismicSurvey' && selectedSeismicAnswer === null) || (activeQuizType === 'epiQuiz' && selectedEpiAnswer === null)} className="w-full bg-white text-brand-moz font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 disabled:opacity-50 text-base uppercase tracking-wider">
+                                                        <button onClick={handleConfirmVideoQuiz} disabled={(activeQuizType === 'security' && selectedSecurityAnswer === null) || (activeQuizType === 'layers' && selectedLayers.includes('')) || (activeQuizType === 'pgChain' && pgChainAnswers.includes('')) || (activeQuizType === 'seismicSurvey' && selectedSeismicAnswer === null) || (activeQuizType === 'epiQuiz' && selectedEpiAnswer === null)} className="w-full bg-white text-brand-moz font-bold py-2.5 px-6 rounded-full hover:bg-gray-100 transition-all shadow-xl active:scale-95 disabled:opacity-50 text-sm uppercase tracking-wider">
                                                             Confirmar Resposta
                                                         </button>
                                                     )}
 
                                                     {videoQuizAttempts >= 2 && activeQuizType !== 'pgChain' && (
-                                                        <div className="bg-white/10 p-3 rounded-lg text-left border border-white/20 backdrop-blur-md animate-fadeIn">
+                                                        <div className="bg-white/10 p-2.5 rounded-lg text-left border border-white/20 backdrop-blur-md animate-fadeIn">
                                                             <p className="text-xs font-bold uppercase tracking-wider mb-1 border-b border-white/10 pb-1">Dica:</p>
                                                             <p className="text-sm font-medium">
                                                                 {activeQuizType === 'security' 
@@ -996,7 +990,7 @@ const CoursePlayerPage: React.FC = () => {
                                 )}
                             </div>
                              <div className="p-4">
-                                <h2 className="text-2xl font-bold mt-2">{getTranslatedTitle(activeModule.title)}</h2>
+                                <h2 className="text-xl font-bold mt-2">{getTranslatedTitle(activeModule.title)}</h2>
                             </div>
                         </div>
                     )}
@@ -1018,27 +1012,27 @@ const CoursePlayerPage: React.FC = () => {
                         </div>
                     )}
                     {view === 'certificate' && quizPassed && (
-                        <div className="bg-white p-8 rounded-xl shadow-lg border text-center">
-                            <h2 className="text-4xl font-bold text-brand-up mb-4">{t('course.player.congratulations')}</h2>
-                            <p className="text-xl mb-6">{t('course.player.courseComplete', { title: courseTitle })}</p>
+                        <div className="bg-white p-6 rounded-xl shadow-lg border text-center">
+                            <h2 className="text-3xl font-bold text-brand-up mb-4">{t('course.player.congratulations')}</h2>
+                            <p className="text-lg mb-6">{t('course.player.courseComplete', { title: courseTitle })}</p>
                             {certificateRequested ? (
-                                <p className="text-blue-600 font-semibold text-lg">{t('course.player.certificateRequested')}</p>
+                                <p className="text-blue-600 font-semibold text-base">{t('course.player.certificateRequested')}</p>
                             ) : (
-                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg">
+                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-2.5 px-6 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg">
                                     {t('course.player.requestCertificate')}
                                 </button>
                             )}
                         </div>
                     )}
                 </main>
-                <aside className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border">
-                    <h3 className="text-xl font-bold mb-4">{t('course.player.progress')}</h3>
-                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                        <div className="bg-brand-moz h-2.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
+                <aside className="lg:col-span-1 bg-white p-5 rounded-xl shadow-lg border">
+                    <h3 className="text-lg font-bold mb-4">{t('course.player.progress')}</h3>
+                     <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div className="bg-brand-moz h-2 rounded-full" style={{width: `${progressPercentage}%`}}></div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-6 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
+                    <p className="text-xs text-gray-600 mb-6 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
 
-                    <h3 className="text-xl font-bold mb-4">{t('course.player.modules')}</h3>
+                    <h3 className="text-lg font-bold mb-4">{t('course.player.modules')}</h3>
                     <ul className="space-y-2">
                     {modules.map((module, index) => {
                         const isCompleted = completedModules.includes(module.id);
@@ -1047,7 +1041,7 @@ const CoursePlayerPage: React.FC = () => {
                         const moduleTitle = getTranslatedTitle(module.title);
                         
                         let Icon;
-                        let iconClasses = "w-5 h-5 mr-3 ";
+                        let iconClasses = "w-5 h-5 mr-2.5 ";
                         if (isActive) {
                           Icon = PlayCircleIcon;
                           iconClasses += "text-brand-moz";
@@ -1064,7 +1058,7 @@ const CoursePlayerPage: React.FC = () => {
                             <button
                             onClick={() => !isLocked && handleSelectModule(module)}
                             disabled={isLocked}
-                            className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
+                            className={`w-full text-left p-2.5 rounded-lg flex items-center transition-all duration-200 text-sm ${
                                 isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-brand-light'
                             } ${isActive ? 'bg-brand-light ring-2 ring-brand-moz font-semibold text-brand-up' : 'text-gray-700'}`}
                             >
@@ -1078,9 +1072,9 @@ const CoursePlayerPage: React.FC = () => {
                         <button 
                             disabled={completedModules.length !== modules.length}
                             onClick={() => setView('quiz')}
-                            className="w-full text-left p-3 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                            className="w-full text-left p-2.5 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-sm"
                         >
-                             <LockIcon className={`w-5 h-5 mr-3 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
+                             <LockIcon className={`w-5 h-5 mr-2.5 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
                             {t('course.player.finalQuiz')}
                         </button>
                     </li>

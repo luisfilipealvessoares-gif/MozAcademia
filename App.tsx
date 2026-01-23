@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -57,7 +53,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/*" element={
                 <>
                     <Header />
-                    <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <Routes>
                             {/* Rotas Públicas */}
                             <Route path="/" element={<HomePage />} />

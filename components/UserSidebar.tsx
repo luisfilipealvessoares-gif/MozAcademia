@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,13 +25,13 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, children }) => {
     return (
         <Link 
             to={to} 
-            className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors duration-200 ${
+            className={`flex items-center px-4 py-2.5 text-gray-700 rounded-lg transition-colors duration-200 text-sm ${
                 isActive 
                 ? 'bg-brand-moz text-white font-semibold shadow-md' 
                 : 'hover:bg-brand-light hover:text-brand-up'
             }`}
         >
-            {React.cloneElement(icon, { className: 'w-6 h-6 mr-3' })}
+            {React.cloneElement(icon, { className: 'w-5 h-5 mr-3' })}
             <span className="truncate">{children}</span>
         </Link>
     );
@@ -55,14 +53,14 @@ const UserSidebar: React.FC = () => {
     const userInitials = getInitials(profile?.full_name);
     return (
         <aside className="w-full md:w-64 bg-white flex flex-col flex-shrink-0 border rounded-xl p-4 self-start">
-             <div className="flex flex-col items-center py-6 space-y-2 border-b">
-                <div className={`w-20 h-20 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold ${userInitials.length > 1 ? 'text-3xl' : 'text-4xl'}`}>
+             <div className="flex flex-col items-center py-4 space-y-2 border-b">
+                <div className={`w-16 h-16 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-2xl`}>
                     {userInitials}
                 </div>
-                <h3 className="font-semibold text-lg text-gray-800 text-center">{profile?.full_name}</h3>
-                <p className="text-sm text-gray-500 text-center">{profile?.company_name}</p>
+                <h3 className="font-semibold text-base text-gray-800 text-center">{profile?.full_name}</h3>
+                <p className="text-xs text-gray-500 text-center">{profile?.company_name}</p>
             </div>
-            <nav className="flex-1 mt-6 space-y-2">
+            <nav className="flex-1 mt-4 space-y-1">
                 <NavLink to="/dashboard" icon={<LayoutDashboardIcon />}>{t('header.myDashboard')}</NavLink>
                 <NavLink to="/profile" icon={<UserCircleIcon />}>{t('header.myProfile')}</NavLink>
                 <NavLink to="/support" icon={<LifeBuoyIcon />}>{t('footer.support')}</NavLink>

@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -77,13 +75,13 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-24">
+        <div className="flex items-center justify-between h-20">
           
           <div className="flex items-center">
             <Link to="/" onClick={() => setIsMenuOpen(false)}>
-              <Logo className="h-14 w-auto" />
+              <Logo className="h-12 w-auto" />
             </Link>
-            <nav className="hidden md:flex items-center space-x-10 ml-10">
+            <nav className="hidden md:flex items-center space-x-8 ml-10">
               <NavLink to="/#cursos">{t('header.courses')}</NavLink>
               <NavLink to="/about">{t('header.about')}</NavLink>
             </nav>
@@ -99,28 +97,28 @@ const Header: React.FC = () => {
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                 >
-                  <div className={`w-10 h-10 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold ${userInitials.length > 1 ? 'text-base' : 'text-lg'}`}>
+                  <div className={`w-9 h-9 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-sm`}>
                     {userInitials}
                   </div>
-                  <span className="font-semibold hidden lg:inline">{profile?.full_name}</span>
+                  <span className="font-semibold hidden lg:inline text-sm">{profile?.full_name}</span>
                   <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-2xl border py-2 z-50 animate-fadeIn">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border py-2 z-50 animate-fadeIn">
                     <div className="px-4 py-2 border-b">
-                        <p className="font-bold text-gray-800 truncate">{profile?.full_name}</p>
-                        <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                        <p className="font-bold text-gray-800 truncate text-sm">{profile?.full_name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     <div className="py-1">
-                        <Link to={dashboardLink} onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
+                        <Link to={dashboardLink} onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
                           <DashboardIcon className="w-5 h-5 mr-3" /> {dashboardText}
                         </Link>
-                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
+                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
                           <ProfileIcon className="w-5 h-5 mr-3" /> {t('header.myProfile')}
                         </Link>
                     </div>
                     <div className="border-t"></div>
-                    <button onClick={handleSignOut} className="w-full text-left flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50">
+                    <button onClick={handleSignOut} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                       <LogoutIcon className="w-5 h-5 mr-3" /> {t('header.logout')}
                     </button>
                   </div>
@@ -128,10 +126,10 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/login" className="text-brand-up font-semibold px-5 py-2.5 rounded-lg hover:bg-brand-light transition-all duration-300">
+                <Link to="/login" className="text-brand-up font-semibold px-4 py-2 rounded-lg hover:bg-brand-light transition-all duration-300 text-sm">
                   {t('header.login')}
                 </Link>
-                <Link to="/login?view=register" className="bg-brand-moz text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <Link to="/login?view=register" className="bg-brand-moz text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                   {t('header.register')}
                 </Link>
               </div>

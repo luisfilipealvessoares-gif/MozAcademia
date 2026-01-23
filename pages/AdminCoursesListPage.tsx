@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { Course } from '../types';
@@ -69,7 +68,7 @@ const AdminCoursesListPage: React.FC = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Gerenciamento de Cursos</h1>
+                    <h1 className="text-2xl font-bold">Gerenciamento de Cursos</h1>
                     <p className="text-gray-600 mt-1">Edite os detalhes dos cursos e gerencie seus módulos.</p>
                 </div>
             </div>
@@ -79,20 +78,20 @@ const AdminCoursesListPage: React.FC = () => {
                      <div className="text-center p-6 text-gray-500">Carregando...</div>
                 ) : courses.length > 0 ? courses.map(course => (
                      <div key={course.id} className="bg-white shadow-md rounded-xl border overflow-hidden flex transition-all duration-300 hover:shadow-xl hover:border-brand-moz">
-                        <div className="flex-shrink-0 w-20 bg-brand-light flex items-center justify-center">
-                            <BookOpenSquareIcon className="w-10 h-10 text-brand-up" />
+                        <div className="flex-shrink-0 w-16 bg-brand-light flex items-center justify-center">
+                            <BookOpenSquareIcon className="w-8 h-8 text-brand-up" />
                         </div>
                         <div className="flex-grow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div className="flex-grow">
-                                <h3 className="font-bold text-lg text-gray-800">{course.title}</h3>
-                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{course.description}</p>
+                                <h3 className="font-bold text-base text-gray-800">{course.title}</h3>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{course.description}</p>
                             </div>
                             <div className="flex-shrink-0 flex items-center gap-2 w-full sm:w-auto">
-                                <button onClick={() => handleOpenCourseEditModal(course)} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-gray-100 text-gray-800 px-4 py-2 rounded-md text-sm hover:bg-gray-200 font-semibold transition-transform duration-200 hover:scale-105">
+                                <button onClick={() => handleOpenCourseEditModal(course)} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-gray-100 text-gray-800 px-3 py-1.5 rounded-md text-xs hover:bg-gray-200 font-semibold transition-transform duration-200 hover:scale-105">
                                     <PencilIcon className="w-4 h-4"/>
                                     <span>Editar</span>
                                 </button>
-                                <Link to={`/admin/courses/${course.id}`} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up transition-transform duration-200 hover:scale-105">
+                                <Link to={`/admin/courses/${course.id}`} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-brand-moz text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-brand-up transition-transform duration-200 hover:scale-105">
                                     <ListBulletIcon className="w-4 h-4"/>
                                     <span>Módulos</span>
                                 </Link>
@@ -109,8 +108,8 @@ const AdminCoursesListPage: React.FC = () => {
 
             {showCourseEditModal && editingCourse && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-                    <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-xl">
-                        <h2 className="text-2xl font-bold mb-6">Editar Curso</h2>
+                    <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
+                        <h2 className="text-xl font-bold mb-5">Editar Curso</h2>
                         <form onSubmit={handleUpdateCourse} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Título</label>
@@ -121,8 +120,8 @@ const AdminCoursesListPage: React.FC = () => {
                                 <textarea value={editingCourse.description} onChange={e => setEditingCourse({...editingCourse, description: e.target.value})} rows={4} className="mt-1 w-full p-2 border rounded-md disabled:bg-gray-100" required disabled={isSaving}></textarea>
                             </div>
                             <div className="flex justify-end space-x-4 pt-4">
-                                <button type="button" onClick={() => setShowCourseEditModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50 transition-colors duration-200" disabled={isSaving}>Cancelar</button>
-                                <button type="submit" className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:opacity-50 transition-colors duration-200" disabled={isSaving}>
+                                <button type="button" onClick={() => setShowCourseEditModal(false)} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50 transition-colors duration-200 text-sm" disabled={isSaving}>Cancelar</button>
+                                <button type="submit" className="bg-brand-moz text-white px-4 py-2 rounded-md hover:bg-brand-up disabled:opacity-50 transition-colors duration-200 text-sm" disabled={isSaving}>
                                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                                 </button>
                             </div>

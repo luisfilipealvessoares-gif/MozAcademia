@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './Logo';
@@ -33,7 +32,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, children }) => {
                 : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
         >
-            {React.cloneElement(icon, { className: 'w-6 h-6 mr-3' })}
+            {React.cloneElement(icon, { className: 'w-5 h-5 mr-3' })}
             {children}
         </Link>
     );
@@ -43,10 +42,10 @@ const AdminSidebar: React.FC = () => {
     const { t } = useI18n();
     return (
         <aside className="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0">
-            <div className="h-20 flex items-center justify-center px-4 bg-gray-900 border-b border-gray-700">
-                <Logo className="h-14 w-auto" variant="dark" />
+            <div className="h-16 flex items-center justify-center px-4 bg-gray-900 border-b border-gray-700">
+                <Logo className="h-12 w-auto" variant="dark" />
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-2">
+            <nav className="flex-1 px-4 py-4 space-y-1.5">
                 <NavLink to="/admin" icon={<HomeIcon />}>{t('admin.sidebar.dashboard')}</NavLink>
                 <NavLink to="/admin/analytics" icon={<ChartBarIcon />}>{t('admin.sidebar.analytics')}</NavLink>
                 <NavLink to="/admin/courses" icon={<BookOpenIcon />}>{t('admin.sidebar.courses')}</NavLink>

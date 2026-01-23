@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -156,10 +154,10 @@ const UserDashboard: React.FC = () => {
 
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-8">
             <div>
-                <h1 className="text-4xl font-extrabold text-gray-900">{t('user.dashboard.title')}</h1>
-                <p className="text-xl text-gray-600 mt-2">
+                <h1 className="text-3xl font-bold text-gray-900">{t('user.dashboard.title')}</h1>
+                <p className="text-lg text-gray-600 mt-2">
                     {t('user.dashboard.welcome', { name: profile?.full_name || user?.email })}
                     {!profile?.full_name && (
                         <span className="text-sm ml-2 font-normal">
@@ -169,10 +167,10 @@ const UserDashboard: React.FC = () => {
                 </p>
             </div>
 
-            <div className="bg-brand-light p-8 rounded-xl shadow-lg border border-brand-moz/20">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('user.dashboard.myCourses')}</h2>
+            <div className="bg-brand-light p-6 rounded-xl shadow-lg border border-brand-moz/20">
+                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('user.dashboard.myCourses')}</h2>
                 {enrolledCourses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {enrolledCourses.map(course => {
                             const progress = course.module_count > 0 ? (course.completed_modules_count / course.module_count) * 100 : 0;
                             
@@ -186,7 +184,7 @@ const UserDashboard: React.FC = () => {
                             return (
                             <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
                                 <div>
-                                    <h3 className="font-bold text-xl text-gray-800 mb-2">{courseTitle}</h3>
+                                    <h3 className="font-bold text-lg text-gray-800 mb-2">{courseTitle}</h3>
                                     <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{courseDescription}</p>
                                     <div className="space-y-2">
                                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -197,7 +195,7 @@ const UserDashboard: React.FC = () => {
                                 </div>
                                 <Link
                                     to={`/course/${course.id}`}
-                                    className="mt-6 block w-full text-center bg-brand-moz text-white py-3 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all shadow-md hover:shadow-lg"
+                                    className="mt-6 block w-full text-center bg-brand-moz text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all shadow-md hover:shadow-lg text-sm"
                                 >
                                     {progress > 0 ? t('user.dashboard.course.continue') : t('user.dashboard.course.start')}
                                 </Link>
@@ -205,7 +203,7 @@ const UserDashboard: React.FC = () => {
                         )})}
                     </div>
                 ) : (
-                    <div className="text-center py-12 border-2 border-dashed border-brand-up/30 rounded-xl bg-white">
+                    <div className="text-center py-10 border-2 border-dashed border-brand-up/30 rounded-xl bg-white">
                          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                         </svg>

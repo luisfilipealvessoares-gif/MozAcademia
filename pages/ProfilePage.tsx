@@ -124,16 +124,16 @@ const ProfilePage: React.FC = () => {
     }
     
     return (
-        <div className="max-w-2xl mx-auto space-y-10">
+        <div className="max-w-2xl mx-auto space-y-8">
             <div>
-                <h1 className="text-3xl font-bold mb-1">{t('profile.page.title')}</h1>
+                <h1 className="text-2xl font-bold mb-1">{t('profile.page.title')}</h1>
                 <p className="text-gray-600">{t('profile.page.subtitle')}</p>
             </div>
 
             {/* Profile Info Card */}
-            <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('profile.page.personalInfo')}</h2>
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('profile.page.personalInfo')}</h2>
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t('profile.page.email')}</label>
                         <input
@@ -141,7 +141,7 @@ const ProfilePage: React.FC = () => {
                             type="email"
                             value={user?.email || ''}
                             disabled
-                            className="mt-1 w-full px-4 py-2 text-gray-500 bg-gray-200 border border-gray-300 rounded-md"
+                            className="mt-1 w-full px-3 py-2 text-gray-500 bg-gray-200 border border-gray-300 rounded-md"
                         />
                     </div>
                     <div>
@@ -152,7 +152,7 @@ const ProfilePage: React.FC = () => {
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -174,7 +174,7 @@ const ProfilePage: React.FC = () => {
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         />
                     </div>
                      <div>
@@ -184,7 +184,7 @@ const ProfilePage: React.FC = () => {
                             value={sexo}
                             onChange={(e) => setSexo(e.target.value as 'masculino' | 'feminino' | '')}
                             required
-                            className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
                         >
                             <option value="" disabled>{t('profile.modal.gender.select')}</option>
                             <option value="masculino">{t('profile.modal.gender.male')}</option>
@@ -193,26 +193,26 @@ const ProfilePage: React.FC = () => {
                     </div>
                     <div>
                         <label htmlFor="endereco" className="block text-sm font-medium text-gray-700">{t('profile.page.address')} <span className="text-red-500">*</span></label>
-                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="street-address" />
+                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="street-address" />
                     </div>
                     <div>
                         <label htmlFor="provincia" className="block text-sm font-medium text-gray-700">{t('profile.page.province')} <span className="text-red-500">*</span></label>
-                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="address-level1" />
+                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="address-level1" />
                     </div>
                     <div>
                         <label htmlFor="pais" className="block text-sm font-medium text-gray-700">{t('profile.page.country')} <span className="text-red-500">*</span></label>
-                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="country-name">
+                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="country-name">
                             <option value="" disabled>{t('profile.page.country.select')}</option>
                             {countries.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="atividadeComercial" className="block text-sm font-medium text-gray-700">{t('profile.page.businessActivity')} <span className="text-red-500">*</span></label>
-                        <input id="atividadeComercial" type="text" value={atividadeComercial} onChange={(e) => setAtividadeComercial(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <input id="atividadeComercial" type="text" value={atividadeComercial} onChange={(e) => setAtividadeComercial(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
                     </div>
                     <div>
                         <label htmlFor="idade" className="block text-sm font-medium text-gray-700">{t('profile.page.age')} <span className="text-red-500">*</span></label>
-                        <input id="idade" type="number" value={idade} onChange={(e) => setIdade(e.target.value === '' ? '' : parseInt(e.target.value, 10))} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <input id="idade" type="number" value={idade} onChange={(e) => setIdade(e.target.value === '' ? '' : parseInt(e.target.value, 10))} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
                     </div>
                     <div>
                         <button
@@ -228,9 +228,9 @@ const ProfilePage: React.FC = () => {
             </div>
 
             {/* Change Password Card */}
-            <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('profile.page.changePassword')}</h2>
-                <form onSubmit={handlePasswordUpdate} className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('profile.page.changePassword')}</h2>
+                <form onSubmit={handlePasswordUpdate} className="space-y-4">
                     <div>
                         <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">{t('profile.page.newPassword')}</label>
                         <div className="relative mt-1">
@@ -241,7 +241,7 @@ const ProfilePage: React.FC = () => {
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 required
                                 disabled={passwordLoading || passwordUpdateSuccess}
-                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
                             <button
                                 type="button"
@@ -264,7 +264,7 @@ const ProfilePage: React.FC = () => {
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 required
                                 disabled={passwordLoading || passwordUpdateSuccess}
-                                className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
                             <button
                                 type="button"
@@ -296,7 +296,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </form>
                 {passwordMessage && (
-                    <div className={`mt-4 p-4 rounded-lg text-center ${
+                    <div className={`mt-4 p-3 rounded-lg text-center text-sm ${
                         passwordMessage.type === 'success'
                             ? 'bg-brand-light border border-brand-moz'
                             : 'bg-red-50 border border-red-200'

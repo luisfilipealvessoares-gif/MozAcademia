@@ -130,7 +130,7 @@ const AdminCertificateRequests: React.FC = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Pedidos de Certificado</h1>
+                    <h1 className="text-2xl font-bold">Pedidos de Certificado</h1>
                     <p className="text-gray-600 mt-1">Aprove os pedidos de alunos que concluíram os cursos.</p>
                 </div>
                 <div className="space-x-2">
@@ -157,12 +157,12 @@ const AdminCertificateRequests: React.FC = () => {
                         ) : requests.length > 0 ? (
                             requests.map(req => (
                                 <tr key={req.id} className="hover:bg-gray-50 transition-colors duration-200">
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{req.user_profiles?.full_name || '[Aluno Removido]'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.user_profiles?.company_name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.courses?.title || '[Curso Removido]'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-brand-up transition-all duration-200">Aprovar</button>
+                                    <td className="px-6 py-3 whitespace-nowrap font-medium text-sm">{req.user_profiles?.full_name || '[Aluno Removido]'}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{req.user_profiles?.company_name || 'N/A'}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{req.courses?.title || '[Curso Removido]'}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
+                                    <td className="px-6 py-3 whitespace-nowrap text-right">
+                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-brand-up transition-all duration-200">Aprovar</button>
                                     </td>
                                 </tr>
                             ))
