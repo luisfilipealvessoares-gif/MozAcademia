@@ -281,36 +281,36 @@ const AdminStudentProgress: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold">Progresso dos Alunos</h1>
-                    <p className="text-gray-600 mt-1">Acompanhe o andamento dos alunos nos cursos.</p>
+                    <h1 className="text-xl font-bold">Progresso dos Alunos</h1>
+                    <p className="text-gray-600 mt-1 text-sm">Acompanhe o andamento dos alunos nos cursos.</p>
                 </div>
                  <div className="space-x-2">
-                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar PDF</button>
-                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar Excel</button>
+                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar PDF</button>
+                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar Excel</button>
                 </div>
             </div>
 
             {/* Filter Section */}
-            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                     <div>
                         <label htmlFor="name-filter" className="block text-xs font-medium text-gray-500 mb-1">Aluno</label>
                         <input id="name-filter" type="text" placeholder="Pesquisar nome..." value={nameFilter} onChange={e => setNameFilter(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz"/>
+                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz"/>
                     </div>
                     <div>
                         <label htmlFor="company-filter" className="block text-xs font-medium text-gray-500 mb-1">Empresa</label>
-                        <select id="company-filter" value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="company-filter" value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todas</option>
                             {uniqueCompanies.map(company => <option key={company} value={company}>{company}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="course-filter" className="block text-xs font-medium text-gray-500 mb-1">Curso</label>
-                        <select id="course-filter" value={courseFilter} onChange={e => setCourseFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="course-filter" value={courseFilter} onChange={e => setCourseFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todos</option>
                             {uniqueCourses.map(course => <option key={course} value={course}>{course}</option>)}
                         </select>
@@ -318,18 +318,18 @@ const AdminStudentProgress: React.FC = () => {
                     <div>
                         <label htmlFor="provincia-filter" className="block text-xs font-medium text-gray-500 mb-1">Província</label>
                         <input id="provincia-filter" type="text" placeholder="Pesquisar província..." value={provinciaFilter} onChange={e => setProvinciaFilter(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz"/>
+                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz"/>
                     </div>
                      <div>
                         <label htmlFor="pais-filter" className="block text-xs font-medium text-gray-500 mb-1">País</label>
-                        <select id="pais-filter" value={paisFilter} onChange={e => setPaisFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="pais-filter" value={paisFilter} onChange={e => setPaisFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todos</option>
                             {countries.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="sexo-filter" className="block text-xs font-medium text-gray-500 mb-1">Sexo</label>
-                        <select id="sexo-filter" value={sexoFilter} onChange={e => setSexoFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="sexo-filter" value={sexoFilter} onChange={e => setSexoFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todos</option>
                             <option value="masculino">Masculino</option>
                             <option value="feminino">Feminino</option>
@@ -337,7 +337,7 @@ const AdminStudentProgress: React.FC = () => {
                     </div>
                      <div>
                         <label htmlFor="age-filter" className="block text-xs font-medium text-gray-500 mb-1">Faixa Etária</label>
-                        <select id="age-filter" value={ageFilter} onChange={e => setAgeFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="age-filter" value={ageFilter} onChange={e => setAgeFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todas</option>
                             <option value="18-25">18-25 anos</option>
                             <option value="26-35">26-35 anos</option>
@@ -347,7 +347,7 @@ const AdminStudentProgress: React.FC = () => {
                     </div>
                     <div>
                         <label htmlFor="progress-filter" className="block text-xs font-medium text-gray-500 mb-1">Progresso</label>
-                        <select id="progress-filter" value={progressFilter} onChange={e => setProgressFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="progress-filter" value={progressFilter} onChange={e => setProgressFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todos</option>
                             <option value="0">0%</option>
                             <option value="1-50">1 - 50%</option>
@@ -357,7 +357,7 @@ const AdminStudentProgress: React.FC = () => {
                     </div>
                     <div>
                         <label htmlFor="status-filter" className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                        <select id="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
+                        <select id="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-moz">
                             <option value="all">Todos</option>
                             <option value="parado">Parado</option>
                             <option value="ativo">Ativo</option>
@@ -365,7 +365,7 @@ const AdminStudentProgress: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex items-end">
-                        <button onClick={resetFilters} className="w-full text-sm font-semibold text-gray-600 hover:text-brand-up transition-colors duration-200 bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md">
+                        <button onClick={resetFilters} className="w-full text-xs font-semibold text-gray-600 hover:text-brand-up transition-colors duration-200 bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md">
                             Limpar Filtros
                         </button>
                     </div>
@@ -376,43 +376,43 @@ const AdminStudentProgress: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data de Inscrição</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progresso</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data de Inscrição</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Progresso</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-gray-500">Carregando...</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-gray-500 text-sm">Carregando...</td></tr>
                         ) : error ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-red-500">{error}</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-red-500 text-sm">{error}</td></tr>
                         ) : filteredProgress.length > 0 ? (
                             filteredProgress.map(item => (
                                 <tr key={item.enrollmentId} className="hover:bg-gray-50 transition-colors duration-200">
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm">
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs">
                                         <button onClick={() => handleShowStudentDetails(item.user)} className="font-medium text-brand-up hover:underline" disabled={item.user.full_name === '[Usuário Removido]'}>
                                             {item.user.full_name}
                                         </button>
                                     </td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{item.user.company_name || 'N/A'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{item.course.title}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-600">
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs">{item.user.company_name || 'N/A'}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs">{item.course.title}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
                                         {new Date(item.enrolled_at).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-3 whitespace-nowrap">
+                                    <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
-                                                <div className="bg-brand-moz h-2 rounded-full" style={{width: `${item.progress}%`}}></div>
+                                            <div className="w-full bg-gray-200 rounded-full h-1.5 mr-2">
+                                                <div className="bg-brand-moz h-1.5 rounded-full" style={{width: `${item.progress}%`}}></div>
                                             </div>
-                                            <span className="text-sm text-gray-600 font-semibold w-10 text-right">{item.progress}%</span>
+                                            <span className="text-xs text-gray-600 font-semibold w-10 text-right">{item.progress}%</span>
                                         </div>
                                     </td>
                                 </tr>
                             ))
                         ) : (
-                             <tr><td colSpan={5} className="text-center p-10 text-gray-500">
+                             <tr><td colSpan={5} className="text-center p-10 text-gray-500 text-sm">
                                 {studentProgress.length > 0 ? 'Nenhum resultado encontrado para os filtros aplicados.' : 'Nenhum aluno inscrito ainda.'}
                              </td></tr>
                         )}

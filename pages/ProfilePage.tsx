@@ -124,67 +124,67 @@ const ProfilePage: React.FC = () => {
     }
     
     return (
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-2xl mx-auto space-y-6">
             <div>
-                <h1 className="text-2xl font-bold mb-1">{t('profile.page.title')}</h1>
-                <p className="text-gray-600">{t('profile.page.subtitle')}</p>
+                <h1 className="text-xl font-bold mb-1">{t('profile.page.title')}</h1>
+                <p className="text-gray-600 text-sm">{t('profile.page.subtitle')}</p>
             </div>
 
             {/* Profile Info Card */}
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('profile.page.personalInfo')}</h2>
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-lg font-bold mb-5 text-gray-800">{t('profile.page.personalInfo')}</h2>
+                <form onSubmit={handleUpdateProfile} className="space-y-3">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t('profile.page.email')}</label>
+                        <label htmlFor="email" className="block text-xs font-medium text-gray-700">{t('profile.page.email')}</label>
                         <input
                             id="email"
                             type="email"
                             value={user?.email || ''}
                             disabled
-                            className="mt-1 w-full px-3 py-2 text-gray-500 bg-gray-200 border border-gray-300 rounded-md"
+                            className="mt-1 w-full px-3 py-1.5 text-gray-500 bg-gray-100 border border-gray-300 rounded-md text-sm"
                         />
                     </div>
                     <div>
-                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">{t('profile.page.fullName')} <span className="text-red-500">*</span></label>
+                        <label htmlFor="fullName" className="block text-xs font-medium text-gray-700">{t('profile.page.fullName')} <span className="text-red-500">*</span></label>
                         <input
                             id="fullName"
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             required
-                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring text-sm"
                         />
                     </div>
                      <div>
-                        <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">{t('profile.modal.companyName')} <span className="text-red-500">*</span></label>
+                        <label htmlFor="companyName" className="block text-xs font-medium text-gray-700">{t('profile.modal.companyName')} <span className="text-red-500">*</span></label>
                         <input
                             id="companyName"
                             type="text"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
                             required
-                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring text-sm"
                         />
                     </div>
                      <div>
-                        <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">{t('profile.modal.phone')} <span className="text-red-500">*</span></label>
+                        <label htmlFor="phoneNumber" className="block text-xs font-medium text-gray-700">{t('profile.modal.phone')} <span className="text-red-500">*</span></label>
                         <input
                             id="phoneNumber"
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             required
-                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring text-sm"
                         />
                     </div>
                      <div>
-                        <label htmlFor="sexo" className="block text-sm font-medium text-gray-700">{t('profile.modal.gender')} <span className="text-red-500">*</span></label>
+                        <label htmlFor="sexo" className="block text-xs font-medium text-gray-700">{t('profile.modal.gender')} <span className="text-red-500">*</span></label>
                         <select
                             id="sexo"
                             value={sexo}
                             onChange={(e) => setSexo(e.target.value as 'masculino' | 'feminino' | '')}
                             required
-                            className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
+                            className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring text-sm"
                         >
                             <option value="" disabled>{t('profile.modal.gender.select')}</option>
                             <option value="masculino">{t('profile.modal.gender.male')}</option>
@@ -192,47 +192,47 @@ const ProfilePage: React.FC = () => {
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="endereco" className="block text-sm font-medium text-gray-700">{t('profile.page.address')} <span className="text-red-500">*</span></label>
-                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="street-address" />
+                        <label htmlFor="endereco" className="block text-xs font-medium text-gray-700">{t('profile.page.address')} <span className="text-red-500">*</span></label>
+                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz text-sm" autoComplete="street-address" />
                     </div>
                     <div>
-                        <label htmlFor="provincia" className="block text-sm font-medium text-gray-700">{t('profile.page.province')} <span className="text-red-500">*</span></label>
-                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="address-level1" />
+                        <label htmlFor="provincia" className="block text-xs font-medium text-gray-700">{t('profile.page.province')} <span className="text-red-500">*</span></label>
+                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz text-sm" autoComplete="address-level1" />
                     </div>
                     <div>
-                        <label htmlFor="pais" className="block text-sm font-medium text-gray-700">{t('profile.page.country')} <span className="text-red-500">*</span></label>
-                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="country-name">
+                        <label htmlFor="pais" className="block text-xs font-medium text-gray-700">{t('profile.page.country')} <span className="text-red-500">*</span></label>
+                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz text-sm" autoComplete="country-name">
                             <option value="" disabled>{t('profile.page.country.select')}</option>
                             {countries.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="atividadeComercial" className="block text-sm font-medium text-gray-700">{t('profile.page.businessActivity')} <span className="text-red-500">*</span></label>
-                        <input id="atividadeComercial" type="text" value={atividadeComercial} onChange={(e) => setAtividadeComercial(e.target.value)} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <label htmlFor="atividadeComercial" className="block text-xs font-medium text-gray-700">{t('profile.page.businessActivity')} <span className="text-red-500">*</span></label>
+                        <input id="atividadeComercial" type="text" value={atividadeComercial} onChange={(e) => setAtividadeComercial(e.target.value)} required className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz text-sm"/>
                     </div>
                     <div>
-                        <label htmlFor="idade" className="block text-sm font-medium text-gray-700">{t('profile.page.age')} <span className="text-red-500">*</span></label>
-                        <input id="idade" type="number" value={idade} onChange={(e) => setIdade(e.target.value === '' ? '' : parseInt(e.target.value, 10))} required className="mt-1 w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <label htmlFor="idade" className="block text-xs font-medium text-gray-700">{t('profile.page.age')} <span className="text-red-500">*</span></label>
+                        <input id="idade" type="number" value={idade} onChange={(e) => setIdade(e.target.value === '' ? '' : parseInt(e.target.value, 10))} required className="mt-1 w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz text-sm"/>
                     </div>
                     <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold"
+                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold text-sm"
                         >
                             {loading ? t('profile.page.saving') : t('profile.page.saveChanges')}
                         </button>
                     </div>
                 </form>
-                {message && <p className={`mt-4 text-center text-sm ${message.includes('Erro') ? 'text-red-600' : 'text-brand-up'}`}>{message}</p>}
+                {message && <p className={`mt-3 text-center text-xs ${message.includes('Erro') ? 'text-red-600' : 'text-brand-up'}`}>{message}</p>}
             </div>
 
             {/* Change Password Card */}
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('profile.page.changePassword')}</h2>
-                <form onSubmit={handlePasswordUpdate} className="space-y-4">
+            <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-lg font-bold mb-5 text-gray-800">{t('profile.page.changePassword')}</h2>
+                <form onSubmit={handlePasswordUpdate} className="space-y-3">
                     <div>
-                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">{t('profile.page.newPassword')}</label>
+                        <label htmlFor="newPassword" className="block text-xs font-medium text-gray-700">{t('profile.page.newPassword')}</label>
                         <div className="relative mt-1">
                             <input
                                 id="newPassword"
@@ -241,7 +241,7 @@ const ProfilePage: React.FC = () => {
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 required
                                 disabled={passwordLoading || passwordUpdateSuccess}
-                                className="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
                             />
                             <button
                                 type="button"
@@ -255,7 +255,7 @@ const ProfilePage: React.FC = () => {
                         </div>
                     </div>
                      <div>
-                        <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700">{t('profile.page.confirmNewPassword')}</label>
+                        <label htmlFor="confirmNewPassword" className="block text-xs font-medium text-gray-700">{t('profile.page.confirmNewPassword')}</label>
                         <div className="relative mt-1">
                             <input
                                 id="confirmNewPassword"
@@ -264,7 +264,7 @@ const ProfilePage: React.FC = () => {
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 required
                                 disabled={passwordLoading || passwordUpdateSuccess}
-                                className="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
                             />
                             <button
                                 type="button"
@@ -281,7 +281,7 @@ const ProfilePage: React.FC = () => {
                         <button
                             type="submit"
                             disabled={passwordLoading || passwordUpdateSuccess}
-                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold transition-colors"
+                            className="w-full px-4 py-2 text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up disabled:bg-brand-moz disabled:opacity-50 font-semibold transition-colors text-sm"
                         >
                             {passwordLoading ? (
                                 <span className="flex items-center justify-center">
@@ -296,7 +296,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </form>
                 {passwordMessage && (
-                    <div className={`mt-4 p-3 rounded-lg text-center text-sm ${
+                    <div className={`mt-4 p-2.5 rounded-lg text-center text-xs ${
                         passwordMessage.type === 'success'
                             ? 'bg-brand-light border border-brand-moz'
                             : 'bg-red-50 border border-red-200'

@@ -130,19 +130,19 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-16 md:space-y-20">
+    <div className="space-y-12 md:space-y-16">
         {/* Hero Section */}
-        <section className="relative text-center py-16 md:py-24 px-4 bg-gray-800 rounded-2xl overflow-hidden">
+        <section className="relative text-center py-12 md:py-20 px-4 bg-gray-800 rounded-2xl overflow-hidden">
             <div className="absolute inset-0 bg-black opacity-50 z-10"></div>
             <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" alt="Profissionais em reunião" className="absolute inset-0 w-full h-full object-cover"/>
             <div className="relative z-20">
-                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4 drop-shadow-lg">
+                <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white mb-3 drop-shadow-lg">
                     {t('home.hero.title')} <span className="text-brand-moz">{t('home.hero.title.highlight')}</span>
                 </h1>
-                <p className="max-w-3xl mx-auto text-base md:text-lg text-gray-200 mb-8 drop-shadow-md">
+                <p className="max-w-3xl mx-auto text-sm md:text-base text-gray-200 mb-6 drop-shadow-md">
                     {t('home.hero.subtitle')}
                 </p>
-                <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-3 px-8 rounded-lg text-base hover:bg-brand-up transition-all duration-300 shadow-xl hover:shadow-2xl">
+                <Link to="/#cursos" className="inline-block bg-brand-moz text-white font-bold py-2.5 px-6 rounded-lg text-sm hover:bg-brand-up transition-all duration-300 shadow-xl hover:shadow-2xl">
                     {t('home.hero.button')}
                 </Link>
             </div>
@@ -150,9 +150,9 @@ const HomePage: React.FC = () => {
         
         {/* Courses Section */}
         <section id="cursos">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-10 text-center">{t('home.courses.title')}</h2>
+            <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl mb-8 text-center">{t('home.courses.title')}</h2>
             {courses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {courses.map((course) => {
                         const isEnrolled = enrolledCourses.includes(course.id);
                         
@@ -164,40 +164,40 @@ const HomePage: React.FC = () => {
                         }
 
                         return (
-                            <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl group">
+                            <div key={course.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg group">
                                 {/* Image Container with Branding Tag */}
                                 <div className="relative">
                                     <img 
                                         src={getCourseImage(course.title)} 
                                         alt={courseTitle} 
-                                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                        className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                     {course.title === 'Introdução ao Petróleo, Gás Natural e Gás Natural Liquefeito' && (
-                                        <div className="absolute top-0 left-0 bg-brand-up text-white text-xs font-bold uppercase tracking-wider py-1.5 px-4 rounded-br-lg shadow-md">
+                                        <div className="absolute top-0 left-0 bg-brand-up text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-br-lg shadow-md">
                                             {t('home.courses.new')}
                                         </div>
                                     )}
                                 </div>
                                 
                                 {/* Content Container that grows to fill space */}
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{courseTitle}</h3>
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{courseDescription}</p>
+                                <div className="p-4 flex flex-col flex-grow">
+                                    <h3 className="text-base font-bold text-gray-800 mb-2 line-clamp-2">{courseTitle}</h3>
+                                    <p className="text-gray-600 text-xs mb-3 line-clamp-3">{courseDescription}</p>
                                     
                                     {/* Button container, pushed to the bottom */}
-                                    <div className="mt-auto pt-4">
+                                    <div className="mt-auto pt-3">
                                         {isAdmin ? (
-                                            <Link to={`/admin/courses/${course.id}`} className="block w-full text-center bg-gray-700 text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 shadow-md hover:shadow-lg">
+                                            <Link to={`/admin/courses/${course.id}`} className="block w-full text-center bg-gray-700 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 shadow-sm hover:shadow-md text-sm">
                                                 {t('home.courses.manage')}
                                             </Link>
                                         ) : isEnrolled ? (
-                                            <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg">
+                                            <Link to={`/course/${course.id}`} className="block w-full text-center bg-brand-moz text-white py-2 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md text-sm">
                                                 {t('home.courses.continue')}
                                             </Link>
                                         ) : (
                                             <button
                                                 onClick={() => handleEnroll(course.id)}
-                                                className="w-full bg-brand-moz text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg"
+                                                className="w-full bg-brand-moz text-white py-2 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md text-sm"
                                             >
                                                 {t('home.courses.enroll')}
                                             </button>
@@ -214,29 +214,29 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* Why Us Section */}
-        <section id="porque-nos" className="bg-brand-light py-16 px-6 rounded-2xl">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-10 text-center">{t('home.whyUs.title')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-3 rounded-full mb-4">
-                        <BookOpenIcon className="h-7 w-7"/>
+        <section id="porque-nos" className="bg-brand-light py-12 px-6 rounded-2xl">
+            <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl mb-8 text-center">{t('home.whyUs.title')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-center">
+                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
+                        <BookOpenIcon className="h-6 w-6"/>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{t('home.whyUs.card1.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.whyUs.card1.text')}</p>
+                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card1.title')}</h3>
+                    <p className="text-gray-600 text-xs">{t('home.whyUs.card1.text')}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-3 rounded-full mb-4">
-                        <LightBulbIcon className="h-7 w-7"/>
+                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
+                        <LightBulbIcon className="h-6 w-6"/>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{t('home.whyUs.card2.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.whyUs.card2.text')}</p>
+                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card2.title')}</h3>
+                    <p className="text-gray-600 text-xs">{t('home.whyUs.card2.text')}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-3 rounded-full mb-4">
-                        <ChartBarIcon className="h-7 w-7"/>
+                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
+                        <ChartBarIcon className="h-6 w-6"/>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{t('home.whyUs.card3.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.whyUs.card3.text')}</p>
+                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card3.title')}</h3>
+                    <p className="text-gray-600 text-xs">{t('home.whyUs.card3.text')}</p>
                 </div>
             </div>
         </section>

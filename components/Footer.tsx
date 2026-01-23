@@ -11,33 +11,33 @@ const PhoneIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmln
 const Footer: React.FC = () => {
   const { t } = useI18n();
   return (
-    <footer className="bg-brand-up text-white mt-16">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-brand-up text-white mt-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           <div>
-            <h3 className="font-semibold text-white mb-4">{t('footer.navigation')}</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-semibold text-white mb-3">{t('footer.navigation')}</h3>
+            <ul className="space-y-1.5 text-sm">
               <li><Link to="/#cursos" className="text-gray-200 hover:text-white hover:underline">{t('header.courses')}</Link></li>
               <li><Link to="/about" className="text-gray-200 hover:text-white hover:underline">{t('header.about')}</Link></li>
                <li><Link to="/support" className="text-gray-200 hover:text-white hover:underline">{t('footer.support')}</Link></li>
                <li><a href="https://www.mozup.org" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-white hover:underline">{t('footer.mozupWebsite')}</a></li>
             </ul>
-             <h3 className="font-semibold text-white mb-4 mt-6">{t('footer.account')}</h3>
-            <ul className="space-y-2 text-sm">
+             <h3 className="font-semibold text-white mb-3 mt-4">{t('footer.account')}</h3>
+            <ul className="space-y-1.5 text-sm">
               <li><Link to="/login" className="text-gray-200 hover:text-white hover:underline">{t('footer.studentLogin')}</Link></li>
               <li><Link to="/admin/login" className="text-gray-200 hover:text-white hover:underline">{t('footer.adminLogin')}</Link></li>
             </ul>
           </div>
 
            <div>
-             <h3 className="font-semibold text-white mb-4">{t('footer.maputo')}</h3>
-            <div className="space-y-3 text-sm">
-                <div className="flex items-start space-x-3 text-gray-200">
+             <h3 className="font-semibold text-white mb-3">{t('footer.maputo')}</h3>
+            <div className="space-y-2 text-sm">
+                <div className="flex items-start space-x-2 text-gray-200">
                   <MapPinIcon className="w-4 h-4 mt-1 flex-shrink-0" />
                   <span>Rua dos Desportistas nº 691, Prédio JAT VI – 1, Piso 1, Maputo – Moçambique</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-200">
+                <div className="flex items-center space-x-2 text-gray-200">
                   <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                   <span>+258 84 777 3751 / +258 84 500 4700</span>
                 </div>
@@ -45,13 +45,13 @@ const Footer: React.FC = () => {
           </div>
 
            <div>
-             <h3 className="font-semibold text-white mb-4">{t('footer.pemba')}</h3>
-            <div className="space-y-3 text-sm">
-                 <div className="flex items-start space-x-3 text-gray-200">
+             <h3 className="font-semibold text-white mb-3">{t('footer.pemba')}</h3>
+            <div className="space-y-2 text-sm">
+                 <div className="flex items-start space-x-2 text-gray-200">
                   <MapPinIcon className="w-4 h-4 mt-1 flex-shrink-0" />
                   <span>Av. Alberto Chipande, Business Park, Porta 01, Pemba – Moçambique</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-200">
+                <div className="flex items-center space-x-2 text-gray-200">
                   <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                   <span>+258 85 859 3163</span>
                 </div>
@@ -59,9 +59,9 @@ const Footer: React.FC = () => {
           </div>
 
         </div>
-        <div className="mt-12 border-t border-white/20 pt-8 text-center text-gray-200 space-y-4">
-          <p className="text-2xl font-bold tracking-tight text-white">{t('footer.slogan')}</p>
-          <p className="text-sm">&copy; {new Date().getFullYear()} MozupAcademy. {t('footer.copyright')}</p>
+        <div className="mt-10 border-t border-white/20 pt-6 text-center text-gray-200 space-y-3">
+          <p className="text-lg font-bold tracking-tight text-white">{t('footer.slogan')}</p>
+          <p className="text-xs">&copy; {new Date().getFullYear()} MozupAcademy. {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>

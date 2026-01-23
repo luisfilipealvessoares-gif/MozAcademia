@@ -65,34 +65,34 @@ const AdminCoursesListPage: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold">Gerenciamento de Cursos</h1>
-                    <p className="text-gray-600 mt-1">Edite os detalhes dos cursos e gerencie seus módulos.</p>
+                    <h1 className="text-xl font-bold">Gerenciamento de Cursos</h1>
+                    <p className="text-gray-600 mt-1 text-sm">Edite os detalhes dos cursos e gerencie seus módulos.</p>
                 </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {loading ? (
-                     <div className="text-center p-6 text-gray-500">Carregando...</div>
+                     <div className="text-center p-6 text-gray-500 text-sm">Carregando...</div>
                 ) : courses.length > 0 ? courses.map(course => (
-                     <div key={course.id} className="bg-white shadow-md rounded-xl border overflow-hidden flex transition-all duration-300 hover:shadow-xl hover:border-brand-moz">
-                        <div className="flex-shrink-0 w-16 bg-brand-light flex items-center justify-center">
-                            <BookOpenSquareIcon className="w-8 h-8 text-brand-up" />
+                     <div key={course.id} className="bg-white shadow-md rounded-xl border overflow-hidden flex transition-all duration-300 hover:shadow-lg hover:border-brand-moz">
+                        <div className="flex-shrink-0 w-14 bg-brand-light flex items-center justify-center">
+                            <BookOpenSquareIcon className="w-7 h-7 text-brand-up" />
                         </div>
-                        <div className="flex-grow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex-grow p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div className="flex-grow">
-                                <h3 className="font-bold text-base text-gray-800">{course.title}</h3>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{course.description}</p>
+                                <h3 className="font-bold text-sm text-gray-800">{course.title}</h3>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-1">{course.description}</p>
                             </div>
                             <div className="flex-shrink-0 flex items-center gap-2 w-full sm:w-auto">
-                                <button onClick={() => handleOpenCourseEditModal(course)} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-gray-100 text-gray-800 px-3 py-1.5 rounded-md text-xs hover:bg-gray-200 font-semibold transition-transform duration-200 hover:scale-105">
-                                    <PencilIcon className="w-4 h-4"/>
+                                <button onClick={() => handleOpenCourseEditModal(course)} className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 bg-gray-100 text-gray-800 px-2.5 py-1 rounded-md text-xs hover:bg-gray-200 font-semibold transition-transform duration-200 hover:scale-105">
+                                    <PencilIcon className="w-3.5 h-3.5"/>
                                     <span>Editar</span>
                                 </button>
-                                <Link to={`/admin/courses/${course.id}`} className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-brand-moz text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-brand-up transition-transform duration-200 hover:scale-105">
-                                    <ListBulletIcon className="w-4 h-4"/>
+                                <Link to={`/admin/courses/${course.id}`} className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 bg-brand-moz text-white px-2.5 py-1 rounded-md text-xs font-medium hover:bg-brand-up transition-transform duration-200 hover:scale-105">
+                                    <ListBulletIcon className="w-3.5 h-3.5"/>
                                     <span>Módulos</span>
                                 </Link>
                             </div>
@@ -100,8 +100,8 @@ const AdminCoursesListPage: React.FC = () => {
                     </div>
                 )) : (
                      <div className="text-center p-10 border-2 border-dashed rounded-lg bg-white">
-                        <h3 className="text-lg font-semibold text-gray-800">Nenhum curso encontrado</h3>
-                        <p className="text-gray-500 mt-1">Adicione o primeiro curso para começar a gerenciar.</p>
+                        <h3 className="text-base font-semibold text-gray-800">Nenhum curso encontrado</h3>
+                        <p className="text-gray-500 mt-1 text-sm">Adicione o primeiro curso para começar a gerenciar.</p>
                     </div>
                 )}
             </div>

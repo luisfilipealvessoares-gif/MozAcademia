@@ -778,18 +778,18 @@ const CoursePlayerPage: React.FC = () => {
 
     return (
         <div className="bg-brand-light -mx-6 -my-6 p-6 rounded-xl">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 mb-6 font-semibold text-brand-up hover:text-brand-moz transition-colors">
-                <ArrowLeftIcon className="w-5 h-5" />
+            <Link to="/dashboard" className="inline-flex items-center gap-2 mb-4 font-semibold text-brand-up hover:text-brand-moz transition-colors text-sm">
+                <ArrowLeftIcon className="w-4 h-4" />
                 {t('course.player.backToDashboard')}
             </Link>
-            <div className="mb-6 p-5 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
-                <p className="font-semibold opacity-90 tracking-wider text-sm">{t('course.player.course')}</p>
-                <h1 className="text-3xl font-extrabold drop-shadow-md">{courseTitle}</h1>
+            <div className="mb-5 p-4 bg-gradient-to-r from-brand-moz to-brand-up rounded-xl shadow-lg text-white">
+                <p className="font-semibold opacity-90 tracking-wider text-xs">{t('course.player.course')}</p>
+                <h1 className="text-2xl font-extrabold drop-shadow-md">{courseTitle}</h1>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                 <main className="lg:col-span-3">
                     {view === 'video' && activeModule && (
-                        <div className="bg-white p-2 rounded-xl shadow-lg border relative overflow-hidden">
+                        <div className="bg-white p-1.5 rounded-xl shadow-lg border relative overflow-hidden">
                             <div 
                                 ref={containerRef}
                                 className="aspect-w-16 aspect-h-9 bg-black flex justify-center items-center rounded-lg overflow-hidden relative"
@@ -989,8 +989,8 @@ const CoursePlayerPage: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                             <div className="p-4">
-                                <h2 className="text-xl font-bold mt-2">{getTranslatedTitle(activeModule.title)}</h2>
+                             <div className="p-3">
+                                <h2 className="text-lg font-bold mt-1">{getTranslatedTitle(activeModule.title)}</h2>
                             </div>
                         </div>
                     )}
@@ -1025,15 +1025,15 @@ const CoursePlayerPage: React.FC = () => {
                         </div>
                     )}
                 </main>
-                <aside className="lg:col-span-1 bg-white p-5 rounded-xl shadow-lg border">
-                    <h3 className="text-lg font-bold mb-4">{t('course.player.progress')}</h3>
-                     <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                        <div className="bg-brand-moz h-2 rounded-full" style={{width: `${progressPercentage}%`}}></div>
+                <aside className="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg border">
+                    <h3 className="text-base font-bold mb-3">{t('course.player.progress')}</h3>
+                     <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                        <div className="bg-brand-moz h-1.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
                     </div>
-                    <p className="text-xs text-gray-600 mb-6 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
+                    <p className="text-xs text-gray-600 mb-4 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
 
-                    <h3 className="text-lg font-bold mb-4">{t('course.player.modules')}</h3>
-                    <ul className="space-y-2">
+                    <h3 className="text-base font-bold mb-3">{t('course.player.modules')}</h3>
+                    <ul className="space-y-1.5">
                     {modules.map((module, index) => {
                         const isCompleted = completedModules.includes(module.id);
                         const isLocked = index > 0 && !completedModules.includes(modules[index - 1].id);
@@ -1041,7 +1041,7 @@ const CoursePlayerPage: React.FC = () => {
                         const moduleTitle = getTranslatedTitle(module.title);
                         
                         let Icon;
-                        let iconClasses = "w-5 h-5 mr-2.5 ";
+                        let iconClasses = "w-4 h-4 mr-2 flex-shrink-0 ";
                         if (isActive) {
                           Icon = PlayCircleIcon;
                           iconClasses += "text-brand-moz";
@@ -1058,9 +1058,9 @@ const CoursePlayerPage: React.FC = () => {
                             <button
                             onClick={() => !isLocked && handleSelectModule(module)}
                             disabled={isLocked}
-                            className={`w-full text-left p-2.5 rounded-lg flex items-center transition-all duration-200 text-sm ${
+                            className={`w-full text-left p-2 rounded-lg flex items-center transition-all duration-200 text-xs ${
                                 isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-brand-light'
-                            } ${isActive ? 'bg-brand-light ring-2 ring-brand-moz font-semibold text-brand-up' : 'text-gray-700'}`}
+                            } ${isActive ? 'bg-brand-light ring-1 ring-brand-moz font-semibold text-brand-up' : 'text-gray-700'}`}
                             >
                             {Icon && <Icon className={iconClasses} />}
                             <span className="flex-1 truncate">{index + 1}. {moduleTitle}</span>
@@ -1068,13 +1068,13 @@ const CoursePlayerPage: React.FC = () => {
                         </li>
                         );
                     })}
-                    <li className="mt-4 pt-4 border-t">
+                    <li className="mt-3 pt-3 border-t">
                         <button 
                             disabled={completedModules.length !== modules.length}
                             onClick={() => setView('quiz')}
-                            className="w-full text-left p-2.5 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-sm"
+                            className="w-full text-left p-2 rounded-lg flex items-center font-semibold transition-all duration-200 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-xs"
                         >
-                             <LockIcon className={`w-5 h-5 mr-2.5 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
+                             <LockIcon className={`w-4 h-4 mr-2 flex-shrink-0 ${completedModules.length !== modules.length ? 'text-gray-400' : 'text-gray-700'}`}/>
                             {t('course.player.finalQuiz')}
                         </button>
                     </li>

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
@@ -308,7 +309,7 @@ const AuthPage: React.FC = () => {
         </div>
     )}
     <div className="min-h-[80vh] flex items-center justify-center py-12 bg-gradient-to-br from-brand-light to-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
+      <div className="w-full max-w-sm p-6 space-y-6 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200">
         {successMessage ? (
            <div className="text-center">
              <div className="flex justify-center mb-4">
@@ -340,8 +341,8 @@ const AuthPage: React.FC = () => {
         ) : (
         <>
             <div className="flex flex-col items-center">
-                <Logo className="h-16 w-auto" />
-                <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
+                <Logo className="h-14 w-auto" />
+                <h2 className="mt-5 text-2xl font-extrabold text-center text-gray-900">
                   {view === 'login' ? t('auth.loginTitle') : t('auth.registerTitle')}
                 </h2>
             </div>
@@ -353,22 +354,22 @@ const AuthPage: React.FC = () => {
               </div>
             )}
             
-            <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-                <div className="space-y-4">
+            <form className="mt-6 space-y-4" onSubmit={handleAuth}>
+                <div className="space-y-3">
                     {view === 'register' && (
                     <div>
                         <label htmlFor="full-name" className="sr-only">{t('auth.fullNamePlaceholder')}</label>
-                        <input id="full-name" name="full-name" type="text" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.fullNamePlaceholder')} />
+                        <input id="full-name" name="full-name" type="text" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.fullNamePlaceholder')} />
                     </div>
                     )}
                     <div>
                     <label htmlFor="email-address" className="sr-only">{t('auth.emailPlaceholder')}</label>
-                    <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.emailPlaceholder')} />
+                    <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.emailPlaceholder')} />
                     </div>
                     <div>
                         <label htmlFor="password" className="sr-only">{t('auth.passwordPlaceholder')}</label>
                         <div className="relative">
-                            <input id="password" name="password" type={isPasswordVisible ? "text" : "password"} autoComplete={view === 'login' ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.passwordPlaceholder')} />
+                            <input id="password" name="password" type={isPasswordVisible ? "text" : "password"} autoComplete={view === 'login' ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow" placeholder={t('auth.passwordPlaceholder')} />
                             <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsPasswordVisible(!isPasswordVisible)} aria-label={isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}>
                                 {isPasswordVisible ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                             </button>
@@ -386,7 +387,7 @@ const AuthPage: React.FC = () => {
                                     required
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
+                                    className="appearance-none relative block w-full px-3 py-2.5 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-moz focus:border-transparent sm:text-sm transition-shadow"
                                     placeholder={t('auth.confirmPasswordPlaceholder')}
                                 />
                                 <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5" onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} aria-label={isConfirmPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}>
@@ -426,7 +427,7 @@ const AuthPage: React.FC = () => {
                                     className="focus:ring-brand-up h-4 w-4 text-brand-moz border-gray-300 rounded"
                                 />
                             </div>
-                            <div className="ml-3 text-sm">
+                            <div className="ml-3 text-xs">
                                 <label htmlFor="terms" className="font-medium text-gray-700">
                                     {t('auth.terms.agree')}{' '}
                                     <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-brand-up hover:underline font-semibold">
@@ -441,16 +442,16 @@ const AuthPage: React.FC = () => {
                     </>
                 )}
 
-                {error && <p className="text-red-500 text-sm text-center pt-2">{error}</p>}
+                {error && <p className="text-red-500 text-xs text-center pt-1">{error}</p>}
 
                 <div>
-                    <button type="submit" disabled={loading || (view === 'register' && (!termsAccepted || !hcaptchaToken))} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
+                    <button type="submit" disabled={loading || (view === 'register' && (!termsAccepted || !hcaptchaToken))} className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-moz hover:bg-brand-up focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-moz disabled:bg-brand-moz disabled:opacity-50 transition-all duration-300 shadow-md hover:shadow-lg">
                     {loading ? t('loading') : (view === 'login' ? t('auth.loginButton') : t('auth.registerButton'))}
                     </button>
                 </div>
             </form>
 
-            <div className="text-sm text-center">
+            <div className="text-xs text-center">
                 <button
                     type="button"
                     onClick={() => {

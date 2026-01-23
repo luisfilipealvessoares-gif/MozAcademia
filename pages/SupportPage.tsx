@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 
@@ -25,24 +26,24 @@ const FAQAccordion: React.FC<{ items: FAQItem[] }> = ({ items }) => {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {items.map((item, index) => (
                 <div key={index} className="border-b border-gray-200 last:border-b-0">
                     <button
                         onClick={() => toggleItem(index)}
-                        className="w-full flex justify-between items-center text-left py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-moz rounded-md"
+                        className="w-full flex justify-between items-center text-left py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-moz rounded-md"
                         aria-expanded={openIndex === index}
                         aria-controls={`faq-answer-${index}`}
                     >
-                        <span className="text-gray-800 font-semibold">{item.q}</span>
-                        <ChevronDownIcon className={`w-5 h-5 text-brand-moz transition-transform duration-300 transform ${openIndex === index ? 'rotate-180' : ''}`} />
+                        <span className="text-gray-800 font-semibold text-sm">{item.q}</span>
+                        <ChevronDownIcon className={`w-4 h-4 text-brand-moz transition-transform duration-300 transform ${openIndex === index ? 'rotate-180' : ''}`} />
                     </button>
                     <div
                         id={`faq-answer-${index}`}
                         className={`grid transition-all duration-500 ease-in-out ${openIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
                     >
                         <div className="overflow-hidden">
-                             <p className="pb-4 pt-2 text-gray-600 leading-relaxed">
+                             <p className="pb-3 pt-1 text-gray-600 leading-relaxed text-sm">
                                 {item.a}
                             </p>
                         </div>
@@ -65,44 +66,44 @@ const SupportPage: React.FC = () => {
     ];
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-8">
             <div className="text-center">
-                <h1 className="text-4xl font-extrabold text-gray-900">{t('user.support.title')}</h1>
-                <p className="text-xl text-gray-600 mt-2 max-w-2xl mx-auto">{t('user.support.subtitle')}</p>
+                <h1 className="text-3xl font-extrabold text-gray-900">{t('user.support.title')}</h1>
+                <p className="text-lg text-gray-600 mt-2 max-w-2xl mx-auto">{t('user.support.subtitle')}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contacts Card */}
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('user.support.contacts.title')}</h2>
-                    <div className="space-y-6">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h2 className="text-xl font-bold text-gray-800 mb-5">{t('user.support.contacts.title')}</h2>
+                    <div className="space-y-5">
                         {/* Email */}
                         <div>
-                            <div className="flex items-center space-x-3 mb-1">
-                                <EnvelopeIcon className="w-5 h-5 text-brand-up"/>
-                                <h3 className="font-semibold text-gray-700">{t('user.support.contacts.email.title')}</h3>
+                            <div className="flex items-center space-x-2.5 mb-1">
+                                <EnvelopeIcon className="w-4 h-4 text-brand-up"/>
+                                <h3 className="font-semibold text-gray-700 text-sm">{t('user.support.contacts.email.title')}</h3>
                             </div>
-                            <p className="text-sm text-gray-500 pl-8 mb-1">{t('user.support.contacts.email.desc')}</p>
-                            <a href="mailto:info@mozup.org" className="text-brand-moz hover:underline pl-8">info@mozup.org</a>
+                            <p className="text-xs text-gray-500 pl-7 mb-1">{t('user.support.contacts.email.desc')}</p>
+                            <a href="mailto:info@mozup.org" className="text-brand-moz hover:underline pl-7 text-sm">info@mozup.org</a>
                         </div>
                         {/* Phone */}
                         <div>
-                             <div className="flex items-center space-x-3 mb-2">
-                                <PhoneIcon className="w-5 h-5 text-brand-up"/>
-                                <h3 className="font-semibold text-gray-700">{t('user.support.contacts.phone.title')}</h3>
+                             <div className="flex items-center space-x-2.5 mb-2">
+                                <PhoneIcon className="w-4 h-4 text-brand-up"/>
+                                <h3 className="font-semibold text-gray-700 text-sm">{t('user.support.contacts.phone.title')}</h3>
                             </div>
-                             <div className="pl-8 space-y-1 text-brand-moz">
+                             <div className="pl-7 space-y-1 text-brand-moz text-sm">
                                 <p><strong>{t('footer.maputo')}:</strong> +258 84 777 3751 / +258 84 500 4700</p>
                                 <p><strong>{t('footer.pemba')}:</strong> +258 85 859 3163</p>
                             </div>
                         </div>
                         {/* Address */}
                         <div>
-                             <div className="flex items-center space-x-3 mb-2">
-                                <MapPinIcon className="w-5 h-5 text-brand-up"/>
-                                <h3 className="font-semibold text-gray-700">{t('user.support.contacts.address.title')}</h3>
+                             <div className="flex items-center space-x-2.5 mb-2">
+                                <MapPinIcon className="w-4 h-4 text-brand-up"/>
+                                <h3 className="font-semibold text-gray-700 text-sm">{t('user.support.contacts.address.title')}</h3>
                             </div>
-                            <div className="pl-8 space-y-2 text-gray-600 text-sm">
+                            <div className="pl-7 space-y-1.5 text-gray-600 text-xs">
                                 <p><strong>{t('footer.maputo')}:</strong> Rua dos Desportistas nº 691, Prédio JAT VI – 1, Piso 1</p>
                                 <p><strong>{t('footer.pemba')}:</strong> Av. Alberto Chipande, Business Park, Porta 01</p>
                             </div>
@@ -111,8 +112,8 @@ const SupportPage: React.FC = () => {
                 </div>
 
                 {/* FAQ Card */}
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                     <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('user.support.faq.title')}</h2>
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                     <h2 className="text-xl font-bold text-gray-800 mb-5">{t('user.support.faq.title')}</h2>
                      <FAQAccordion items={faqs} />
                 </div>
             </div>

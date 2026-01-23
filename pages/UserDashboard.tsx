@@ -154,23 +154,23 @@ const UserDashboard: React.FC = () => {
 
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">{t('user.dashboard.title')}</h1>
-                <p className="text-lg text-gray-600 mt-2">
+                <h1 className="text-2xl font-bold text-gray-900">{t('user.dashboard.title')}</h1>
+                <p className="text-base text-gray-600 mt-1">
                     {t('user.dashboard.welcome', { name: profile?.full_name || user?.email })}
                     {!profile?.full_name && (
-                        <span className="text-sm ml-2 font-normal">
+                        <span className="text-xs ml-2 font-normal">
                             (<Link to="/profile" className="text-brand-up hover:underline">{t('user.dashboard.completeProfilePrompt')}</Link>)
                         </span>
                     )}
                 </p>
             </div>
 
-            <div className="bg-brand-light p-6 rounded-xl shadow-lg border border-brand-moz/20">
-                <h2 className="text-xl font-bold mb-6 text-gray-800">{t('user.dashboard.myCourses')}</h2>
+            <div className="bg-brand-light p-5 rounded-xl shadow-lg border border-brand-moz/20">
+                <h2 className="text-lg font-bold mb-4 text-gray-800">{t('user.dashboard.myCourses')}</h2>
                 {enrolledCourses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {enrolledCourses.map(course => {
                             const progress = course.module_count > 0 ? (course.completed_modules_count / course.module_count) * 100 : 0;
                             
@@ -182,20 +182,20 @@ const UserDashboard: React.FC = () => {
                             }
                             
                             return (
-                            <div key={course.id} className="bg-white border rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+                            <div key={course.id} className="bg-white border rounded-xl p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-300">
                                 <div>
-                                    <h3 className="font-bold text-lg text-gray-800 mb-2">{courseTitle}</h3>
-                                    <p className="text-gray-500 text-sm mb-4 h-16 overflow-hidden">{courseDescription}</p>
-                                    <div className="space-y-2">
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div className="bg-brand-moz h-2 rounded-full" style={{width: `${progress}%`}}></div>
+                                    <h3 className="font-bold text-base text-gray-800 mb-2">{courseTitle}</h3>
+                                    <p className="text-gray-500 text-xs mb-4 h-12 overflow-hidden">{courseDescription}</p>
+                                    <div className="space-y-1.5">
+                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div className="bg-brand-moz h-1.5 rounded-full" style={{width: `${progress}%`}}></div>
                                         </div>
                                         <p className="text-xs text-gray-500 font-medium">{t('user.dashboard.course.modulesCompleted', { completed: course.completed_modules_count, total: course.module_count })}</p>
                                     </div>
                                 </div>
                                 <Link
                                     to={`/course/${course.id}`}
-                                    className="mt-6 block w-full text-center bg-brand-moz text-white py-2.5 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all shadow-md hover:shadow-lg text-sm"
+                                    className="mt-4 block w-full text-center bg-brand-moz text-white py-2 px-4 rounded-lg font-semibold hover:bg-brand-up transition-all shadow-sm hover:shadow-md text-sm"
                                 >
                                     {progress > 0 ? t('user.dashboard.course.continue') : t('user.dashboard.course.start')}
                                 </Link>

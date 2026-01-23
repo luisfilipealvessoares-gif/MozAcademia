@@ -127,47 +127,47 @@ const AdminCertificateRequests: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold">Pedidos de Certificado</h1>
-                    <p className="text-gray-600 mt-1">Aprove os pedidos de alunos que concluíram os cursos.</p>
+                    <h1 className="text-xl font-bold">Pedidos de Certificado</h1>
+                    <p className="text-gray-600 mt-1 text-sm">Aprove os pedidos de alunos que concluíram os cursos.</p>
                 </div>
                 <div className="space-x-2">
-                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar PDF</button>
-                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar Excel</button>
+                    <button onClick={exportToPDF} className="bg-white text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar PDF</button>
+                    <button onClick={exportToExcel} className="bg-white text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 border shadow-sm transition-all duration-200">Exportar Excel</button>
                 </div>
             </div>
             <div className="bg-white shadow-md rounded-lg overflow-x-auto border">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Inscrição</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data Inscrição</th>
+                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-gray-500">Carregando...</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-gray-500 text-sm">Carregando...</td></tr>
                         ) : error ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-red-500">{error}</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-red-500 text-sm">{error}</td></tr>
                         ) : requests.length > 0 ? (
                             requests.map(req => (
                                 <tr key={req.id} className="hover:bg-gray-50 transition-colors duration-200">
-                                    <td className="px-6 py-3 whitespace-nowrap font-medium text-sm">{req.user_profiles?.full_name || '[Aluno Removido]'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{req.user_profiles?.company_name || 'N/A'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm">{req.courses?.title || '[Curso Removido]'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-right">
-                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-brand-up transition-all duration-200">Aprovar</button>
+                                    <td className="px-4 py-2 whitespace-nowrap font-medium text-xs">{req.user_profiles?.full_name || '[Aluno Removido]'}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs">{req.user_profiles?.company_name || 'N/A'}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs">{req.courses?.title || '[Curso Removido]'}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString() : 'N/A'}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-right">
+                                        <button onClick={() => handleApprove(req.id)} className="bg-brand-moz text-white px-2.5 py-1 rounded-md text-xs font-medium hover:bg-brand-up transition-all duration-200">Aprovar</button>
                                     </td>
                                 </tr>
                             ))
                         ) : (
-                            <tr><td colSpan={5} className="text-center p-10 text-gray-500">Nenhum pedido de certificado pendente.</td></tr>
+                            <tr><td colSpan={5} className="text-center p-10 text-gray-500 text-sm">Nenhum pedido de certificado pendente.</td></tr>
                         )}
                     </tbody>
                 </table>

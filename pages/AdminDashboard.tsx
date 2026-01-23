@@ -33,14 +33,14 @@ const CountUp: React.FC<{ end: number; duration?: number }> = ({ end, duration =
 // FIX: Update the `icon` prop type to be more specific. This allows TypeScript to
 // correctly infer that props like `className` are valid for the cloned element.
 const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white p-5 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300">
+    <div className="bg-white p-4 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300">
         <div className="flex items-start justify-between">
             <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-                <p className="text-3xl font-extrabold text-gray-800 mt-2"><CountUp end={value} /></p>
+                <p className="text-2xl font-extrabold text-gray-800 mt-1"><CountUp end={value} /></p>
             </div>
-            <div className={`p-2 rounded-full ${color}`}>
-                {React.cloneElement(icon, { className: "w-6 h-6 text-white" })}
+            <div className={`p-1.5 rounded-full ${color}`}>
+                {React.cloneElement(icon, { className: "w-5 h-5 text-white" })}
             </div>
         </div>
     </div>
@@ -48,8 +48,8 @@ const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElemen
 
 
 const ChartCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => (
-    <div className={`bg-white p-6 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl h-full flex flex-col transition-all duration-300 ${className}`}>
-        <h3 className="font-bold text-lg mb-4 text-gray-800 flex-shrink-0">{title}</h3>
+    <div className={`bg-white p-5 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl h-full flex flex-col transition-all duration-300 ${className}`}>
+        <h3 className="font-bold text-base mb-4 text-gray-800 flex-shrink-0">{title}</h3>
         <div className="flex-grow flex flex-col justify-center">
             {children}
         </div>
@@ -65,11 +65,11 @@ const BarChart: React.FC<{ data: ChartDataPoint[] }> = ({ data }) => {
             return () => clearTimeout(timer);
         }, [item.value]);
         return (
-            <div className="flex items-center text-sm group transition-colors duration-200 hover:bg-brand-light/50 p-1 -m-1 rounded-lg">
+            <div className="flex items-center text-xs group transition-colors duration-200 hover:bg-brand-light/50 p-1 -m-1 rounded-lg">
                 <div className="w-1/3 truncate pr-2 text-gray-600 font-medium">{item.label}</div>
                 <div className="w-2/3 flex items-center">
-                    <div className="w-full bg-gray-200 rounded-full h-6">
-                        <div className="bg-gradient-to-r from-brand-up to-brand-moz h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold transition-all duration-1000 ease-out" style={{ width }}>
+                    <div className="w-full bg-gray-200 rounded-full h-5">
+                        <div className="bg-gradient-to-r from-brand-up to-brand-moz h-5 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold transition-all duration-1000 ease-out" style={{ width }}>
                             <span className="transition-opacity duration-500" style={{ opacity: width === '0%' ? 0 : 1 }}>{item.value}</span>
                         </div>
                     </div>
@@ -78,7 +78,7 @@ const BarChart: React.FC<{ data: ChartDataPoint[] }> = ({ data }) => {
         );
     };
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             {data.length > 0 ? data.map(item => <AnimatedBar key={item.label} item={item} />) : <p className="text-gray-500 text-center py-8">Não há dados para exibir.</p>}
         </div>
     );
@@ -108,23 +108,23 @@ const PieChart: React.FC<PieChartProps> = ({ data, highlightedStatus, onHighligh
         conicGradient = `conic-gradient(${gradientParts.join(', ')})`;
     }
     return (
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 h-full">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 h-full">
             <div className="relative flex items-center justify-center">
-                 <div className="w-36 h-36 rounded-full transition-all duration-500 ease-in-out" style={{ background: conicGradient }}></div>
-                 <div className={`absolute w-20 h-20 bg-white rounded-full transition-opacity duration-300 ${selectedItem ? 'opacity-0' : 'opacity-100'}`}></div>
+                 <div className="w-32 h-32 rounded-full transition-all duration-500 ease-in-out" style={{ background: conicGradient }}></div>
+                 <div className={`absolute w-16 h-16 bg-white rounded-full transition-opacity duration-300 ${selectedItem ? 'opacity-0' : 'opacity-100'}`}></div>
                  {selectedItem && (
                     <div className="absolute text-center animate-fadeInUp" style={{ animationDuration: '0.3s' }}>
-                        <p className="text-3xl font-bold" style={{ color: selectedItem.color }}>{selectedItem.value}</p>
-                        <p className="text-xs text-gray-600 font-semibold max-w-[90px] leading-tight">{selectedItem.label}</p>
+                        <p className="text-2xl font-bold" style={{ color: selectedItem.color }}>{selectedItem.value}</p>
+                        <p className="text-xs text-gray-600 font-semibold max-w-[80px] leading-tight">{selectedItem.label}</p>
                     </div>
                 )}
             </div>
-            <ul className="space-y-1.5 text-xs">
+            <ul className="space-y-1 text-xs">
                 {chartData.map(item => (
                     <li key={item.label} onClick={() => onHighlight(highlightedStatus === item.label ? null : item.label)} className={`flex items-center p-1 rounded-md transition-all duration-300 cursor-pointer ${highlightedStatus && highlightedStatus !== item.label ? 'opacity-50 hover:opacity-100' : 'opacity-100'} ${highlightedStatus === item.label ? 'bg-gray-200' : 'hover:bg-gray-100'}`}>
-                        <span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
+                        <span className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: item.color }}></span>
                         <span className="font-semibold text-gray-700">{item.label}:</span>
-                        <span className="ml-2 text-gray-600">{item.value}</span>
+                        <span className="ml-1.5 text-gray-600">{item.value}</span>
                     </li>
                 ))}
             </ul>
@@ -244,20 +244,20 @@ const AdminDashboard: React.FC = () => {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard de Análise</h1>
-                <p className="text-lg text-gray-600 mt-1">Visão geral da performance da plataforma.</p>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard de Análise</h1>
+                <p className="text-base text-gray-600 mt-1">Visão geral da performance da plataforma.</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <StatCard title="Total de Alunos" value={kpiStats.totalUsers} icon={<UsersIcon />} color="bg-blue-500" />
                 <StatCard title="Total de Inscrições" value={kpiStats.totalEnrollments} icon={<ClipboardListIcon />} color="bg-brand-moz" />
                 <StatCard title="Conclusões de Cursos" value={kpiStats.totalCompletions} icon={<AcademicCapIcon />} color="bg-brand-up" />
                 <StatCard title="Certificados Pendentes" value={kpiStats.pendingCertificates} icon={<ClockIcon />} color="bg-gray-500" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
                 <div className="lg:col-span-3"><ChartCard title="Total de Inscrições por Curso"><BarChart data={coursePopularity} /></ChartCard></div>
                 <div className="lg:col-span-2"><ChartCard title="Estado dos Alunos"><PieChart data={studentStatus} highlightedStatus={highlightedStatus} onHighlight={setHighlightedStatus} /></ChartCard></div>
             </div>
