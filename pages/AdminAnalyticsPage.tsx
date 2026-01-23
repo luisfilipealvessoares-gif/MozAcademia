@@ -107,23 +107,17 @@ const AdminAnalyticsPage: React.FC = () => {
         const { signal } = abortControllerRef.current;
 
         try {
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
-            const [usersRes, enrollmentsRes, passedAttemptsRes, enrollmentsWithCoursesRes, recentEnrollmentsRes] = await Promise.all([
-                supabase.from('user_profiles').select('id, sexo, idade, pais', { count: 'exact' }).eq('is_admin', false).abortSignal(signal),
-                supabase.from('enrollments').select('id', { count: 'exact', head: true }).abortSignal(signal),
-                supabase.from('quiz_attempts').select('user_id').eq('passed', true).abortSignal(signal),
-                supabase.from('enrollments').select('courses(id, title)').abortSignal(signal),
-                supabase.from('enrollments').select('enrolled_at').gte('enrolled_at', thirtyDaysAgo.toISOString()).abortSignal(signal)
-            ]);
+            const { data: usersData, count: totalUsers, error: usersError } = await supabase
+                .from('user_profiles')
+                .select('id, sexo, idade, pais')
+                .eq('is_admin', false)
+                .abortSignal(signal);
 
+            if (usersError) throw usersError;
             if (signal.aborted) return;
             
-            // Handle users, gender, age, country
-            const { data: usersData, count: totalUsers, error: usersError } = usersRes;
-            if (usersError) throw usersError;
-            
+            const nonAdminUserIds = usersData ? usersData.map(u => u.id) : [];
+
             if (usersData) {
                 const genderCounts = usersData.reduce((acc, user) => {
                     if (user.sexo === 'masculino') acc.masculino++;
@@ -150,8 +144,6 @@ const AdminAnalyticsPage: React.FC = () => {
                     if (user.pais) acc[user.pais] = (acc[user.pais] || 0) + 1;
                     return acc;
                 }, {});
-                // FIX: TypeScript may infer the value from Object.entries as `unknown`.
-                // We type the result as [string, number][] to ensure type safety for subsequent operations.
                 const countryEntries: [string, number][] = Object.entries(countryCounts);
                 const sortedCountries = countryEntries.sort((a, b) => b[1] - a[1]);
                 const top5 = sortedCountries.slice(0, 5);
@@ -161,18 +153,35 @@ const AdminAnalyticsPage: React.FC = () => {
                 setCountryDistribution(countryChartData);
             }
 
-            // Handle enrollments count
+            if (nonAdminUserIds.length === 0) {
+                 setStats(prev => ({ ...prev, totalEnrollments: 0, completedCoursesUsers: 0 }));
+                 setCoursePopularity([]);
+                 setEnrollmentsOverTime([]);
+                 if (!signal.aborted) setLoading(false);
+                 return;
+            }
+
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const [enrollmentsRes, passedAttemptsRes, enrollmentsWithCoursesRes, recentEnrollmentsRes] = await Promise.all([
+                supabase.from('enrollments').select('id', { count: 'exact', head: true }).in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('enrollments').select('courses(id, title)').in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('enrollments').select('enrolled_at').in('user_id', nonAdminUserIds).gte('enrolled_at', thirtyDaysAgo.toISOString()).abortSignal(signal)
+            ]);
+
+            if (signal.aborted) return;
+
             const { count: totalEnrollments, error: enrollmentsError } = enrollmentsRes;
             if (enrollmentsError) throw enrollmentsError;
             setStats(prev => ({ ...prev, totalEnrollments: totalEnrollments ?? 0 }));
             
-            // Handle completions
             const { data: passedAttempts, error: passedAttemptsError } = passedAttemptsRes;
             if (passedAttemptsError) throw passedAttemptsError;
             const completedCoursesUsers = new Set(passedAttempts?.map(a => a.user_id)).size;
             setStats(prev => ({...prev, completedCoursesUsers}));
 
-            // Handle course popularity
             const { data: enrollmentsWithCourses, error: enrollmentsCoursesError } = enrollmentsWithCoursesRes;
             if(enrollmentsCoursesError) throw enrollmentsCoursesError;
             if (enrollmentsWithCourses) {
@@ -186,7 +195,6 @@ const AdminAnalyticsPage: React.FC = () => {
                 setCoursePopularity(Object.entries(popularity).map(([title, enrollments]) => ({ title, enrollments: enrollments as number })).sort((a, b) => b.enrollments - a.enrollments));
             }
             
-            // Handle recent enrollments
             const { data: recentEnrollments, error: recentEnrollmentsError } = recentEnrollmentsRes;
             if(recentEnrollmentsError) throw recentEnrollmentsError;
             if (recentEnrollments) {

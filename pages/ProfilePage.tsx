@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -194,15 +193,15 @@ const ProfilePage: React.FC = () => {
                     </div>
                     <div>
                         <label htmlFor="endereco" className="block text-sm font-medium text-gray-700">{t('profile.page.address')} <span className="text-red-500">*</span></label>
-                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <input id="endereco" type="text" value={endereco} onChange={(e) => setEndereco(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="street-address" />
                     </div>
                     <div>
                         <label htmlFor="provincia" className="block text-sm font-medium text-gray-700">{t('profile.page.province')} <span className="text-red-500">*</span></label>
-                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz"/>
+                        <input id="provincia" type="text" value={provincia} onChange={(e) => setProvincia(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="address-level1" />
                     </div>
                     <div>
                         <label htmlFor="pais" className="block text-sm font-medium text-gray-700">{t('profile.page.country')} <span className="text-red-500">*</span></label>
-                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz">
+                        <select id="pais" value={pais} onChange={(e) => setPais(e.target.value)} required className="mt-1 w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-brand-moz focus:ring-brand-moz" autoComplete="country-name">
                             <option value="" disabled>{t('profile.page.country.select')}</option>
                             {countries.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>

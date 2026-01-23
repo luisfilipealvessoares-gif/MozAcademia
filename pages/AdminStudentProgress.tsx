@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { UserProfile, Course } from '../types';
@@ -49,9 +48,27 @@ const AdminStudentProgress: React.FC = () => {
         
         setError(null);
         try {
+            const { data: nonAdminUsers, error: nonAdminUsersError } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('is_admin', false)
+                .abortSignal(signal);
+
+            if (nonAdminUsersError) throw nonAdminUsersError;
+            if (signal.aborted) return;
+            
+            const nonAdminUserIds = nonAdminUsers.map(u => u.id);
+            
+            if (nonAdminUserIds.length === 0) {
+                setStudentProgress([]);
+                if (!signal.aborted) setLoading(false);
+                return;
+            }
+
             const { data: enrollments, error: enrollError } = await supabase
                 .from('enrollments')
                 .select('id, course_id, user_id, enrolled_at')
+                .in('user_id', nonAdminUserIds)
                 .order('enrolled_at', { ascending: false })
                 .abortSignal(signal);
 

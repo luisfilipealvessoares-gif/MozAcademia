@@ -148,13 +148,31 @@ const AdminDashboard: React.FC = () => {
         const signal = abortControllerRef.current.signal;
 
         try {
-            const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes, totalUsersRes ] = await Promise.all([
-                supabase.from('enrollments').select('courses(title)').abortSignal(signal),
-                supabase.from('enrollments').select('user_id', { count: 'exact' }).abortSignal(signal),
-                supabase.from('quiz_attempts').select('user_id').eq('passed', true).abortSignal(signal),
-                supabase.from('certificate_requests').select('user_id').abortSignal(signal),
-                supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending').abortSignal(signal),
-                supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('is_admin', false).abortSignal(signal),
+            const { data: nonAdminUsers, error: nonAdminUsersError } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('is_admin', false)
+                .abortSignal(signal);
+            
+            if (nonAdminUsersError) throw nonAdminUsersError;
+            if (signal.aborted) return;
+            
+            const nonAdminUserIds = nonAdminUsers.map(u => u.id);
+
+            if (nonAdminUserIds.length === 0) {
+                setKpiStats({ totalUsers: 0, totalEnrollments: 0, totalCompletions: 0, pendingCertificates: 0 });
+                setCoursePopularity([]);
+                setStudentStatus({ inProgress: 0, completed: 0, requestedCertificate: 0 });
+                if (!signal.aborted) setLoading(false);
+                return;
+            }
+
+            const [ popularityRes, enrollmentsRes, completionsRes, requestsRes, pendingCertsRes ] = await Promise.all([
+                supabase.from('enrollments').select('courses(title)').in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('enrollments').select('user_id', { count: 'exact' }).in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('certificate_requests').select('user_id').in('user_id', nonAdminUserIds).abortSignal(signal),
+                supabase.from('certificate_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending').in('user_id', nonAdminUserIds).abortSignal(signal),
             ]);
             
             if (signal.aborted) return;
@@ -162,7 +180,7 @@ const AdminDashboard: React.FC = () => {
             // KPI Stats
             const completedUsers = new Set(completionsRes.data?.map(c => c.user_id));
             setKpiStats({
-                totalUsers: totalUsersRes.count ?? 0,
+                totalUsers: nonAdminUserIds.length,
                 totalEnrollments: enrollmentsRes.count ?? 0,
                 totalCompletions: completedUsers.size,
                 pendingCertificates: pendingCertsRes.count ?? 0,
