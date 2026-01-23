@@ -36,7 +36,7 @@ const getInitials = (name: string | null | undefined): string => {
 
 // --- Helper Components ---
 const NavLink: React.FC<{ to: string, children: React.ReactNode, onClick?: () => void }> = ({ to, children, onClick }) => (
-    <Link to={to} onClick={onClick} className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300 relative group py-2">
+    <Link to={to} onClick={onClick} className="text-gray-600 hover:text-brand-moz font-medium transition-colors duration-300 relative group py-2 text-sm">
       <span>{children}</span>
       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-moz transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
     </Link>
@@ -73,63 +73,63 @@ const Header: React.FC = () => {
   const userInitials = getInitials(profile?.full_name);
 
   return (
-    <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
+    <header className="bg-white/90 backdrop-blur-lg shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           
           <div className="flex items-center">
             <Link to="/" onClick={() => setIsMenuOpen(false)}>
-              <Logo className="h-10 w-auto" />
+              <Logo className="h-9 w-auto" />
             </Link>
-            <nav className="hidden md:flex items-center space-x-6 ml-10">
+            <nav className="hidden md:flex items-center space-x-5 ml-8">
               <NavLink to="/#cursos">{t('header.courses')}</NavLink>
               <NavLink to="/about">{t('header.about')}</NavLink>
             </nav>
           </div>
           
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             <LanguageSwitcher />
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
-                  className="flex items-center space-x-2 p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                  className="flex items-center space-x-1.5 p-1 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300"
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                 >
-                  <div className={`w-8 h-8 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-xs`}>
+                  <div className={`w-7 h-7 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-xs`}>
                     {userInitials}
                   </div>
-                  <span className="font-semibold hidden lg:inline text-sm">{profile?.full_name}</span>
+                  <span className="font-semibold hidden lg:inline text-xs">{profile?.full_name}</span>
                   <ChevronDownIcon className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border py-2 z-50 animate-fadeIn">
-                    <div className="px-4 py-2 border-b">
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border py-1.5 z-50 animate-fadeIn">
+                    <div className="px-3 py-1.5 border-b">
                         <p className="font-bold text-gray-800 truncate text-sm">{profile?.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     <div className="py-1">
-                        <Link to={dashboardLink} onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
-                          <DashboardIcon className="w-5 h-5 mr-3" /> {dashboardText}
+                        <Link to={dashboardLink} onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
+                          <DashboardIcon className="w-4 h-4 mr-2" /> {dashboardText}
                         </Link>
-                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
-                          <ProfileIcon className="w-5 h-5 mr-3" /> {t('header.myProfile')}
+                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-brand-moz">
+                          <ProfileIcon className="w-4 h-4 mr-2" /> {t('header.myProfile')}
                         </Link>
                     </div>
                     <div className="border-t"></div>
-                    <button onClick={handleSignOut} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                      <LogoutIcon className="w-5 h-5 mr-3" /> {t('header.logout')}
+                    <button onClick={handleSignOut} className="w-full text-left flex items-center px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+                      <LogoutIcon className="w-4 h-4 mr-2" /> {t('header.logout')}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/login" className="text-brand-up font-semibold px-3 py-1.5 rounded-lg hover:bg-brand-light transition-all duration-300 text-sm">
+                <Link to="/login" className="text-brand-up font-semibold px-2.5 py-1 rounded-lg hover:bg-brand-light transition-all duration-300 text-sm">
                   {t('header.login')}
                 </Link>
-                <Link to="/login?view=register" className="bg-brand-moz text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <Link to="/login?view=register" className="bg-brand-moz text-white px-2.5 py-1 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
                   {t('header.register')}
                 </Link>
               </div>
