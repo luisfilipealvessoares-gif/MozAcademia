@@ -90,6 +90,7 @@ const AdminAnalyticsPage: React.FC = () => {
     const [genderDistribution, setGenderDistribution] = useState<GenderDistribution>({ masculino: 0, feminino: 0 });
     const [ageDistribution, setAgeDistribution] = useState<{ label: string; value: number }[]>([]);
     const [countryDistribution, setCountryDistribution] = useState<{ label: string; value: number }[]>([]);
+    const [nonAdminUserIds, setNonAdminUserIds] = useState<string[]>([]);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const [modalData, setModalData] = useState<{
@@ -116,7 +117,8 @@ const AdminAnalyticsPage: React.FC = () => {
             if (usersError) throw usersError;
             if (signal.aborted) return;
             
-            const nonAdminUserIds = usersData ? usersData.map(u => u.id) : [];
+            const localNonAdminUserIds = usersData ? usersData.map(u => u.id) : [];
+            setNonAdminUserIds(localNonAdminUserIds);
 
             if (usersData) {
                 const genderCounts = usersData.reduce((acc, user) => {
@@ -153,7 +155,7 @@ const AdminAnalyticsPage: React.FC = () => {
                 setCountryDistribution(countryChartData);
             }
 
-            if (nonAdminUserIds.length === 0) {
+            if (localNonAdminUserIds.length === 0) {
                  setStats(prev => ({ ...prev, totalEnrollments: 0, completedCoursesUsers: 0 }));
                  setCoursePopularity([]);
                  setEnrollmentsOverTime([]);
@@ -165,10 +167,10 @@ const AdminAnalyticsPage: React.FC = () => {
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
             const [enrollmentsRes, passedAttemptsRes, enrollmentsWithCoursesRes, recentEnrollmentsRes] = await Promise.all([
-                supabase.from('enrollments').select('id', { count: 'exact', head: true }).in('user_id', nonAdminUserIds).abortSignal(signal),
-                supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', nonAdminUserIds).abortSignal(signal),
-                supabase.from('enrollments').select('courses(id, title)').in('user_id', nonAdminUserIds).abortSignal(signal),
-                supabase.from('enrollments').select('enrolled_at').in('user_id', nonAdminUserIds).gte('enrolled_at', thirtyDaysAgo.toISOString()).abortSignal(signal)
+                supabase.from('enrollments').select('id', { count: 'exact', head: true }).in('user_id', localNonAdminUserIds).abortSignal(signal),
+                supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', localNonAdminUserIds).abortSignal(signal),
+                supabase.from('enrollments').select('courses(id, title)').in('user_id', localNonAdminUserIds).abortSignal(signal),
+                supabase.from('enrollments').select('enrolled_at').in('user_id', localNonAdminUserIds).gte('enrolled_at', thirtyDaysAgo.toISOString()).abortSignal(signal)
             ]);
 
             if (signal.aborted) return;
@@ -258,28 +260,28 @@ const AdminAnalyticsPage: React.FC = () => {
         let title = '';
         let query;
 
-        const { data: nonAdminUsers, error: userError } = await supabase.from('user_profiles').select('id').eq('is_admin', false);
-        if (userError || !nonAdminUsers) {
+        const { data: currentNonAdminUsers, error: userError } = await supabase.from('user_profiles').select('id').eq('is_admin', false);
+        if (userError || !currentNonAdminUsers) {
              showStudentList('Erro', Promise.resolve({ error: { message: 'Não foi possível buscar usuários.' }}));
              return;
         }
-        const nonAdminUserIds = nonAdminUsers.map(u => u.id);
+        const currentNonAdminUserIds = currentNonAdminUsers.map(u => u.id);
 
         switch (type) {
             case 'total':
                 title = 'Total de Alunos';
-                query = supabase.from('user_profiles').select('full_name').in('id', nonAdminUserIds);
+                query = supabase.from('user_profiles').select('full_name').in('id', currentNonAdminUserIds);
                 break;
             case 'enrolled':
                 title = 'Alunos com Inscrições';
-                const { data: enrollData, error: enrollError } = await supabase.from('enrollments').select('user_id').in('user_id', nonAdminUserIds);
+                const { data: enrollData, error: enrollError } = await supabase.from('enrollments').select('user_id').in('user_id', currentNonAdminUserIds);
                 if (enrollError) { showStudentList(title, Promise.resolve({ error: enrollError })); return; }
                 const enrolledUserIds = [...new Set(enrollData.map(e => e.user_id))];
                 query = supabase.from('user_profiles').select('full_name').in('id', enrolledUserIds);
                 break;
             case 'completed':
                 title = 'Alunos com Cursos Concluídos';
-                const { data: attemptData, error: attemptError } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', nonAdminUserIds);
+                const { data: attemptData, error: attemptError } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', currentNonAdminUserIds);
                 if (attemptError) { showStudentList(title, Promise.resolve({ error: attemptError })); return; }
                 const completedUserIds = [...new Set(attemptData.map(a => a.user_id))];
                 query = supabase.from('user_profiles').select('full_name').in('id', completedUserIds);
@@ -297,7 +299,9 @@ const AdminAnalyticsPage: React.FC = () => {
         }
         const { data: enrollments, error: enrollError } = await supabase.from('enrollments').select('user_id').eq('course_id', courseData.id);
         if (enrollError) { showStudentList(`Alunos em "${courseTitle}"`, Promise.resolve({ error: enrollError })); return; }
-        const userIds = enrollments.map(e => e.user_id);
+        
+        const userIds = enrollments.map(e => e.user_id).filter(id => nonAdminUserIds.includes(id));
+        
         if (userIds.length === 0) {
             setModalData({ title: `Alunos em "${courseTitle}"`, items: [], loading: false });
             setIsModalOpen(true);
@@ -315,7 +319,9 @@ const AdminAnalyticsPage: React.FC = () => {
 
         const { data, error } = await supabase.from('enrollments').select('user_id').gte('enrolled_at', startDate.toISOString()).lt('enrolled_at', endDate.toISOString());
         if (error) { showStudentList(`Novas Inscrições em ${dateStr}`, Promise.resolve({ error })); return; }
-        const userIds = data.map(e => e.user_id);
+        
+        const userIds = data.map(e => e.user_id).filter(id => nonAdminUserIds.includes(id));
+        
          if (userIds.length === 0) {
             setModalData({ title: `Novas Inscrições em ${dateStr}`, items: [], loading: false });
             setIsModalOpen(true);
@@ -337,7 +343,7 @@ const AdminAnalyticsPage: React.FC = () => {
         if (country === 'Outros') {
             title = `Alunos de Outros Países`;
             const topCountries = countryDistribution.filter(c => c.label !== 'Outros').map(c => c.label);
-            query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).not('pais', 'in', `(${topCountries.join(',')})`);
+            query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).not('pais', 'in', `(${topCountries.map(c => `'${c}'`).join(',')})`);
         } else {
             query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).eq('pais', country);
         }
