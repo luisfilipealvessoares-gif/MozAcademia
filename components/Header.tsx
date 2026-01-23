@@ -75,13 +75,13 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           
           <div className="flex items-center">
             <Link to="/" onClick={() => setIsMenuOpen(false)}>
-              <Logo className="h-12 w-auto" />
+              <Logo className="h-10 w-auto" />
             </Link>
-            <nav className="hidden md:flex items-center space-x-8 ml-10">
+            <nav className="hidden md:flex items-center space-x-6 ml-10">
               <NavLink to="/#cursos">{t('header.courses')}</NavLink>
               <NavLink to="/about">{t('header.about')}</NavLink>
             </nav>
@@ -93,15 +93,15 @@ const Header: React.FC = () => {
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
-                  className="flex items-center space-x-3 p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                  className="flex items-center space-x-2 p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-300"
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                 >
-                  <div className={`w-9 h-9 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-sm`}>
+                  <div className={`w-8 h-8 rounded-full bg-brand-light text-brand-up flex items-center justify-center font-bold text-xs`}>
                     {userInitials}
                   </div>
                   <span className="font-semibold hidden lg:inline text-sm">{profile?.full_name}</span>
-                  <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDownIcon className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border py-2 z-50 animate-fadeIn">
@@ -126,10 +126,10 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/login" className="text-brand-up font-semibold px-4 py-2 rounded-lg hover:bg-brand-light transition-all duration-300 text-sm">
+                <Link to="/login" className="text-brand-up font-semibold px-3 py-1.5 rounded-lg hover:bg-brand-light transition-all duration-300 text-sm">
                   {t('header.login')}
                 </Link>
-                <Link to="/login?view=register" className="bg-brand-moz text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <Link to="/login?view=register" className="bg-brand-moz text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-brand-up transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                   {t('header.register')}
                 </Link>
               </div>
