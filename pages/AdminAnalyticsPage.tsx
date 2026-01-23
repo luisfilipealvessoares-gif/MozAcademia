@@ -25,8 +25,8 @@ interface GenderDistribution {
     feminino: number;
 }
 
-const StatCard: React.FC<{ title: string; value: string | number; description: string }> = ({ title, value, description }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md border hover:-translate-y-1 transition-transform duration-300">
+const StatCard: React.FC<{ title: string; value: string | number; description: string; onClick?: () => void }> = ({ title, value, description, onClick }) => (
+    <div onClick={onClick} className={`bg-white p-6 rounded-lg shadow-md border hover:-translate-y-1 transition-transform duration-300 ${onClick ? 'cursor-pointer' : ''}`}>
         <h3 className="text-gray-500 text-sm font-semibold uppercase">{title}</h3>
         <p className="text-3xl font-bold text-gray-800 mt-2">{value}</p>
         <p className="text-gray-500 text-xs mt-1">{description}</p>
@@ -107,7 +107,7 @@ const AdminAnalyticsPage: React.FC = () => {
         const { signal } = abortControllerRef.current;
 
         try {
-            const { data: usersData, count: totalUsers, error: usersError } = await supabase
+            const { data: usersData, error: usersError } = await supabase
                 .from('user_profiles')
                 .select('id, sexo, idade, pais')
                 .eq('is_admin', false)
@@ -128,7 +128,7 @@ const AdminAnalyticsPage: React.FC = () => {
 
                 const ages = usersData.map(u => u.idade).filter(Boolean) as number[];
                 const averageAge = ages.length > 0 ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
-                setStats(prev => ({...prev, totalUsers: totalUsers ?? 0, averageAge }));
+                setStats(prev => ({...prev, totalUsers: usersData.length, averageAge }));
 
                 const ageBins: { [key: string]: number } = { '18-25': 0, '26-35': 0, '36-45': 0, '46-55': 0, '56+': 0 };
                 ages.forEach(age => {
@@ -239,88 +239,109 @@ const AdminAnalyticsPage: React.FC = () => {
           supabase.removeChannel(channel);
         };
     }, [fetchData]);
-    
-    const handleCourseBarClick = async (courseTitle: string) => {
+
+    const showStudentList = async (title: string, query: any) => {
         setIsModalOpen(true);
-        setModalData({ title: `Alunos em "${courseTitle}"`, items: [], loading: true });
+        setModalData({ title, items: [], loading: true });
 
-        const { data: courseData, error: courseError } = await supabase
-            .from('courses')
-            .select('id')
-            .eq('title', courseTitle)
-            .single();
+        const { data: profiles, error } = await query;
         
-        if (courseError || !courseData) {
-            setModalData({ title: 'Erro', items: ['Não foi possível encontrar o curso.'], loading: false });
-            return;
-        }
-
-        const { data: enrollments, error: enrollError } = await supabase
-            .from('enrollments')
-            .select('user_id')
-            .eq('course_id', courseData.id);
-
-        if (enrollError) {
-            setModalData({ title: `Alunos em "${courseTitle}"`, items: ['Erro ao buscar alunos.'], loading: false });
-            return;
-        }
-
-        const userIds = enrollments.map(e => e.user_id);
-        if (userIds.length === 0) {
-            setModalData({ title: `Alunos em "${courseTitle}"`, items: [], loading: false });
-            return;
-        }
-
-        const { data: profiles, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('full_name')
-            .in('id', userIds);
-        
-        if (profileError) {
-             setModalData({ title: `Alunos em "${courseTitle}"`, items: ['Erro ao buscar nomes dos alunos.'], loading: false });
+        if (error) {
+             setModalData({ title, items: ['Erro ao buscar alunos.'], loading: false });
         } else {
-            const studentNames = profiles.map(p => p.full_name).filter(Boolean) as string[];
-            setModalData({ title: `Alunos em "${courseTitle}"`, items: studentNames, loading: false });
+            const studentNames = profiles.map((p: {full_name: string}) => p.full_name).filter(Boolean) as string[];
+            setModalData({ title, items: studentNames, loading: false });
         }
     };
 
-    const handleEnrollmentDateClick = async (dateStr: string) => {
-        setIsModalOpen(true);
-        setModalData({ title: `Novas Inscrições em ${dateStr}`, items: [], loading: true });
+    const handleStatCardClick = async (type: 'total' | 'enrolled' | 'completed') => {
+        let title = '';
+        let query;
 
+        const { data: nonAdminUsers, error: userError } = await supabase.from('user_profiles').select('id').eq('is_admin', false);
+        if (userError || !nonAdminUsers) {
+             showStudentList('Erro', Promise.resolve({ error: { message: 'Não foi possível buscar usuários.' }}));
+             return;
+        }
+        const nonAdminUserIds = nonAdminUsers.map(u => u.id);
+
+        switch (type) {
+            case 'total':
+                title = 'Total de Alunos';
+                query = supabase.from('user_profiles').select('full_name').in('id', nonAdminUserIds);
+                break;
+            case 'enrolled':
+                title = 'Alunos com Inscrições';
+                const { data: enrollData, error: enrollError } = await supabase.from('enrollments').select('user_id').in('user_id', nonAdminUserIds);
+                if (enrollError) { showStudentList(title, Promise.resolve({ error: enrollError })); return; }
+                const enrolledUserIds = [...new Set(enrollData.map(e => e.user_id))];
+                query = supabase.from('user_profiles').select('full_name').in('id', enrolledUserIds);
+                break;
+            case 'completed':
+                title = 'Alunos com Cursos Concluídos';
+                const { data: attemptData, error: attemptError } = await supabase.from('quiz_attempts').select('user_id').eq('passed', true).in('user_id', nonAdminUserIds);
+                if (attemptError) { showStudentList(title, Promise.resolve({ error: attemptError })); return; }
+                const completedUserIds = [...new Set(attemptData.map(a => a.user_id))];
+                query = supabase.from('user_profiles').select('full_name').in('id', completedUserIds);
+                break;
+            default: return;
+        }
+        showStudentList(title, query);
+    };
+    
+    const handleCourseBarClick = async (courseTitle: string) => {
+        const { data: courseData, error: courseError } = await supabase.from('courses').select('id').eq('title', courseTitle).single();
+        if (courseError || !courseData) {
+            showStudentList(`Alunos em "${courseTitle}"`, Promise.resolve({ error: { message: 'Curso não encontrado' }}));
+            return;
+        }
+        const { data: enrollments, error: enrollError } = await supabase.from('enrollments').select('user_id').eq('course_id', courseData.id);
+        if (enrollError) { showStudentList(`Alunos em "${courseTitle}"`, Promise.resolve({ error: enrollError })); return; }
+        const userIds = enrollments.map(e => e.user_id);
+        if (userIds.length === 0) {
+            setModalData({ title: `Alunos em "${courseTitle}"`, items: [], loading: false });
+            setIsModalOpen(true);
+            return;
+        }
+        const query = supabase.from('user_profiles').select('full_name').in('id', userIds);
+        showStudentList(`Alunos em "${courseTitle}"`, query);
+    };
+
+    const handleEnrollmentDateClick = async (dateStr: string) => {
         const parts = dateStr.split('/');
         const startDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
         const endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 1);
 
-        const { data, error } = await supabase
-            .from('enrollments')
-            .select('user_id')
-            .gte('enrolled_at', startDate.toISOString())
-            .lt('enrolled_at', endDate.toISOString());
-
-        if (error) {
-            setModalData({ title: `Novas Inscrições em ${dateStr}`, items: ['Erro ao buscar alunos.'], loading: false });
-            return;
-        }
-        
+        const { data, error } = await supabase.from('enrollments').select('user_id').gte('enrolled_at', startDate.toISOString()).lt('enrolled_at', endDate.toISOString());
+        if (error) { showStudentList(`Novas Inscrições em ${dateStr}`, Promise.resolve({ error })); return; }
         const userIds = data.map(e => e.user_id);
-        if (userIds.length === 0) {
+         if (userIds.length === 0) {
             setModalData({ title: `Novas Inscrições em ${dateStr}`, items: [], loading: false });
+            setIsModalOpen(true);
             return;
         }
+        const query = supabase.from('user_profiles').select('full_name').in('id', userIds);
+        showStudentList(`Novas Inscrições em ${dateStr}`, query);
+    };
 
-        const { data: profiles, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('full_name')
-            .in('id', userIds);
+    const handleAgeBarClick = async (ageRange: string) => {
+        const [min, max] = ageRange.replace('+', '-999').split('-').map(Number);
+        const query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).gte('idade', min).lte('idade', max);
+        showStudentList(`Alunos na Faixa Etária: ${ageRange}`, query);
+    };
 
-        if (profileError) {
-            setModalData({ title: `Novas Inscrições em ${dateStr}`, items: ['Erro ao buscar nomes dos alunos.'], loading: false });
+    const handleCountryBarClick = async (country: string) => {
+        let query;
+        let title = `Alunos de ${country}`;
+        if (country === 'Outros') {
+            title = `Alunos de Outros Países`;
+            const topCountries = countryDistribution.filter(c => c.label !== 'Outros').map(c => c.label);
+            query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).not('pais', 'in', `(${topCountries.join(',')})`);
         } else {
-            const studentNames = profiles.map(p => p.full_name).filter(Boolean) as string[];
-            setModalData({ title: `Novas Inscrições em ${dateStr}`, items: studentNames, loading: false });
+            query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).eq('pais', country);
         }
+        showStudentList(title, query);
     };
     
     const exportToPDF = () => {
@@ -402,9 +423,9 @@ const AdminAnalyticsPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total de Alunos" value={stats.totalUsers} description="Número de usuários não-administradores." />
-                <StatCard title="Total de Inscrições" value={stats.totalEnrollments} description="Inscrições totais em todos os cursos." />
-                <StatCard title="Conclusões" value={stats.completedCoursesUsers} description="Alunos que concluíram pelo menos um curso." />
+                <StatCard onClick={() => handleStatCardClick('total')} title="Total de Alunos" value={stats.totalUsers} description="Número de usuários não-administradores." />
+                <StatCard onClick={() => handleStatCardClick('enrolled')} title="Total de Inscrições" value={stats.totalEnrollments} description="Inscrições totais em todos os cursos." />
+                <StatCard onClick={() => handleStatCardClick('completed')} title="Conclusões" value={stats.completedCoursesUsers} description="Alunos que concluíram pelo menos um curso." />
                 <StatCard title="Idade Média" value={stats.averageAge > 0 ? stats.averageAge : 'N/A'} description="Média de idade dos alunos." />
             </div>
 
@@ -413,8 +434,8 @@ const AdminAnalyticsPage: React.FC = () => {
                 <BarChart title="Novas Inscrições (Últimos 30 Dias)" data={enrollmentsOverTime.map(e => ({ label: e.date, value: e.count }))} onBarClick={handleEnrollmentDateClick} />
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <BarChart title="Distribuição por Idade" data={ageDistribution} />
-                 <BarChart title="Distribuição Geográfica" data={countryDistribution} />
+                <BarChart title="Distribuição por Idade" data={ageDistribution} onBarClick={handleAgeBarClick} />
+                 <BarChart title="Distribuição Geográfica" data={countryDistribution} onBarClick={handleCountryBarClick} />
             </div>
 
             {isModalOpen && (
