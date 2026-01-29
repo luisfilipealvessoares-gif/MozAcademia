@@ -45,7 +45,6 @@ const translations = {
     'footer.copyright': 'Todos os direitos reservados.',
     'footer.privacy': 'Política de Privacidade',
     'footer.terms': 'Termos e Condições',
-    'footer.refund': 'Política de Reembolso',
 
     // Home Page
     'home.hero.title': 'Capacitação empresarial',
@@ -301,23 +300,6 @@ const translations = {
     'privacy.section7.p1': 'Podemos atualizar esta política de privacidade de tempos em tempos. A versão mais recente estará sempre disponível na nossa plataforma.',
     'privacy.section8.title': 'Contacto',
     'privacy.section8.p1': 'Se tiver alguma dúvida sobre esta política, por favor, entre em contacto connosco através da nossa página de Apoio.',
-
-    // Refund Policy Page
-    'refund.title': 'Política de Reembolso',
-    'refund.lastUpdated': 'Última atualização: 25 de Julho de 2024',
-    'refund.intro': 'Esta Política de Reembolso descreve as circunstâncias em que a MozupAcademy pode emitir um reembolso pelo acesso aos cursos. A nossa política foi concebida para ser transparente e justa.',
-    'refund.section1.title': 'Regra Geral',
-    'refund.section1.p1': 'Devido à natureza digital dos nossos cursos, que disponibilizam acesso imediato a propriedade intelectual, a MozupAcademy não oferece reembolsos após a inscrição e pagamento de um curso. Todas as vendas são consideradas finais.',
-    'refund.section2.title': 'Exceções',
-    'refund.section2.p1': 'Reembolsos podem ser considerados, numa base caso a caso, nas seguintes situações excepcionais:',
-    'refund.section2.list.item1': 'Problemas Técnicos Graves: Se a plataforma estiver inacessível por um período prolongado e não conseguirmos fornecer uma solução alternativa, impedindo-o de aceder ao conteúdo do curso.',
-    'refund.section2.list.item2': 'Compra Duplicada: Se acidentalmente comprou o mesmo curso mais do que uma vez.',
-    'refund.section3.title': 'Como Solicitar um Reembolso',
-    'refund.section3.p1': 'Se a sua situação se enquadra numa das exceções acima, deve contactar a nossa equipa de apoio no prazo de 7 dias após a compra. O seu pedido deve incluir o seu nome de utilizador, o nome do curso e uma descrição detalhada do problema.',
-    'refund.section4.title': 'Processamento',
-    'refund.section4.p1': 'Cada pedido será analisado individualmente. A MozupAcademy reserva-se o direito de aprovar ou negar qualquer pedido de reembolso à sua inteira discrição. Se aprovado, o reembolso será processado através do método de pagamento original dentro de 10-15 dias úteis.',
-    'refund.section5.title': 'Contacto',
-    'refund.section5.p1': 'Para questões relacionadas com reembolsos, por favor, utilize a nossa página de Apoio.',
   },
   en: {
     // General
@@ -360,7 +342,6 @@ const translations = {
     'footer.copyright': 'All rights reserved.',
     'footer.privacy': 'Privacy Policy',
     'footer.terms': 'Terms & Conditions',
-    'footer.refund': 'Refund Policy',
 
     // Home Page
     'home.hero.title': 'Digital business',
@@ -616,23 +597,6 @@ const translations = {
     'privacy.section7.p1': 'We may update this privacy policy from time to time. The latest version will always be available on our platform.',
     'privacy.section8.title': 'Contact',
     'privacy.section8.p1': 'If you have any questions about this policy, please contact us through our Support page.',
-
-    // Refund Policy Page
-    'refund.title': 'Refund Policy',
-    'refund.lastUpdated': 'Last updated: July 25, 2024',
-    'refund.intro': 'This Refund Policy describes the circumstances under which MozupAcademy may issue a refund for course access. Our policy is designed to be transparent and fair.',
-    'refund.section1.title': 'General Rule',
-    'refund.section1.p1': 'Due to the digital nature of our courses, which provide immediate access to intellectual property, MozupAcademy does not offer refunds after a course has been purchased and enrolled in. All sales are considered final.',
-    'refund.section2.title': 'Exceptions',
-    'refund.section2.p1': 'Refunds may be considered on a case-by-case basis under the following exceptional circumstances:',
-    'refund.section2.list.item1': 'Severe Technical Issues: If the platform is inaccessible for an extended period and we cannot provide an alternative solution, preventing you from accessing the course content.',
-    'refund.section2.list.item2': 'Duplicate Purchase: If you accidentally purchased the same course more than once.',
-    'refund.section3.title': 'How to Request a Refund',
-    'refund.section3.p1': 'If your situation falls under one of the exceptions above, you must contact our support team within 7 days of purchase. Your request should include your username, the course name, and a detailed description of the issue.',
-    'refund.section4.title': 'Processing',
-    'refund.section4.p1': 'Each request will be reviewed individually. MozupAcademy reserves the right to approve or deny any refund request at its sole discretion. If approved, the refund will be processed via the original payment method within 10-15 business days.',
-    'refund.section5.title': 'Contact',
-    'refund.section5.p1': 'For refund-related questions, please use our Support page.',
   }
 };
 

@@ -32,8 +32,8 @@ const CountUp: React.FC<{ end: number; duration?: number }> = ({ end, duration =
 
 // FIX: Update the `icon` prop type to be more specific. This allows TypeScript to
 // correctly infer that props like `className` are valid for the cloned element.
-const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; color: string }> = ({ title, value, icon, color }) => (
-    <div className="bg-white p-4 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300">
+const StatCard: React.FC<{ title: string; value: number; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; color: string; onClick?: () => void; }> = ({ title, value, icon, color, onClick }) => (
+    <div onClick={onClick} className={`bg-white p-4 rounded-xl shadow-lg border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}>
         <div className="flex items-start justify-between">
             <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
@@ -137,7 +137,10 @@ const AdminDashboard: React.FC = () => {
     const [kpiStats, setKpiStats] = useState<KpiStatsData>({ totalUsers: 0, totalEnrollments: 0, totalCompletions: 0, pendingCertificates: 0 });
     const [coursePopularity, setCoursePopularity] = useState<ChartDataPoint[]>([]);
     const [studentStatus, setStudentStatus] = useState<StudentStatusData>({ inProgress: 0, completed: 0, requestedCertificate: 0 });
+    const [genderDistribution, setGenderDistribution] = useState<{ masculino: number; feminino: number }>({ masculino: 0, feminino: 0 });
     const [highlightedStatus, setHighlightedStatus] = useState<string | null>(null);
+    const [modalData, setModalData] = useState<{ title: string; items: string[]; loading: boolean; }>({ title: '', items: [], loading: false });
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchAllData = useCallback(async () => {
@@ -150,14 +153,21 @@ const AdminDashboard: React.FC = () => {
         try {
             const { data: nonAdminUsers, error: nonAdminUsersError } = await supabase
                 .from('user_profiles')
-                .select('id')
+                .select('id, sexo')
                 .eq('is_admin', false)
                 .abortSignal(signal);
             
             if (nonAdminUsersError) throw nonAdminUsersError;
             if (signal.aborted) return;
             
-            const nonAdminUserIds = nonAdminUsers.map(u => u.id);
+            const genderCounts = (nonAdminUsers || []).reduce((acc, user) => {
+                if (user.sexo === 'masculino') acc.masculino++;
+                else if (user.sexo === 'feminino') acc.feminino++;
+                return acc;
+            }, { masculino: 0, feminino: 0 });
+            setGenderDistribution(genderCounts);
+
+            const nonAdminUserIds = nonAdminUsers ? nonAdminUsers.map(u => u.id) : [];
 
             if (nonAdminUserIds.length === 0) {
                 setKpiStats({ totalUsers: 0, totalEnrollments: 0, totalCompletions: 0, pendingCertificates: 0 });
@@ -238,6 +248,26 @@ const AdminDashboard: React.FC = () => {
             supabase.removeChannel(channel);
         };
     }, [fetchAllData]);
+
+    const showStudentList = async (title: string, query: any) => {
+        setIsModalOpen(true);
+        setModalData({ title, items: [], loading: true });
+    
+        const { data: profiles, error } = await query;
+        
+        if (error) {
+             setModalData({ title, items: ['Erro ao buscar alunos.'], loading: false });
+        } else {
+            const studentNames = profiles.map((p: {full_name: string}) => p.full_name).filter(Boolean) as string[];
+            setModalData({ title, items: studentNames.length > 0 ? studentNames : ["Nenhum aluno encontrado."], loading: false });
+        }
+    };
+    
+    const handleGenderCardClick = (gender: 'masculino' | 'feminino') => {
+        const title = gender === 'masculino' ? 'Alunos (Homens)' : 'Alunas (Mulheres)';
+        const query = supabase.from('user_profiles').select('full_name').eq('is_admin', false).eq('sexo', gender);
+        showStudentList(title, query);
+    };
     
     if (loading) return (
         <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-moz"></div></div>
@@ -250,8 +280,10 @@ const AdminDashboard: React.FC = () => {
                 <p className="text-base text-gray-600 mt-1">Visão geral da performance da plataforma.</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <StatCard title="Total de Alunos" value={kpiStats.totalUsers} icon={<UsersIcon />} color="bg-blue-500" />
+                <StatCard title="Homens" value={genderDistribution.masculino} icon={<UsersIcon />} color="bg-sky-500" onClick={() => handleGenderCardClick('masculino')} />
+                <StatCard title="Mulheres" value={genderDistribution.feminino} icon={<UsersIcon />} color="bg-pink-500" onClick={() => handleGenderCardClick('feminino')} />
                 <StatCard title="Total de Inscrições" value={kpiStats.totalEnrollments} icon={<ClipboardListIcon />} color="bg-brand-moz" />
                 <StatCard title="Conclusões de Cursos" value={kpiStats.totalCompletions} icon={<AcademicCapIcon />} color="bg-brand-up" />
                 <StatCard title="Certificados Pendentes" value={kpiStats.pendingCertificates} icon={<ClockIcon />} color="bg-gray-500" />
@@ -261,6 +293,35 @@ const AdminDashboard: React.FC = () => {
                 <div className="lg:col-span-3"><ChartCard title="Total de Inscrições por Curso"><BarChart data={coursePopularity} /></ChartCard></div>
                 <div className="lg:col-span-2"><ChartCard title="Estado dos Alunos"><PieChart data={studentStatus} highlightedStatus={highlightedStatus} onHighlight={setHighlightedStatus} /></ChartCard></div>
             </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+                    <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-xl flex flex-col max-h-[80vh]">
+                        <div className="flex justify-between items-center pb-4 border-b">
+                            <h2 className="text-xl font-bold text-gray-800">{modalData.title}</h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 font-bold text-2xl">&times;</button>
+                        </div>
+                        <div className="my-6 overflow-y-auto">
+                            {modalData.loading ? (
+                                <div className="flex justify-center items-center h-32">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-moz"></div>
+                                </div>
+                            ) : (
+                                <ul className="space-y-2">
+                                    {modalData.items.map((item, index) => (
+                                        <li key={index} className="bg-gray-50 p-3 rounded-md text-gray-700">{item}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <div className="flex justify-end pt-4 border-t mt-auto">
+                            <button onClick={() => setIsModalOpen(false)} className="bg-gray-200 px-5 py-2 rounded-md text-gray-800 font-semibold hover:bg-gray-300">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

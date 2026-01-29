@@ -66,8 +66,6 @@ const Footer: React.FC = () => {
               <Link to="/privacy-policy" className="text-gray-200 hover:text-white hover:underline">{t('footer.privacy')}</Link>
               <span className="text-gray-400">|</span>
               <Link to="/terms-and-conditions" className="text-gray-200 hover:text-white hover:underline">{t('footer.terms')}</Link>
-              <span className="text-gray-400">|</span>
-              <Link to="/refund-policy" className="text-gray-200 hover:text-white hover:underline">{t('footer.refund')}</Link>
           </div>
         </div>
       </div>
