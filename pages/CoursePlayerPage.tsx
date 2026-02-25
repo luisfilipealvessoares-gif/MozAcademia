@@ -47,13 +47,10 @@ const QuizComponent: React.FC<{ courseId: string; onQuizComplete: (passed: boole
         const { data, error } = await supabase
           .from('quiz_questions')
           .select('*')
-          .eq('course_id', courseId)
-          .abortSignal(signal);
+          .eq('course_id', courseId);
         
         if (error) {
-            if (error.name !== 'AbortError') {
-                console.error("Error fetching quiz questions:", error);
-            }
+            console.error("Error fetching quiz questions:", error);
             return;
         }
 
@@ -267,6 +264,36 @@ const CoursePlayerPage: React.FC = () => {
         };
     }, [isModuleIncomplete, t]);
 
+    // Restore video progress
+    useEffect(() => {
+        if (activeModule && videoRef.current && userId && signedVideoUrl) {
+            const savedTime = localStorage.getItem(`video_progress_${userId}_${activeModule.id}`);
+            if (savedTime) {
+                const time = parseFloat(savedTime);
+                if (!isNaN(time) && isFinite(time)) {
+                    // Slight delay to ensure video metadata is loaded
+                    const restoreTime = () => {
+                        if(videoRef.current) {
+                            // Don't resume if we are at the very end (less than 10 seconds remaining)
+                            if (videoRef.current.duration && time > videoRef.current.duration - 10) {
+                                return;
+                            }
+                            videoRef.current.currentTime = time;
+                            // Update the ref to prevent the seek blocker from interpreting this as a skip
+                            lastPlayerTimeRef.current = time;
+                        }
+                    };
+                    
+                    if (videoRef.current.readyState >= 1) {
+                        restoreTime();
+                    } else {
+                        videoRef.current.addEventListener('loadedmetadata', restoreTime, { once: true });
+                    }
+                }
+            }
+        }
+    }, [activeModule, userId, signedVideoUrl]);
+
     // Robust audio pause and visual visibility effect
     useEffect(() => {
         if (inVideoQuizActive && videoRef.current) {
@@ -312,11 +339,23 @@ const CoursePlayerPage: React.FC = () => {
         }
     };
 
+    const lastSaveTimeRef = useRef<number>(0);
+
     const handleVideoTimeUpdate = () => {
         if (!videoRef.current || inVideoQuizActive) return;
 
         const currentTime = videoRef.current.currentTime;
         const lastTime = lastPlayerTimeRef.current;
+
+        // Save progress locally (throttled to every 5 seconds)
+        const now = Date.now();
+        if (userId && activeModule && (now - lastSaveTimeRef.current > 5000)) {
+            localStorage.setItem(`video_progress_${userId}_${activeModule.id}`, currentTime.toString());
+            if (videoRef.current.duration) {
+                localStorage.setItem(`video_duration_${userId}_${activeModule.id}`, videoRef.current.duration.toString());
+            }
+            lastSaveTimeRef.current = now;
+        }
 
         // --- SEEK BLOCKING LOGIC ---
         let quizZones = [];
@@ -549,12 +588,12 @@ const CoursePlayerPage: React.FC = () => {
 
             try {
                 const [courseRes, modulesRes, progressRes, attemptRes, certReqRes, inVideoQuizRes] = await Promise.all([
-                    supabase.from('courses').select('*').eq('id', courseId).single().abortSignal(signal),
-                    supabase.from('modules').select('*').eq('course_id', courseId).order('order').abortSignal(signal),
-                    supabase.from('user_progress').select('module_id').eq('user_id', userId).abortSignal(signal),
-                    supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single().abortSignal(signal),
-                    supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single().abortSignal(signal),
-                    supabase.from('user_in_video_quiz_completions').select('quiz_type').eq('user_id', userId).eq('course_id', courseId).abortSignal(signal)
+                    supabase.from('courses').select('*').eq('id', courseId).single(),
+                    supabase.from('modules').select('*').eq('course_id', courseId).order('order'),
+                    supabase.from('user_progress').select('module_id').eq('user_id', userId),
+                    supabase.from('quiz_attempts').select('passed').eq('user_id', userId).eq('course_id', courseId).order('completed_at', { ascending: false }).limit(1).single(),
+                    supabase.from('certificate_requests').select('id').eq('user_id', userId).eq('course_id', courseId).single(),
+                    supabase.from('user_in_video_quiz_completions').select('quiz_type').eq('user_id', userId).eq('course_id', courseId)
                 ]);
 
                 if (signal.aborted) return;
@@ -687,6 +726,9 @@ const CoursePlayerPage: React.FC = () => {
         await supabase.from('user_progress').insert({ user_id: userId, module_id: moduleId });
         const newCompleted = [...completedModules, moduleId];
         setCompletedModules(newCompleted);
+        
+        // Clear saved progress for this module so re-watching starts from beginning
+        localStorage.removeItem(`video_progress_${userId}_${moduleId}`);
     
         const currentModuleIndex = modules.findIndex(m => m.id === moduleId);
         const isLastModule = currentModuleIndex === modules.length - 1;
@@ -857,7 +899,7 @@ const CoursePlayerPage: React.FC = () => {
                                         ) : (
                                             <div className="max-w-lg w-full space-y-4 bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-white/20">
                                                 <div className="text-center">
-                                                    <span className="bg-white/10 py-1.5 px-4 rounded-full text-xs font-bold uppercase tracking-widest">Desafio Mozup</span>
+                                                    <span className="bg-white/10 py-1.5 px-4 rounded-full text-xs font-bold uppercase tracking-widest">Desafio MozUp</span>
                                                 </div>
                                                 
                                                 {activeQuizType === 'security' && (
@@ -1026,13 +1068,11 @@ const CoursePlayerPage: React.FC = () => {
                     )}
                 </main>
                 <aside className="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg border">
-                    <h3 className="text-base font-bold mb-3">{t('course.player.progress')}</h3>
-                     <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                        <div className="bg-brand-moz h-1.5 rounded-full" style={{width: `${progressPercentage}%`}}></div>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-4 text-center">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
+                    <h3 className="text-lg font-bold mb-2 leading-tight">{courseTitle}</h3>
+                    <p className="text-sm text-gray-600 mb-4">{course?.description}</p>
+                    
+                    <p className="text-xs font-semibold text-gray-800 mb-4">{t('course.player.modulesCompleted', { completed: completedModules.length, total: totalModules })}</p>
 
-                    <h3 className="text-base font-bold mb-3">{t('course.player.modules')}</h3>
                     <ul className="space-y-1.5">
                     {modules.map((module, index) => {
                         const isCompleted = completedModules.includes(module.id);
@@ -1079,6 +1119,8 @@ const CoursePlayerPage: React.FC = () => {
                         </button>
                     </li>
                     </ul>
+
+
                 </aside>
             </div>
         </div>

@@ -66,13 +66,21 @@ const AuthPage: React.FC = () => {
     const tryRender = () => {
       if (captchaContainer.current && window.hcaptcha && !captchaIdRef.current) {
         clearInterval(intervalId);
-        const widgetId = window.hcaptcha.render(captchaContainer.current, {
-          sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
-          callback: setHcaptchaToken,
-          'expired-callback': () => setHcaptchaToken(null),
-          'error-callback': () => setHcaptchaToken(null),
-        });
-        captchaIdRef.current = widgetId;
+        // Ensure container is empty before rendering
+        if (captchaContainer.current.innerHTML !== "") {
+            captchaContainer.current.innerHTML = "";
+        }
+        try {
+            const widgetId = window.hcaptcha.render(captchaContainer.current, {
+            sitekey: '548ec312-7f46-453c-811c-05b036e6a6fa',
+            callback: setHcaptchaToken,
+            'expired-callback': () => setHcaptchaToken(null),
+            'error-callback': () => setHcaptchaToken(null),
+            });
+            captchaIdRef.current = widgetId;
+        } catch (e) {
+            console.warn("hCaptcha render error:", e);
+        }
       }
     };
 

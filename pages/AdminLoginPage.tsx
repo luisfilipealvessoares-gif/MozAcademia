@@ -88,7 +88,7 @@ const AdminLoginPage: React.FC = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email de Administrador"
+            placeholder="E-mail de Administrador"
             required
             className="w-full px-4 py-2 text-gray-700 bg-gray-100 border rounded-md focus:border-brand-moz focus:ring-brand-moz focus:ring-opacity-40 focus:outline-none focus:ring"
           />

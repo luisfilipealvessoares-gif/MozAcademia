@@ -17,7 +17,7 @@ const Logo: React.FC<{ className?: string, variant?: 'light' | 'dark' }> = ({ cl
             viewBox="0 0 580 120" 
             xmlns="http://www.w3.org/2000/svg"
             className="w-full h-full"
-            aria-label="Mozup Academy Logo"
+            aria-label="MozUp Academy Logo"
         >
             {/* The font is loaded globally in index.html, so it's available here. */}
             <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" style={textStyle}>

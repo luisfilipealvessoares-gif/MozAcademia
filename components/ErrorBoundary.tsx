@@ -1,4 +1,4 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 
 interface Props {
@@ -15,13 +15,13 @@ interface FallbackProps {
 
 const ErrorFallback: React.FC<FallbackProps> = ({ t }) => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center p-4">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">{t('error.boundary.title')}</h1>
-        <p className="text-gray-700 mb-6">{t('error.boundary.subtitle')}</p>
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Algo correu mal</h1>
+        <p className="text-gray-700 mb-6">A nossa equipa foi notificada. Por favor, tente recarregar a página.</p>
         <button
             onClick={() => window.location.reload()}
             className="bg-brand-moz text-white font-semibold py-2 px-6 rounded-lg hover:bg-brand-up transition"
         >
-            {t('error.boundary.button')}
+            Recarregar Página
         </button>
     </div>
 );
@@ -32,9 +32,10 @@ interface ErrorBoundaryInternalProps {
     children: ReactNode;
 }
 
-// FIX: The class component 'ErrorBoundaryInternal' was not extending `React.Component`, causing `this.props` to be undefined. It has been updated to extend `React.Component` with the appropriate prop and state types.
 class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, State> {
   state: State = { hasError: false };
+  // @ts-ignore
+  props: ErrorBoundaryInternalProps;
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
@@ -55,7 +56,7 @@ class ErrorBoundaryInternal extends React.Component<ErrorBoundaryInternalProps, 
 
 const ErrorBoundary: React.FC<Props> = ({ children }) => {
     const { t } = useI18n();
-    return <ErrorBoundaryInternal t={t} children={children} />;
+    return <ErrorBoundaryInternal t={t}>{children}</ErrorBoundaryInternal>;
 };
 
 export default ErrorBoundary;

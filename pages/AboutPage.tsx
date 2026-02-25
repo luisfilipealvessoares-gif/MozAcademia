@@ -25,10 +25,13 @@ const AboutPage: React.FC = () => {
                     <h2 className="text-3xl font-bold text-brand-up mb-4 tracking-tight">{t('about.subtitle')}</h2>
                     <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                         <p>
-                            <span className="font-semibold text-gray-800">MozupAcademy</span> {t('about.p1').replace('A MozupAcademy', '')}
+                            <span className="font-semibold text-gray-800">MozUp Academy</span> {t('about.p1').replace('A MozUp Academy', '')}
                         </p>
                         <p>
                             {t('about.p2')}
+                        </p>
+                        <p>
+                            {t('about.p3')}
                         </p>
                     </div>
                 </section>

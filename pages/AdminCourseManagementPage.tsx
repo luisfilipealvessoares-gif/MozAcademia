@@ -16,35 +16,25 @@ const AdminCourseManagementPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const fetchModules = useCallback(async (signal: AbortSignal) => {
+  const fetchModules = useCallback(async () => {
     if (!courseId) return;
-    const { data } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order').abortSignal(signal);
-    if (data && !signal.aborted) setModules(data);
+    const { data } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order');
+    if (data) setModules(data);
   }, [courseId]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
     const fetchCourse = async () => {
       if (!courseId) return;
       setLoading(true);
-      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single().abortSignal(signal);
-      if (signal.aborted) return;
+      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single();
       
       setCourse(courseData);
-      await fetchModules(signal);
+      await fetchModules();
 
-      if (!signal.aborted) {
-        setLoading(false);
-      }
+      setLoading(false);
     };
     
     fetchCourse();
-    
-    return () => {
-      controller.abort();
-    };
   }, [courseId, fetchModules]);
 
   const handleOpenModal = (module: Partial<Module> | null = null) => {
@@ -108,7 +98,7 @@ const AdminCourseManagementPage: React.FC = () => {
     } else {
         setShowSuccess(true);
         // Use a dummy controller as we don't need to cancel this specific refetch
-        await fetchModules(new AbortController().signal);
+        await fetchModules();
         setTimeout(() => {
             handleCloseModal();
         }, 2000);
@@ -141,7 +131,7 @@ const AdminCourseManagementPage: React.FC = () => {
         }
       }
       
-      await fetchModules(new AbortController().signal);
+      await fetchModules();
     }
   }
 

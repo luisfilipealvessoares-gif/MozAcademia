@@ -4,12 +4,20 @@ import { CertificateRequest } from '../types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import CertificateTemplate from '../components/CertificateTemplate';
 
 const AdminCertificateRequests: React.FC = () => {
     const [requests, setRequests] = useState<CertificateRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+
+    // Certificate Simulator State
+    const [showSimulator, setShowSimulator] = useState(false);
+    const [simStudentName, setSimStudentName] = useState('João da Silva');
+    const [simCompanyName, setSimCompanyName] = useState('Empresa Modelo Lda.');
+    const [simCourseName, setSimCourseName] = useState('Introdução ao Petróleo e Gás');
+    const [simCompletionDate, setSimCompletionDate] = useState(new Date().toLocaleDateString('pt-PT'));
 
     const fetchRequests = useCallback(async () => {
         if (abortControllerRef.current) {
@@ -64,10 +72,12 @@ const AdminCertificateRequests: React.FC = () => {
                 if (!signal.aborted) setRequests([]);
             }
         } catch (err: any) {
-            if (err.name !== 'AbortError') {
-                console.error("Erro ao buscar pedidos:", err.message);
-                setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
+            // Check for AbortError by name or message content
+            if (err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('aborted')) {
+                return;
             }
+            console.error("Erro ao buscar pedidos:", err.message);
+            setError("Não foi possível carregar os pedidos. Tente novamente mais tarde.");
         } finally {
             if (!signal.aborted) {
                 setLoading(false);
@@ -171,6 +181,76 @@ const AdminCertificateRequests: React.FC = () => {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Certificate Simulator Section */}
+            <div className="mt-10 border-t pt-8">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-800">Simulador de Certificados</h2>
+                        <p className="text-gray-600 text-sm">Visualize e teste o layout dos certificados antes da emissão.</p>
+                    </div>
+                    <button 
+                        onClick={() => setShowSimulator(!showSimulator)}
+                        className="bg-brand-moz text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-up transition-colors"
+                    >
+                        {showSimulator ? 'Ocultar Simulador' : 'Abrir Simulador'}
+                    </button>
+                </div>
+
+                {showSimulator && (
+                    <div className="bg-gray-50 p-6 rounded-xl border shadow-inner">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Nome do Aluno</label>
+                                <input 
+                                    type="text" 
+                                    value={simStudentName} 
+                                    onChange={(e) => setSimStudentName(e.target.value)}
+                                    className="w-full p-2 border rounded-md text-sm focus:ring-brand-moz focus:border-brand-moz"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Empresa</label>
+                                <input 
+                                    type="text" 
+                                    value={simCompanyName} 
+                                    onChange={(e) => setSimCompanyName(e.target.value)}
+                                    className="w-full p-2 border rounded-md text-sm focus:ring-brand-moz focus:border-brand-moz"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Curso</label>
+                                <input 
+                                    type="text" 
+                                    value={simCourseName} 
+                                    onChange={(e) => setSimCourseName(e.target.value)}
+                                    className="w-full p-2 border rounded-md text-sm focus:ring-brand-moz focus:border-brand-moz"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Data de Conclusão</label>
+                                <input 
+                                    type="text" 
+                                    value={simCompletionDate} 
+                                    onChange={(e) => setSimCompletionDate(e.target.value)}
+                                    className="w-full p-2 border rounded-md text-sm focus:ring-brand-moz focus:border-brand-moz"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center overflow-auto p-4 bg-gray-200 rounded-lg border border-gray-300">
+                            <div className="transform scale-75 origin-top">
+                                <CertificateTemplate 
+                                    studentName={simStudentName}
+                                    companyName={simCompanyName}
+                                    courseName={simCourseName}
+                                    completionDate={simCompletionDate}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

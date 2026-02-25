@@ -27,16 +27,16 @@ const WelcomePage: React.FC = () => {
         <div className="flex justify-center mb-6">
           <CheckIcon />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Conta ativada com sucesso!</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Conta activada com sucesso</h1>
         <p className="mt-4 text-gray-600">
-          Seu cadastro foi confirmado. Por favor, retorne à página de login para acessar sua conta.
+          O seu registo foi confirmado. Por favor, regresse à página inicial para aceder à sua conta.
         </p>
         <div className="mt-8">
           <Link
             to="/login"
             className="inline-block w-full max-w-xs px-6 py-3 text-lg font-semibold text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up"
           >
-            Fazer Login Agora
+            Aceder à conta
           </Link>
         </div>
         <div className="mt-6">

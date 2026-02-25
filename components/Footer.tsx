@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="mt-10 border-t border-white/20 pt-6 text-center text-gray-200 space-y-3">
           <p className="text-lg font-bold tracking-tight text-white">{t('footer.slogan')}</p>
-          <p className="text-xs">&copy; {new Date().getFullYear()} MozupAcademy. {t('footer.copyright')}</p>
+          <p className="text-xs">&copy; {new Date().getFullYear()} MozUp Academy. {t('footer.copyright')}</p>
           <div className="mt-4 flex justify-center items-center space-x-3 sm:space-x-4 text-xs">
               <Link to="/privacy-policy" className="text-gray-200 hover:text-white hover:underline">{t('footer.privacy')}</Link>
               <span className="text-gray-400">|</span>

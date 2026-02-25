@@ -354,7 +354,7 @@ const AdminAnalyticsPage: React.FC = () => {
         const doc = new jsPDF();
         
         doc.setFontSize(18);
-        doc.text("Relatório de Análise - MozupAcademy", 14, 22);
+        doc.text("Relatório de Análise - MozUp Academy", 14, 22);
         doc.setFontSize(11);
         doc.setTextColor(100);
         doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 29);
@@ -409,7 +409,7 @@ const AdminAnalyticsPage: React.FC = () => {
             }
         });
 
-        doc.save('relatorio_analise_mozupacademy.pdf');
+        doc.save('relatorio_analise_mozup_academy.pdf');
     };
 
     if (loading) {

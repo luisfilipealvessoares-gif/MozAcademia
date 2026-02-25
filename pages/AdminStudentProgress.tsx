@@ -252,7 +252,7 @@ const AdminStudentProgress: React.FC = () => {
             `${item.progress}%`,
         ]);
         autoTable(doc, {
-            head: [['Aluno', 'Email', 'Empresa', 'Curso', 'Província', 'País', 'Idade', 'Progresso']],
+            head: [['Aluno', 'E-mail', 'Empresa', 'Curso', 'Província', 'País', 'Idade', 'Progresso']],
             body: tableData,
         });
         doc.save('progresso_alunos.pdf');
@@ -429,7 +429,7 @@ const AdminStudentProgress: React.FC = () => {
                         </div>
                         <div className="my-5 space-y-2 text-gray-700 text-sm">
                             <div><strong className="font-semibold text-gray-500 w-28 inline-block">Nome:</strong> {selectedStudent.full_name}</div>
-                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">Email:</strong> {selectedStudent.email || 'Não informado'}</div>
+                            <div><strong className="font-semibold text-gray-500 w-28 inline-block">E-mail:</strong> {selectedStudent.email || 'Não informado'}</div>
                             <div><strong className="font-semibold text-gray-500 w-28 inline-block">Empresa:</strong> {selectedStudent.company_name || 'Não informado'}</div>
                             <div><strong className="font-semibold text-gray-500 w-28 inline-block">Telefone:</strong> {selectedStudent.phone_number || 'Não informado'}</div>
                             <div><strong className="font-semibold text-gray-500 w-28 inline-block">Sexo:</strong> {selectedStudent.sexo ? (selectedStudent.sexo.charAt(0).toUpperCase() + selectedStudent.sexo.slice(1)) : 'Não informado'}</div>
