@@ -58,9 +58,6 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose, onAccept }) =>
             
             <h3 className="font-bold text-gray-800 pt-2">{t('terms.h10')}</h3>
             <p>{t('terms.p10_1')}</p>
-            
-            <h3 className="font-bold text-gray-800 pt-2">{t('terms.h11')}</h3>
-            <p>{t('terms.p11_1')}</p>
 
             <p className="font-bold pt-4 text-gray-800">{t('terms.final')}</p>
         </div>

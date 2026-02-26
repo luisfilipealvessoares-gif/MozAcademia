@@ -1,12 +1,24 @@
 
 import React from 'react';
 import { useI18n } from '../contexts/I18nContext';
+import { useNavigate } from 'react-router-dom';
 
 const PrivacyPolicyPage: React.FC = () => {
     const { t } = useI18n();
+    const navigate = useNavigate();
 
     return (
-        <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg border max-w-4xl mx-auto">
+        <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg border max-w-4xl mx-auto relative">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="mb-6 flex items-center text-brand-moz hover:text-brand-up transition-colors font-semibold"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                {t('back')}
+            </button>
+
             <h1 className="text-3xl font-bold text-brand-up mb-6">{t('privacy.title')}</h1>
             <p className="text-sm text-gray-500 mb-8">{t('privacy.lastUpdated')}</p>
 
