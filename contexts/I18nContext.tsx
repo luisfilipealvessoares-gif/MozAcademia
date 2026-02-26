@@ -37,7 +37,7 @@ const translations = {
     'footer.support': 'Suporte',
     'footer.mozupWebsite': 'Website MozUp',
     'footer.account': 'Conta',
-    'footer.studentLogin': 'Login de Aluno',
+    'footer.studentLogin': 'Login do Formando',
     'footer.adminLogin': 'Acesso do Formador',
     'footer.maputo': 'Maputo',
     'footer.pemba': 'Pemba',
