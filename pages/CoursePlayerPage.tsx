@@ -540,6 +540,15 @@ const CoursePlayerPage: React.FC = () => {
         setActiveQuizType(null);
     };
 
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+
     useEffect(() => {
         if (!isProfileComplete) {
             setLoading(false);
@@ -558,13 +567,13 @@ const CoursePlayerPage: React.FC = () => {
                         videoPath = decodeURIComponent(url.pathname.split('/course_videos/')[1]);
                     } catch (e) {
                         console.error("Invalid video URL format:", videoPath);
-                        if (isActive) setVideoError("Formato de URL do vídeo inválido.");
+                        if (isActive && isMounted.current) setVideoError("Formato de URL do vídeo inválido.");
                         return;
                     }
                 }
                 const { data, error } = await supabase.storage.from('course_videos').createSignedUrl(videoPath, 3600);
                 
-                if (isActive) {
+                if (isActive && isMounted.current) {
                     if (error) {
                         console.error("Error creating signed URL:", error.message);
                         setVideoError(t('course.player.videoLoadError'));
@@ -591,6 +600,14 @@ const CoursePlayerPage: React.FC = () => {
             setLoading(true);
             setFetchError(null);
 
+            // Safety timeout to prevent infinite loading
+            const timeoutId = setTimeout(() => {
+                if (isMounted.current && loading) {
+                    setLoading(false);
+                    setFetchError(t('course.player.dataLoadError'));
+                }
+            }, 15000); // 15 seconds timeout
+
             try {
                 const [courseRes, modulesRes, progressRes, attemptRes, certReqRes, inVideoQuizRes] = await Promise.all([
                     supabase.from('courses').select('*').eq('id', courseId).single(),
@@ -601,7 +618,9 @@ const CoursePlayerPage: React.FC = () => {
                     supabase.from('user_in_video_quiz_completions').select('quiz_type').eq('user_id', userId).eq('course_id', courseId)
                 ]);
 
-                if (signal.aborted) return;
+                clearTimeout(timeoutId);
+
+                if (signal.aborted || !isMounted.current) return;
 
                 const { data: courseData, error: courseError } = courseRes;
                 if (courseError) throw courseError;
@@ -654,12 +673,13 @@ const CoursePlayerPage: React.FC = () => {
                     }
                 }
             } catch (error: any) {
-                if (error.name !== 'AbortError') {
+                clearTimeout(timeoutId);
+                if (error.name !== 'AbortError' && isMounted.current) {
                     console.error("Failed to load course data:", error.message);
                     setFetchError(t('course.player.dataLoadError'));
                 }
             } finally {
-                if (!signal.aborted) {
+                if (isMounted.current) {
                     setLoading(false);
                 }
             }
