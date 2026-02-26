@@ -8,19 +8,27 @@ const AuthRedirectHandler: React.FC = () => {
   const navigate = useNavigate();
   // Use a ref to ensure this effect runs only once per confirmation.
   const hasRedirected = useRef(false);
+  
+  // Capture the initial URL state on mount, as Supabase might clear the hash
+  const isSignupConfirmation = useRef(
+      window.location.hash.includes('type=signup') || 
+      window.location.search.includes('type=signup')
+  ).current;
 
   useEffect(() => {
     // Check if there is a session, if we haven't redirected yet,
-    // and if the confirmation flag from the signup process is set.
-    if (session && !hasRedirected.current && localStorage.getItem('awaiting_confirmation') === 'true') {
-      // Set the ref to true to prevent this from running again.
-      hasRedirected.current = true;
-      // Clean up the flag from localStorage.
-      localStorage.removeItem('awaiting_confirmation');
-      // Redirect the user to the welcome page.
-      navigate('/welcome', { replace: true });
+    // and if the confirmation flag from the signup process is set OR if the URL indicates a signup confirmation.
+    if ((session && localStorage.getItem('awaiting_confirmation') === 'true') || (session && isSignupConfirmation)) {
+      if (!hasRedirected.current) {
+          // Set the ref to true to prevent this from running again.
+          hasRedirected.current = true;
+          // Clean up the flag from localStorage.
+          localStorage.removeItem('awaiting_confirmation');
+          // Redirect the user to the welcome page.
+          navigate('/welcome', { replace: true });
+      }
     }
-  }, [session, navigate]);
+  }, [session, navigate, isSignupConfirmation]);
 
   // This component does not render any UI elements.
   return null;

@@ -87,7 +87,7 @@ const translations = {
     'auth.loginButton': 'Iniciar sessão',
     'auth.registerButton': 'Registar',
     'auth.toggleToRegister': 'Não tem uma conta? Registe-se',
-    'auth.toggleToLogin': 'Já tem uma conta? Inicie sessão',
+    'auth.toggleToLogin': 'Já tem uma conta? Inicie a sessão',
     'auth.emailConfirmation.title': 'Verifique o seu e-mail',
     'auth.emailConfirmation.messageNew': 'Foi enviado um e-mail de confirmação para o endereço {email}. Solicitamos que verifique a sua caixa de entrada (e/ ou pasta de correio Spam) para activar a sua conta.',
     'auth.emailConfirmation.messageExisting': 'Este e-mail já foi registado, mas não confirmado. Enviámos um novo e-mail de confirmação para {email}. Por favor, verifique a sua caixa de entrada.',

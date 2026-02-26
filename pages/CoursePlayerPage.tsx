@@ -7,6 +7,9 @@ import { Module, UserProgress, Course, QuizQuestion, QuizAttempt, UserInVideoQui
 import Module1FinalQuiz from '../components/Module1FinalQuiz';
 import Module2FinalQuiz from '../components/Module2FinalQuiz';
 import Module3FinalQuiz from '../components/Module3FinalQuiz';
+import CertificateTemplate from '../components/CertificateTemplate';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -183,6 +186,8 @@ const CoursePlayerPage: React.FC = () => {
     const [certificateRequested, setCertificateRequested] = useState(false);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [generatingCertificate, setGeneratingCertificate] = useState(false);
+    const certificateRef = useRef<HTMLDivElement>(null);
 
     // In-video quiz state
     const [inVideoQuizActive, setInVideoQuizActive] = useState(false);
@@ -760,6 +765,47 @@ const CoursePlayerPage: React.FC = () => {
         }
     };
 
+    const handleDownloadCertificate = async () => {
+        if (!certificateRef.current) return;
+        setGeneratingCertificate(true);
+
+        try {
+            const canvas = await html2canvas(certificateRef.current, {
+                scale: 4,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: 1123,
+                height: 794,
+                windowWidth: 1123,
+                windowHeight: 794,
+                x: 0,
+                y: 0,
+                scrollX: 0,
+                scrollY: 0,
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Certificado_${course?.title || 'Curso'}.pdf`);
+
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Erro ao gerar o certificado. Tente novamente.");
+        } finally {
+            setGeneratingCertificate(false);
+        }
+    };
+
     if (loading) return (
         <div className="flex justify-center items-center h-screen">
             <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-brand-moz"></div>
@@ -1057,13 +1103,26 @@ const CoursePlayerPage: React.FC = () => {
                         <div className="bg-white p-6 rounded-xl shadow-lg border text-center">
                             <h2 className="text-3xl font-bold text-brand-up mb-4">{t('course.player.congratulations')}</h2>
                             <p className="text-lg mb-6">{t('course.player.courseComplete', { title: courseTitle })}</p>
-                            {certificateRequested ? (
-                                <p className="text-blue-600 font-semibold text-base">{t('course.player.certificateRequested')}</p>
-                            ) : (
-                                <button onClick={handleRequestCertificate} className="bg-brand-moz text-white font-bold py-2.5 px-6 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg">
-                                    {t('course.player.requestCertificate')}
-                                </button>
-                            )}
+                            
+                            <button 
+                                onClick={handleDownloadCertificate} 
+                                disabled={generatingCertificate}
+                                className="bg-brand-moz text-white font-bold py-3 px-8 rounded-lg hover:bg-brand-up transition-all shadow-md hover:shadow-lg flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {generatingCertificate ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                        Gerando Certificado...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        </svg>
+                                        Baixar Certificado
+                                    </>
+                                )}
+                            </button>
                         </div>
                     )}
                 </main>
@@ -1122,6 +1181,17 @@ const CoursePlayerPage: React.FC = () => {
 
 
                 </aside>
+            </div>
+
+            {/* Hidden Certificate Template for Capture */}
+            <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+                <CertificateTemplate 
+                    ref={certificateRef}
+                    studentName={profile?.full_name || user?.user_metadata?.full_name || 'Nome do Aluno'}
+                    companyName={profile?.company_name || 'Nome da Empresa'}
+                    courseName={courseTitle}
+                    completionDate={new Date().toLocaleDateString('pt-PT')}
+                />
             </div>
         </div>
     );

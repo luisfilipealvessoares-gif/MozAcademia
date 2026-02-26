@@ -36,7 +36,7 @@ const WelcomePage: React.FC = () => {
             to="/login"
             className="inline-block w-full max-w-xs px-6 py-3 text-lg font-semibold text-white bg-brand-moz rounded-md hover:bg-brand-up focus:outline-none focus:bg-brand-up"
           >
-            Aceder à conta
+            Iniciar sessão ou Aceder à conta
           </Link>
         </div>
         <div className="mt-6">

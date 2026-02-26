@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import CertificateTemplate from '../components/CertificateTemplate';
+import html2canvas from 'html2canvas';
 
 const AdminCertificateRequests: React.FC = () => {
     const [requests, setRequests] = useState<CertificateRequest[]>([]);
@@ -18,6 +19,47 @@ const AdminCertificateRequests: React.FC = () => {
     const [simCompanyName, setSimCompanyName] = useState('Empresa Modelo Lda.');
     const [simCourseName, setSimCourseName] = useState('Introdução ao Petróleo e Gás');
     const [simCompletionDate, setSimCompletionDate] = useState(new Date().toLocaleDateString('pt-PT'));
+    const certificateRef = useRef<HTMLDivElement>(null);
+
+    const downloadCertificatePDF = async () => {
+        if (certificateRef.current) {
+            try {
+                // High quality capture
+                const canvas = await html2canvas(certificateRef.current, {
+                    scale: 4, // Higher scale for better quality
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: 1123,
+                    height: 794,
+                    windowWidth: 1123,
+                    windowHeight: 794,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                
+                // A4 Landscape dimensions in mm
+                const pdfWidth = 297;
+                const pdfHeight = 210;
+                
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`certificado_${simStudentName.replace(/\s+/g, '_')}.pdf`);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("Erro ao gerar PDF. Tente novamente.");
+            }
+        }
+    };
 
     const fetchRequests = useCallback(async () => {
         if (abortControllerRef.current) {
@@ -239,8 +281,9 @@ const AdminCertificateRequests: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-center overflow-auto p-4 bg-gray-200 rounded-lg border border-gray-300">
-                            <div className="transform scale-75 origin-top">
+                        <div className="flex justify-center overflow-auto p-4 bg-gray-200 rounded-lg border border-gray-300 relative">
+                            {/* Preview Instance (Scaled) */}
+                            <div className="transform scale-[0.6] origin-top md:scale-75">
                                 <CertificateTemplate 
                                     studentName={simStudentName}
                                     companyName={simCompanyName}
@@ -248,6 +291,29 @@ const AdminCertificateRequests: React.FC = () => {
                                     completionDate={simCompletionDate}
                                 />
                             </div>
+                        </div>
+                        
+                        {/* Hidden Full-Size Instance for PDF Generation */}
+                        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+                            <CertificateTemplate 
+                                ref={certificateRef}
+                                studentName={simStudentName}
+                                companyName={simCompanyName}
+                                courseName={simCourseName}
+                                completionDate={simCompletionDate}
+                            />
+                        </div>
+                        
+                        <div className="mt-4 flex justify-end">
+                            <button 
+                                onClick={downloadCertificatePDF}
+                                className="bg-brand-up text-white px-6 py-2 rounded-lg font-bold shadow-md hover:bg-red-700 transition-colors flex items-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Baixar Certificado (PDF)
+                            </button>
                         </div>
                     </div>
                 )}

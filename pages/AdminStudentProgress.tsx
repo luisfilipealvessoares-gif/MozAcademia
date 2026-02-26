@@ -150,10 +150,12 @@ const AdminStudentProgress: React.FC = () => {
             }
 
         } catch (err: any) {
-            if (err.name !== 'AbortError') {
-                console.error("Error fetching student progress:", err.message || err);
-                setError("Não foi possível carregar o progresso dos alunos.");
+            // Check for AbortError by name or message content
+            if (err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('aborted')) {
+                return;
             }
+            console.error("Error fetching student progress:", err.message || err);
+            setError("Não foi possível carregar o progresso dos alunos.");
         } finally {
             if (!signal.aborted) {
                 setLoading(false);
