@@ -203,6 +203,7 @@ const CoursePlayerPage: React.FC = () => {
     const [videoQuizShowSuccess, setVideoQuizShowSuccess] = useState(false);
     const [videoQuizAttempts, setVideoQuizAttempts] = useState(0);
     const [videoQuizFeedback, setVideoQuizFeedback] = useState<string | null>(null);
+    const [completedQuizTypes, setCompletedQuizTypes] = useState<Set<string>>(new Set());
     
     // Quiz 1 (Security) State
     const [selectedSecurityAnswer, setSelectedSecurityAnswer] = useState<number | null>(null);
@@ -331,6 +332,10 @@ const CoursePlayerPage: React.FC = () => {
 
     const saveInVideoQuizProgress = async (quizType: string) => {
         if (!userId || !courseId) return;
+        
+        // Optimistically update local state
+        setCompletedQuizTypes(prev => new Set(prev).add(quizType));
+
         const { error } = await supabase.from('user_in_video_quiz_completions').upsert(
             {
                 user_id: userId,
@@ -434,7 +439,7 @@ const CoursePlayerPage: React.FC = () => {
                 setVideoQuizFeedback("A resposta não está correta. Tente identificar o risco principal.");
             }
         } else if (activeQuizType === 'layers') {
-            const correctOrder = ["Rocha Geradora", "Petróleo e Gás", "Rocha Reservatório", "Rocha Capeadora / Selo"];
+            const correctOrder = ["Rocha Geradora", "Rocha Reservatório", "Petróleo e Gás", "Rocha Capeadora / Selo"];
             const isCorrect = selectedLayers.every((val, index) => val === correctOrder[index]);
 
             if (isCorrect) {
@@ -646,6 +651,7 @@ const CoursePlayerPage: React.FC = () => {
                 const { data: quizCompletions } = inVideoQuizRes;
                 if (quizCompletions) {
                     const completedTypes = new Set(quizCompletions.map(q => q.quiz_type));
+                    setCompletedQuizTypes(completedTypes);
                     if (completedTypes.has('security')) setSecurityQuizComplete(true);
                     if (completedTypes.has('layers')) setLayersQuizComplete(true);
                     if (completedTypes.has('pgChain')) setPgChainQuizComplete(true);
@@ -693,21 +699,20 @@ const CoursePlayerPage: React.FC = () => {
     }, [userId, courseId, navigate, logActivity, t, isProfileComplete]);
 
     const handleSelectModule = (module: Module) => {
-        if (isModuleIncomplete && activeModule && module.id !== activeModule.id) {
-            if (!window.confirm(t('user.course.changeModuleWarning'))) {
-                return;
-            }
-        }
+        // Allow free navigation between modules since we save progress in localStorage
         setActiveModule(module);
         setView('video');
-        setSecurityQuizComplete(false);
-        setLayersQuizComplete(false);
-        setPgChainQuizComplete(false);
-        setSeismicSurveyQuizComplete(false);
-        setEpiQuizComplete(false);
-        setModule1FinalQuizComplete(false);
-        setModule2FinalQuizComplete(false);
-        setModule3FinalQuizComplete(false);
+        
+        // Restore quiz completion state from the loaded set
+        setSecurityQuizComplete(completedQuizTypes.has('security'));
+        setLayersQuizComplete(completedQuizTypes.has('layers'));
+        setPgChainQuizComplete(completedQuizTypes.has('pgChain'));
+        setSeismicSurveyQuizComplete(completedQuizTypes.has('seismicSurvey'));
+        setEpiQuizComplete(completedQuizTypes.has('epiQuiz'));
+        setModule1FinalQuizComplete(completedQuizTypes.has('module1Final'));
+        setModule2FinalQuizComplete(completedQuizTypes.has('module2Final'));
+        setModule3FinalQuizComplete(completedQuizTypes.has('module3Final'));
+
         setInVideoQuizActive(false);
         setVideoQuizShowSuccess(false);
         setVideoQuizAttempts(0);
@@ -721,39 +726,59 @@ const CoursePlayerPage: React.FC = () => {
         logActivity(module.id);
     };
 
-    const handleModuleComplete = async (moduleId: string) => {
-        if (!userId || completedModules.includes(moduleId)) return;
+    const handleModuleComplete = async (moduleId: string, justCompletedQuiz?: string) => {
+        if (!userId) return;
     
         const module = modules.find(m => m.id === moduleId);
         if (!module) return;
 
-        let allQuizzesForModuleComplete = false;
-        if (module.title.includes("Módulo 1")) {
-            allQuizzesForModuleComplete = securityQuizComplete && layersQuizComplete && pgChainQuizComplete && seismicSurveyQuizComplete && epiQuizComplete && module1FinalQuizComplete;
-        } else if (module.title.includes("Módulo 2")) {
-            allQuizzesForModuleComplete = module2FinalQuizComplete;
-        } else if (module.title.includes("Módulo 3")) {
-            allQuizzesForModuleComplete = module3FinalQuizComplete;
-        } else {
-            allQuizzesForModuleComplete = true; // Assume complete if no quizzes are defined for it
-        }
+        const isAlreadyCompleted = completedModules.includes(moduleId);
 
-        if (!allQuizzesForModuleComplete) {
-            alert("Para marcar este módulo como concluído, você deve primeiro passar em todos os quizzes do vídeo.");
-            if (videoRef.current) {
-                const newTime = Math.max(0, videoRef.current.duration - 5);
-                videoRef.current.currentTime = newTime;
-                videoRef.current.play().catch(e => console.error("Error replaying video:", e));
+        if (!isAlreadyCompleted) {
+            // Create a temporary set that includes the currently completed quiz (to handle immediate calls)
+            const currentCompleted = new Set(completedQuizTypes);
+            if (justCompletedQuiz) {
+                currentCompleted.add(justCompletedQuiz);
             }
-            return;
-        }
 
-        await supabase.from('user_progress').insert({ user_id: userId, module_id: moduleId });
-        const newCompleted = [...completedModules, moduleId];
-        setCompletedModules(newCompleted);
-        
-        // Clear saved progress for this module so re-watching starts from beginning
-        localStorage.removeItem(`video_progress_${userId}_${moduleId}`);
+            let allQuizzesForModuleComplete = false;
+            if (module.title.includes("Módulo 1")) {
+                // Relaxed check: Only require the Final Quiz for completion to prevent users getting stuck.
+                // The seek blocking logic already enforces the other quizzes during playback.
+                allQuizzesForModuleComplete = currentCompleted.has('module1Final');
+            } else if (module.title.includes("Módulo 2")) {
+                allQuizzesForModuleComplete = currentCompleted.has('module2Final');
+            } else if (module.title.includes("Módulo 3")) {
+                allQuizzesForModuleComplete = currentCompleted.has('module3Final');
+            } else {
+                allQuizzesForModuleComplete = true; // Assume complete if no quizzes are defined for it
+            }
+
+            if (!allQuizzesForModuleComplete) {
+                // Only show alert if we are NOT in the "just completed" flow (which implies we are at the end of video)
+                // OR if we really missed the final quiz.
+                
+                // If this was triggered by onEnded (no justCompletedQuiz), and we fail:
+                if (!justCompletedQuiz) {
+                    alert("Para marcar este módulo como concluído, você deve primeiro passar no quiz final do módulo.");
+                    if (videoRef.current) {
+                        const newTime = Math.max(0, videoRef.current.duration - 10);
+                        if (Math.abs(videoRef.current.currentTime - newTime) > 2) {
+                            videoRef.current.currentTime = newTime;
+                            videoRef.current.play().catch(e => console.error("Error replaying video:", e));
+                        }
+                    }
+                }
+                return;
+            }
+
+            await supabase.from('user_progress').insert({ user_id: userId, module_id: moduleId });
+            const newCompleted = [...completedModules, moduleId];
+            setCompletedModules(newCompleted);
+            
+            // Clear saved progress for this module so re-watching starts from beginning
+            localStorage.removeItem(`video_progress_${userId}_${moduleId}`);
+        }
     
         const currentModuleIndex = modules.findIndex(m => m.id === moduleId);
         const isLastModule = currentModuleIndex === modules.length - 1;

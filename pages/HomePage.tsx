@@ -214,29 +214,57 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* Why Us Section */}
-        <section id="porque-nos" className="bg-brand-light py-12 px-6 rounded-2xl">
-            <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl mb-8 text-center">{t('home.whyUs.title')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-center">
-                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
-                        <BookOpenIcon className="h-6 w-6"/>
-                    </div>
-                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card1.title')}</h3>
-                    <p className="text-gray-600 text-xs">{t('home.whyUs.card1.text')}</p>
+        <section id="porque-nos" className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-light/50 to-white -z-10"></div>
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30">
+                 <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-brand-moz/10 blur-3xl"></div>
+                 <div className="absolute top-1/2 right-0 w-64 h-64 rounded-full bg-brand-up/10 blur-3xl"></div>
+            </div>
+
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                    <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 mb-4">
+                        {t('home.whyUs.title')}
+                    </h2>
+                    <div className="h-1.5 w-24 bg-brand-moz mx-auto rounded-full"></div>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
-                        <LightBulbIcon className="h-6 w-6"/>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                    {/* Card 1 */}
+                    <div className="group relative bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-moz/5 rounded-full blur-xl group-hover:bg-brand-moz/10 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-moz/10 text-brand-moz mb-6 group-hover:bg-brand-moz group-hover:text-white transition-colors duration-300 shadow-sm">
+                                <BookOpenIcon className="h-8 w-8"/>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-brand-moz transition-colors">{t('home.whyUs.card1.title')}</h3>
+                            <p className="text-gray-600 leading-relaxed text-sm md:text-base">{t('home.whyUs.card1.text')}</p>
+                        </div>
                     </div>
-                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card2.title')}</h3>
-                    <p className="text-gray-600 text-xs">{t('home.whyUs.card2.text')}</p>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-                    <div className="inline-block bg-brand-moz/10 text-brand-moz p-2.5 rounded-full mb-3">
-                        <ChartBarIcon className="h-6 w-6"/>
+
+                    {/* Card 2 */}
+                    <div className="group relative bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-up/5 rounded-full blur-xl group-hover:bg-brand-up/10 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-up/10 text-brand-up mb-6 group-hover:bg-brand-up group-hover:text-white transition-colors duration-300 shadow-sm">
+                                <LightBulbIcon className="h-8 w-8"/>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-brand-up transition-colors">{t('home.whyUs.card2.title')}</h3>
+                            <p className="text-gray-600 leading-relaxed text-sm md:text-base">{t('home.whyUs.card2.text')}</p>
+                        </div>
                     </div>
-                    <h3 className="text-base font-semibold mb-2">{t('home.whyUs.card3.title')}</h3>
-                    <p className="text-gray-600 text-xs">{t('home.whyUs.card3.text')}</p>
+
+                    {/* Card 3 */}
+                    <div className="group relative bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-moz/5 rounded-full blur-xl group-hover:bg-brand-moz/10 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-moz/10 text-brand-moz mb-6 group-hover:bg-brand-moz group-hover:text-white transition-colors duration-300 shadow-sm">
+                                <ChartBarIcon className="h-8 w-8"/>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-brand-moz transition-colors">{t('home.whyUs.card3.title')}</h3>
+                            <p className="text-gray-600 leading-relaxed text-sm md:text-base">{t('home.whyUs.card3.text')}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
